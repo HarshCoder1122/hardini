@@ -11,8 +11,13 @@ app.use(cors());
 app.use(express.json());
 
 // YouTube API Configuration
-const YOUTUBE_API_KEY = process.env.YOUTUBE_API_KEY || 'AIzaSyAxIpnyaoX0hCOVWn-Y1G-dLcuMK7JxGX8';
+const YOUTUBE_API_KEY = process.env.YOUTUBE_API_KEY || 'AIzaSyAK3WmzMQfwGiXUjKhRFLTQGNHAs1hjo-Q';
 const YOUTUBE_API_URL = 'https://www.googleapis.com/youtube/v3';
+
+// Debug YouTube API key
+console.log('YouTube API Key available:', !!YOUTUBE_API_KEY);
+console.log('Environment:', process.env.NODE_ENV || 'development');
+console.log('YouTube API Key length:', YOUTUBE_API_KEY ? YOUTUBE_API_KEY.length : 0);
 
 // Farming-related search terms
 const FARMING_SEARCH_TERMS = [
@@ -42,18 +47,21 @@ app.get('/api/reels', async (req, res) => {
             if (allVideos.length >= maxResults) break;
 
             try {
-                const searchResponse = await axios.get(`${YOUTUBE_API_URL}/search`, {
-                    params: {
-                        key: YOUTUBE_API_KEY,
-                        q: searchTerm,
-                        type: 'video',
-                        part: 'snippet',
-                        maxResults: Math.min(10, maxResults - allVideos.length),
-                        order: 'relevance',
-                        regionCode: 'IN', // Focus on Indian content
-                        relevanceLanguage: 'en'
-                    }
-                });
+                    console.log(`Searching for: "${searchTerm}" with API key: ${YOUTUBE_API_KEY.substring(0, 10)}...`);
+
+                    const searchResponse = await axios.get(`${YOUTUBE_API_URL}/search`, {
+                        params: {
+                            key: YOUTUBE_API_KEY,
+                            q: searchTerm,
+                            type: 'video',
+                            part: 'snippet',
+                            maxResults: Math.min(5, maxResults - allVideos.length), // Reduced to 5 for debugging
+                            order: 'relevance'
+                            // Removed regionCode and relevanceLanguage for broader results
+                        }
+                    });
+
+                    console.log(`Search response for "${searchTerm}":`, searchResponse.data.items ? searchResponse.data.items.length : 0, 'videos found');
 
                 if (searchResponse.data.items) {
                     // Get detailed video information
@@ -67,27 +75,13 @@ app.get('/api/reels', async (req, res) => {
                         }
                     });
 
-                    const farmingVideos = videoResponse.data.items
-                        .filter(video => {
-                            // Filter for farming/agriculture related content
-                            const title = video.snippet.title.toLowerCase();
-                            const description = video.snippet.description.toLowerCase();
-                            const channelTitle = video.snippet.channelTitle.toLowerCase();
+                    console.log(`Video details response:`, videoResponse.data.items ? videoResponse.data.items.length : 0, 'videos with details');
 
-                            const farmingKeywords = [
-                                'farm', 'agri', 'crop', 'rice', 'wheat', 'tractor', 'harvest',
-                                'farming', 'agriculture', 'dairy', 'cattle', 'vegetable',
-                                'organic', 'pesticide', 'fertilizer', 'irrigation', 'soil',
-                                'cultivation', 'plantation', 'gardening', 'horticulture'
-                            ];
+                    // If no farming videos found, use all videos from search
+                    let farmingVideos;
 
-                            return farmingKeywords.some(keyword =>
-                                title.includes(keyword) ||
-                                description.includes(keyword) ||
-                                channelTitle.includes(keyword)
-                            );
-                        })
-                        .map(video => ({
+                    if (videoResponse.data.items && videoResponse.data.items.length > 0) {
+                        farmingVideos = videoResponse.data.items.map(video => ({
                             id: video.id,
                             title: video.snippet.title,
                             description: video.snippet.description,
@@ -99,7 +93,23 @@ app.get('/api/reels', async (req, res) => {
                             duration: video.contentDetails?.duration || 'PT0S',
                             tags: video.snippet.tags || []
                         }));
+                    } else {
+                        // Fallback to search results if details request fails
+                        farmingVideos = searchResponse.data.items.map(item => ({
+                            id: item.id.videoId,
+                            title: item.snippet.title,
+                            description: item.snippet.description,
+                            thumbnail: item.snippet.thumbnails.high?.url || item.snippet.thumbnails.default.url,
+                            channelTitle: item.snippet.channelTitle,
+                            publishedAt: item.snippet.publishedAt,
+                            viewCount: '0',
+                            likeCount: '0',
+                            duration: 'PT0S',
+                            tags: []
+                        }));
+                    }
 
+                    console.log(`Filtered farming videos for "${searchTerm}":`, farmingVideos.length);
                     allVideos.push(...farmingVideos);
                 }
             } catch (error) {
