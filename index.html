@@ -1,0 +1,1261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hardini - Technology Meets Experiences</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+</head>
+<body>
+    <section class="new-landing-page">
+        <div class="landing-header">
+            <div class="logo-group">
+                <img src="assets/iifm.png" alt="IIFM Logo" class="iifm-logo">
+                <p>प्रगतेः मूलं प्रकृतिः</p>
+            </div>
+            <div class="logo-group">
+                <img src="assets/life (1).png" alt="LiFE Logo" class="life-logo">
+                <p>Lifestyle for<br>Environment</p>
+            </div>
+            <div class="logo-group">
+                <img src="assets/nature.png" alt="Nature Protects Logo" class="nature-logo">
+                <p>प्रकृति रशिता<br>Nature Protects if She is Protected</p>
+            </div>
+        </div>
+        <div class="landing-title">
+            <p class="institute-name">INDIAN INSTITUTE OF FOREST MANAGEMENT, BHOPAL</p>
+            <h1>CO<span class="lightbulb-icon">💡</span>ALESCENCE'25</h1>
+            <h2>Coalescing for Equity: Business and Climate</h2>
+        </div>
+        <div class="landing-illustration">
+            <img src="images/landing-illustration.png" alt="Illustration" class="illustration-image">
+        </div>
+        <button class="scroll-down-btn">Scroll Down 👇</button>
+    </section>
+
+    <div id="old-app-content">
+        <header>
+            <nav>
+                <div class="logo">HARDINI 🌱</div>
+                <div class="nav-links">
+                    <a href="index.html">🏠 HOME</a>
+                    <a href="supply-chain.html">🔄 SUPPLY CHAIN</a>
+                    <a href="connect.html">🤝 CONNECT</a>
+                    <a href="reels.html">🎥 REELS</a>
+                </div>
+            </nav>
+        </header>
+
+        <main>
+            <section class="hero">
+                <div class="hero-content">
+                    <h1>Empowering Agriculture</h1>
+                    <h2>Technology Meets Experiences</h2>
+                    <p>Innovative solutions for a sustainable future in farming</p>
+                    <button class="cta-button">🚀 GET STARTED</button>
+                </div>
+            </section>
+
+            <section class="features" id="features">
+                <div class="feature-grid">
+                    <!-- Outlet Section -->
+                    <div class="feature-card outlet-card" data-feature="outlet">
+                        <div class="feature-icon">🏪</div>
+                        <h3>Outlet</h3>
+                        <p>One-stop shop for all farming needs</p>
+                        <button class="view-details-btn" data-modal="outletModal">View Products</button>
+                    </div>
+
+                    <!-- Waste Utilization Section -->
+                    <div class="feature-card" data-feature="waste">
+                        <div class="feature-icon">♻️</div>
+                        <h3>Waste Utilization</h3>
+                        <p>Reducing waste through innovation</p>
+                        <button class="view-details-btn" data-modal="wasteModal">View Details</button>
+                    </div>
+
+                    <!-- Experienced Farmers Section -->
+                    <div class="feature-card" data-feature="farmers">
+                        <div class="feature-icon">👨‍🌾</div>
+                        <h3>Experienced Farmers</h3>
+                        <p>Learn from knowledgeable farmers</p>
+                        <button class="view-details-btn" data-modal="farmersModal">View Details</button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Reels Section - Instagram Style -->
+            <section class="home-reels-section" id="reels">
+                <div class="home-reels-container">
+                    <div class="home-reels-header">
+                        <h2>🌾 AgriReels</h2>
+                        <p>Swipe up to explore farming shorts</p>
+                    </div>
+
+            <!-- Instagram-style Reels Container -->
+                    <div class="instagram-reels-container">
+                        <!-- Reels will be dynamically loaded here -->
+                    </div>
+
+                    <!-- Full Screen Reel Player -->
+                    <div id="fullscreenReelPlayer" class="fullscreen-reel-player">
+                        <div class="fullscreen-reel-content">
+                            <button class="fullscreen-close-btn" id="closeFullscreenReel">✕</button>
+                            <div class="fullscreen-video-container">
+                                <iframe id="fullscreenReelVideo" frameborder="0" allowfullscreen></iframe>
+                            </div>
+                            <div class="fullscreen-reel-info">
+                                <div class="reel-header">
+                                    <div class="reel-avatar" id="fullscreenAvatar"></div>
+                                    <div class="reel-info">
+                                        <h3 id="fullscreenChannel"></h3>
+                                        <p id="fullscreenCategory"></p>
+                                    </div>
+                                </div>
+                                <div class="reel-description">
+                                    <p id="fullscreenDescription"></p>
+                                </div>
+                                <div class="reel-stats">
+                                    <span id="fullscreenViews"></span>
+                                    <span id="fullscreenLikes"></span>
+                                </div>
+                                <div class="reel-actions">
+                                    <button class="action-btn" onclick="likeFullscreenReel()">
+                                        <i class="fas fa-heart"></i>
+                                        <span class="action-count" id="fullscreenLikeCount"></span>
+                                    </button>
+                                    <button class="action-btn" onclick="shareFullscreenReel()">
+                                        <i class="fas fa-share"></i>
+                                        <span class="action-count">Share</span>
+                                    </button>
+                                    <button class="action-btn" onclick="saveFullscreenReel()">
+                                        <i class="fas fa-bookmark"></i>
+                                        <span class="action-count">Save</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="reels-navigation">
+                        <button class="nav-arrow prev-arrow" onclick="scrollReels('prev')">⬅️</button>
+                        <div class="reel-indicators">
+                            <span class="indicator active" onclick="goToReel(0)"></span>
+                            <span class="indicator" onclick="goToReel(1)"></span>
+                            <span class="indicator" onclick="goToReel(2)"></span>
+                            <span class="indicator" onclick="goToReel(3)"></span>
+                            <span class="indicator" onclick="goToReel(4)"></span>
+                            <span class="indicator" onclick="goToReel(5)"></span>
+                        </div>
+                        <button class="nav-arrow next-arrow" onclick="scrollReels('next')">➡️</button>
+                    </div>
+
+                    <div class="reels-cta">
+                        <a href="reels.html" class="see-all-btn">🎬 View All Reels</a>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Reel Modal for Full Screen YouTube Shorts Playback -->
+            <div id="reelModal" class="reel-modal">
+                <div class="modal-content">
+                    <!-- Close button -->
+                    <button class="fullscreen-close-btn" id="closeReelModal">✕</button>
+
+                    <!-- Full screen video player -->
+                    <div class="fullscreen-video-player">
+                        <iframe id="reelModalVideo" frameborder="0" allowfullscreen></iframe>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Contact Section -->
+            <section class="contact-section" id="contact">
+                <div class="contact-container">
+                    <div class="contact-header">
+                        <h2>Get In Touch 📞</h2>
+                        <p>Have questions? We'd love to hear from you.</p>
+                    </div>
+                    
+                    <div class="contact-content">
+                        <!-- Contact Information -->
+                        <div class="contact-info">
+                            <div class="info-item">
+                                <span class="info-icon">📍</span>
+                                <div class="info-details">
+                                    <h3>Our Location</h3>
+                                    <p>123 Agriculture Street</p>
+                                    <p>Tech Valley, IN 400001</p>
+                                </div>
+                            </div>
+                            
+                            <div class="info-item">
+                                <span class="info-icon">📧</span>
+                                <div class="info-details">
+                                    <h3>Email Us</h3>
+                                    <p>info@hardini.com</p>
+                                    <p>support@hardini.com</p>
+                                </div>
+                            </div>
+                            
+                            <div class="info-item">
+                                <span class="info-icon">📱</span>
+                                <div class="info-details">
+                                    <h3>Call Us</h3>
+                                    <p>+91 123 456 7890</p>
+                                    <p>+91 987 654 3210</p>
+                                </div>
+                            </div>
+
+                            <div class="social-links">
+                                <h3>Follow Us</h3>
+                                <div class="social-icons">
+                                    <a href="#" class="social-icon">📱 Instagram</a>
+                                    <a href="#" class="social-icon">👥 Facebook</a>
+                                    <a href="#" class="social-icon">🐦 Twitter</a>
+                                    <a href="#" class="social-icon">💼 LinkedIn</a>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Contact Form -->
+                        <div class="contact-form">
+                            <h3>Send us a Message</h3>
+                            <form id="contactForm">
+                                <div class="form-group">
+                                    <label for="name">Full Name</label>
+                                    <input type="text" id="name" name="name" required placeholder="Enter your full name">
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="contactEmail">Email</label>
+                                    <input type="email" id="contactEmail" name="email" required placeholder="Enter your email">
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="phone">Phone Number</label>
+                                    <input type="tel" id="phone" name="phone" placeholder="Enter your phone number">
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="subject">Subject</label>
+                                    <input type="text" id="subject" name="subject" required placeholder="What is this regarding?">
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="message">Message</label>
+                                    <textarea id="message" name="message" rows="5" required placeholder="Your message here..."></textarea>
+                                </div>
+                                
+                                <button type="submit" class="submit-btn">Send Message 📨</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Map Section -->
+                <div class="map-container">
+                    <iframe 
+                        src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3771.908427666779!2d72.85673731485201!3d19.025533087115334!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3be7cf21727f6e19%3A0x83934209d0e03c62!2sHardini%20Technologies!5e0!3m2!1sen!2sin!4v1645518745013!5m2!1sen!2sin"
+                        width="100%" 
+                        height="450" 
+                        style="border:0;" 
+                        allowfullscreen="" 
+                        loading="lazy">
+                    </iframe>
+                </div>
+            </section>
+        </main>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>About Hardini</h3>
+                    <p>Empowering agriculture through innovative technology solutions and sustainable farming practices.</p>
+                </div>
+                
+                <div class="footer-section">
+                    <h3>Quick Links</h3>
+                    <ul>
+                        <li><a href="#supply-chain">Supply Chain</a></li>
+                        <li><a href="#features">Features</a></li>
+                        <li><a href="#contact">Contact</a></li>
+
+                    </ul>
+                </div>
+                
+                <div class="footer-section">
+                    <h3>Newsletter</h3>
+                    <p>Subscribe to our newsletter for updates and farming tips.</p>
+                    <form class="newsletter-form">
+                        <input type="email" placeholder="Enter your email">
+                        <button type="submit">Subscribe</button>
+                    </form>
+                </div>
+            </div>
+            
+            <div class="footer-bottom">
+                <p>&copy; 2024 Hardini Technologies. All rights reserved.</p>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Outlet Modal -->
+    <div class="detail-modal" id="outletModal">
+        <div class="modal-content outlet-modal">
+            <span class="close-modal">&times;</span>
+            <h2>Agricultural Products</h2>
+            
+            <!-- Category Navigation -->
+            <div class="category-nav">
+                <button class="category-btn active" data-category="seeds">Seeds</button>
+                <button class="category-btn" data-category="pesticides">Pesticides</button>
+                <button class="category-btn" data-category="fertilizers">Fertilizers</button>
+                <button class="category-btn" data-category="equipment">Equipment Rental</button>
+                <button class="category-btn" data-category="drones">Drones</button>
+            </div>
+
+            <!-- Seeds Section -->
+            <div class="category-content active" id="seeds-content">
+                <div class="category-info">
+                    <h3>Premium Quality Seeds</h3>
+                    <p>All our seeds are certified and tested for:</p>
+                    <ul class="info-list">
+                        <li>Germination Rate: Minimum 90%</li>
+                        <li>Purity: 98-99%</li>
+                        <li>Disease Resistance</li>
+                        <li>Climate Adaptability</li>
+                    </ul>
+                    <div class="info-note">
+                        <span class="info-icon">ℹ️</span>
+                        <p>Free soil testing and cultivation guidance provided with bulk orders</p>
+                    </div>
+                </div>
+                <div class="products-grid">
+                    <div class="product-card">
+                        <img src="images/wheat-seeds.jpg" alt="Wheat Seeds">
+                        <h4>Premium Wheat Seeds</h4>
+                        <ul class="product-features">
+                            <li>High Yield Variety</li>
+                            <li>Disease Resistant</li>
+                            <li>90% Germination Rate</li>
+                        </ul>
+                        <p class="price">₹200/kg</p>
+                        <button class="order-btn">Order Now</button>
+                    </div>
+                    <div class="product-card">
+                        <img src="images/rice-seeds.jpg" alt="Rice Seeds">
+                        <h4>Hybrid Rice Seeds</h4>
+                        <ul class="product-features">
+                            <li>Drought Tolerant</li>
+                            <li>Early Maturing</li>
+                            <li>95% Germination Rate</li>
+                        </ul>
+                        <p class="price">₹180/kg</p>
+                        <button class="order-btn">Order Now</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pesticides Section -->
+            <div class="category-content" id="pesticides-content">
+                <div class="category-info">
+                    <h3>Crop Protection Solutions</h3>
+                    <p>Our pesticides are:</p>
+                    <ul class="info-list">
+                        <li>Eco-friendly and biodegradable</li>
+                        <li>Safe for beneficial insects</li>
+                        <li>Approved by agricultural authorities</li>
+                        <li>Tested for all crop types</li>
+                    </ul>
+                    <div class="info-note warning">
+                        <span class="info-icon">⚠️</span>
+                        <p>Always follow safety guidelines and wear protective gear during application</p>
+                    </div>
+                </div>
+                <div class="products-grid">
+                    <div class="product-card">
+                        <img src="images/neem-spray.jpg" alt="Neem Spray">
+                        <h4>Neem-Based Spray</h4>
+                        <ul class="product-features">
+                            <li>100% Organic</li>
+                            <li>Multi-Pest Control</li>
+                            <li>Safe for Crops</li>
+                        </ul>
+                        <p class="price">₹450/liter</p>
+                        <button class="order-btn">Order Now</button>
+                    </div>
+                    <div class="product-card">
+                        <img src="images/bio-pesticide.jpg" alt="Bio Pesticide">
+                        <h4>Bio Pesticide</h4>
+                        <ul class="product-features">
+                            <li>Eco-Friendly</li>
+                            <li>Long Lasting</li>
+                            <li>No Harmful Residue</li>
+                        </ul>
+                        <p class="price">₹550/liter</p>
+                        <button class="order-btn">Order Now</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Fertilizers Section -->
+            <div class="category-content" id="fertilizers-content">
+                <div class="category-info">
+                    <h3>Advanced Fertilizer Solutions</h3>
+                    <p>Benefits of our fertilizers:</p>
+                    <ul class="info-list">
+                        <li>Balanced NPK ratio</li>
+                        <li>Micronutrient enriched</li>
+                        <li>Soil pH optimized</li>
+                        <li>Long-lasting effect</li>
+                    </ul>
+                    <div class="info-note">
+                        <span class="info-icon">🌱</span>
+                        <p>Free soil testing available to determine the best fertilizer mix for your farm</p>
+                    </div>
+                </div>
+                <div class="products-grid">
+                    <div class="product-card">
+                        <img src="images/npk-fertilizer.jpg" alt="NPK Fertilizer">
+                        <h4>Premium NPK Mix</h4>
+                        <ul class="product-features">
+                            <li>Balanced Nutrition</li>
+                            <li>Quick Release</li>
+                            <li>All Crop Types</li>
+                        </ul>
+                        <p class="price">₹1200/bag</p>
+                        <button class="order-btn">Order Now</button>
+                    </div>
+                    <div class="product-card">
+                        <img src="images/organic-fertilizer.jpg" alt="Organic Fertilizer">
+                        <h4>Organic Compost</h4>
+                        <ul class="product-features">
+                            <li>100% Natural</li>
+                            <li>Soil Enriching</li>
+                            <li>Long Lasting</li>
+                        </ul>
+                        <p class="price">₹800/bag</p>
+                        <button class="order-btn">Order Now</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Equipment Section -->
+            <div class="category-content" id="equipment-content">
+                <!-- Category Information -->
+                <div class="category-info">
+                    <h3>🚜 Equipment Rental Service</h3>
+                    <div class="info-list">
+                        <ul>
+                            <li>🕒 Flexible rental periods: Daily, Weekly, Monthly</li>
+                            <li>🛠️ Regular maintenance included</li>
+                            <li>📞 24/7 Technical support</li>
+                            <li>🛡️ Insurance coverage available</li>
+                            <li>🚛 Free delivery for long-term rentals</li>
+                            <li>👨‍🌾 Trained operators available</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="rental-terms">
+                        <h4>📋 Rental Terms & Conditions</h4>
+                        <ul>
+                            <li>💰 Refundable security deposit required</li>
+                            <li>📄 Valid ID and address proof needed</li>
+                            <li>👨‍🏫 Training provided for complex equipment</li>
+                            <li>🚛 Free delivery for long-term rentals</li>
+                            <li>📱 24/7 customer support available</li>
+                            <li>🔧 Regular maintenance included</li>
+                            <li>⚡ Fuel not included in rental cost</li>
+                            <li>📅 Minimum rental period: 1 day</li>
+                        </ul>
+                    </div>
+
+                    <div class="info-note">
+                        <span>📞</span>
+                        <p>For immediate assistance and bookings, call our support team: +91 1234567890</p>
+                    </div>
+                </div>
+
+                <!-- Equipment Grid -->
+                <div class="products-grid">
+                    <!-- Tractor Card -->
+                    <div class="product-card">
+                        <img src="images/tractor.jpg" alt="Modern Tractor">
+                        <div class="rental-badge">🚜 Available for Rent</div>
+                        <h4>Advanced Farming Tractor</h4>
+                        <ul class="product-features">
+                            <li>⚡ 50 HP Powerful Engine</li>
+                            <li>🛰️ GPS Navigation System</li>
+                            <li>❄️ Climate Controlled Cabin</li>
+                            <li>🔧 Multi-Purpose Usage</li>
+                            <li>⛽ Fuel Efficient Design</li>
+                        </ul>
+                        <div class="rental-pricing">
+                            <p class="price">💰 Rental Rates</p>
+                            <ul class="rental-rates">
+                                <li><span>📅 Daily Rate</span><span>₹5,000</span></li>
+                                <li><span>📅 Weekly Rate</span><span>₹30,000</span></li>
+                                <li><span>📅 Monthly Rate</span><span>₹1,00,000</span></li>
+                            </ul>
+                        </div>
+                        <button class="rent-btn">🔑 Book Now</button>
+                    </div>
+
+                    <!-- Harvester Card -->
+                    <div class="product-card">
+                        <img src="images/harvester.jpg" alt="Modern Harvester">
+                        <div class="rental-badge">🌾 Available for Rent</div>
+                        <h4>Smart Harvester</h4>
+                        <ul class="product-features">
+                            <li>🔄 Auto Grain Sorting</li>
+                            <li>✨ Minimal Crop Loss</li>
+                            <li>⚡ High Efficiency</li>
+                            <li>📱 Digital Controls</li>
+                            <li>🌾 Multi-Crop Support</li>
+                        </ul>
+                        <div class="rental-pricing">
+                            <p class="price">💰 Rental Rates</p>
+                            <ul class="rental-rates">
+                                <li><span>📅 Daily Rate</span><span>₹8,000</span></li>
+                                <li><span>📅 Weekly Rate</span><span>₹50,000</span></li>
+                                <li><span>📅 Monthly Rate</span><span>₹1,80,000</span></li>
+                            </ul>
+                        </div>
+                        <button class="rent-btn">🔑 Book Now</button>
+                    </div>
+
+                    <!-- Rotavator Card -->
+                    <div class="product-card">
+                        <img src="images/rotavator.jpg" alt="Modern Rotavator">
+                        <div class="rental-badge">🚜 Available for Rent</div>
+                        <h4>Power Rotavator</h4>
+                        <ul class="product-features">
+                            <li>⚡ High Performance</li>
+                            <li>🔧 Easy Maintenance</li>
+                            <li>🌱 Perfect Soil Mixing</li>
+                            <li>⚙️ Adjustable Depth</li>
+                            <li>💪 Durable Build</li>
+                        </ul>
+                        <div class="rental-pricing">
+                            <p class="price">💰 Rental Rates</p>
+                            <ul class="rental-rates">
+                                <li><span>📅 Daily Rate</span><span>₹2,000</span></li>
+                                <li><span>📅 Weekly Rate</span><span>₹12,000</span></li>
+                                <li><span>📅 Monthly Rate</span><span>₹40,000</span></li>
+                            </ul>
+                        </div>
+                        <button class="rent-btn">🔑 Book Now</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Drones Section -->
+            <div class="category-content" id="drones-content">
+                <div class="category-info">
+                    <h3>Agricultural Drone Solutions</h3>
+                    <p>Our drones offer:</p>
+                    <ul class="info-list">
+                        <li>Precision farming capabilities</li>
+                        <li>Real-time crop monitoring</li>
+                        <li>Automated spraying systems</li>
+                        <li>Data analytics support</li>
+                    </ul>
+                    <div class="info-note">
+                        <span class="info-icon">🎓</span>
+                        <p>Free training and certification provided with every purchase</p>
+                    </div>
+                </div>
+                <div class="products-grid">
+                    <div class="product-card premium">
+                        <div class="premium-badge">Premium</div>
+                        <img src="images/spray-drone.jpg" alt="Spray Drone">
+                        <h4>AgriSpray Pro X1</h4>
+                        <ul class="product-features">
+                            <li>20L Tank Capacity</li>
+                            <li>4K Camera</li>
+                            <li>45min Flight Time</li>
+                            <li>AI Crop Analysis</li>
+                        </ul>
+                        <p class="price">₹1,20,000</p>
+                        <button class="demo-btn">Book Demo</button>
+                    </div>
+                    <div class="product-card">
+                        <img src="images/survey-drone.jpg" alt="Survey Drone">
+                        <h4>CropMapper S2</h4>
+                        <ul class="product-features">
+                            <li>HD Mapping Camera</li>
+                            <li>30min Flight Time</li>
+                            <li>Thermal Imaging</li>
+                            <li>Crop Health Analysis</li>
+                        </ul>
+                        <p class="price">₹85,000</p>
+                        <button class="demo-btn">Book Demo</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Waste Utilization Modal -->
+    <div class="detail-modal" id="wasteModal">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <h2>Agricultural Waste Management</h2>
+            <div class="modal-grid">
+                <div class="modal-section">
+                    <h3>Solutions</h3>
+                    <div class="solutions-grid">
+                        <div class="solution-card">
+                            <div class="solution-icon">🔥</div>
+                            <h4>Biomass Energy</h4>
+                            <p>Convert crop waste into clean energy</p>
+                            <ul class="solution-features">
+                                <li>Power Generation</li>
+                                <li>Reduced Emissions</li>
+                                <li>Additional Income</li>
+                            </ul>
+                            <button class="learn-more-btn">Learn More</button>
+                        </div>
+                        <div class="solution-card">
+                            <div class="solution-icon">🌱</div>
+                            <h4>Composting</h4>
+                            <p>Transform waste into rich fertilizer</p>
+                            <ul class="solution-features">
+                                <li>Organic Compost</li>
+                                <li>Soil Enhancement</li>
+                                <li>Zero Waste</li>
+                            </ul>
+                            <button class="learn-more-btn">Learn More</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-section">
+                    <h3>Impact Metrics</h3>
+                    <div class="impact-stats">
+                        <div class="stat-card">
+                            <div class="stat-number">5000+</div>
+                            <p>Tons Waste Processed</p>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-number">₹2Cr+</div>
+                            <p>Farmer Earnings</p>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-number">60%</div>
+                            <p>Emission Reduction</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Experienced Farmers Modal -->
+    <div class="detail-modal" id="farmersModal">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <h2>Learn from Expert Farmers</h2>
+            <div class="modal-grid">
+                <div class="modal-section">
+                    <h3>Featured Experts</h3>
+                    <div class="experts-grid">
+                        <div class="expert-card">
+                            <img src="images/farmer1.jpg" alt="Expert Farmer">
+                            <div class="expert-info">
+                                <h4>Rajesh Patel</h4>
+                                <p class="expertise">Organic Farming Expert</p>
+                                <p class="experience">25+ Years Experience</p>
+                                <div class="achievements">
+                                    <span> Best Farmer Award 2023</span>
+                                    <span>🌾 100+ Farmers Trained</span>
+                                </div>
+                                <button class="connect-btn">Connect & Learn</button>
+                            </div>
+                        </div>
+                        <div class="expert-card">
+                            <img src="images/farmer2.jpg" alt="Expert Farmer">
+                            <div class="expert-info">
+                                <h4>Sunita Devi</h4>
+                                <p class="expertise">Modern Farming Techniques</p>
+                                <p class="experience">20+ Years Experience</p>
+                                <div class="achievements">
+                                    <span>🚜 Smart Farming Pioneer</span>
+                                    <span>📱 Digital Agriculture Expert</span>
+                                </div>
+                                <button class="connect-btn">Connect & Learn</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-section">
+                    <h3>Learning Programs</h3>
+                    <div class="programs-grid">
+                        <div class="program-card">
+                            <div class="program-icon">📚</div>
+                            <h4>Mentorship Program</h4>
+                            <ul class="program-features">
+                                <li>1-on-1 Guidance</li>
+                                <li>Field Visits</li>
+                                <li>Practical Training</li>
+                            </ul>
+                            <p class="duration">3 Months</p>
+                            <button class="enroll-btn">Enroll Now</button>
+                        </div>
+                        <div class="program-card">
+                            <div class="program-icon">👥</div>
+                            <h4>Group Workshops</h4>
+                            <ul class="program-features">
+                                <li>Interactive Sessions</li>
+                                <li>Peer Learning</li>
+                                <li>Network Building</li>
+                            </ul>
+                            <p class="duration">Weekly Sessions</p>
+                            <button class="enroll-btn">Join Next Batch</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Chatbot Integration -->
+    <div class="chatbot-container">
+        <div class="chatbot-toggle" id="chatbotToggle">
+            <span class="bot-icon">🤖</span>
+            <span class="close-chat">✕</span>
+        </div>
+        <div class="chatbot-box" id="chatbotBox">
+            <iframe
+                src="https://hardini-chi.vercel.app/"
+                width="100%"
+                height="100%"
+                frameborder="0"
+                allowfullscreen
+                style="border-radius: 15px;"
+            ></iframe>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+
+    <!-- Home Reels JavaScript -->
+    <script>
+        // Home reels functionality with API integration
+        let currentReelIndex = 0;
+        let farmingReels = [];
+        let totalReels = 0;
+        const API_BASE_URL = 'http://localhost:3001/api';
+
+        // Fetch farming reels from backend API
+        async function fetchFarmingReels() {
+            try {
+        const response = await fetch(`${API_BASE_URL}/reels?limit=8`);
+                const data = await response.json();
+
+                if (data.success && data.data) {
+                    farmingReels = data.data.slice(0, 6); // Take first 6 reels
+                    totalReels = farmingReels.length;
+                    renderReels();
+                    updateReelIndicators();
+                } else {
+                    console.error('Failed to fetch farming reels:', data.error);
+                    showFallbackReels();
+                }
+            } catch (error) {
+                console.error('Error fetching farming reels:', error);
+                showFallbackReels();
+            }
+        }
+
+        // Fallback reels in case API fails
+        function showFallbackReels() {
+            farmingReels = [
+                {
+                    id: 'dQw4w9WgXcQ',
+                    title: 'Modern Farming Techniques',
+                    description: 'Latest innovations in agriculture',
+                    thumbnail: 'https://img.youtube.com/vi/dQw4w9WgXcQ/maxresdefault.jpg',
+                    channelTitle: 'AgriTech Hub',
+                    viewCount: '1250000',
+                    likeCount: '45000'
+                },
+                {
+                    id: '9bZkp7q19f0',
+                    title: 'Smart Irrigation Systems',
+                    description: 'Water conservation techniques',
+                    thumbnail: 'https://img.youtube.com/vi/9bZkp7q19f0/maxresdefault.jpg',
+                    channelTitle: 'Farm Innovations',
+                    viewCount: '850000',
+                    likeCount: '32000'
+                },
+                {
+                    id: 'yiw6_JakZFc',
+                    title: 'Organic Farming Methods',
+                    description: 'Sustainable farming practices',
+                    thumbnail: 'https://img.youtube.com/vi/yiw6_JakZFc/maxresdefault.jpg',
+                    channelTitle: 'Organic Farming',
+                    viewCount: '680000',
+                    likeCount: '28000'
+                }
+            ];
+            totalReels = farmingReels.length;
+            renderReels();
+            updateReelIndicators();
+        }
+
+        // Render reels in the container
+        function renderReels() {
+            const container = document.querySelector('.instagram-reels-container');
+            if (!container || farmingReels.length === 0) return;
+
+            container.innerHTML = farmingReels.map((reel, index) => `
+                <div class="instagram-reel-item" data-index="${index}">
+                        <div class="reel-video-container">
+                            <iframe
+                                class="reel-iframe"
+                                src="https://www.youtube.com/embed/${reel.id}?autoplay=1&mute=1&controls=0&modestbranding=1&rel=0&showinfo=0&iv_load_policy=3&playsinline=1&enablejsapi=1"
+                                frameborder="0"
+                                allowfullscreen
+                                style="pointer-events: none;"
+                            ></iframe>
+                        <div class="play-overlay">
+                            <div class="play-button-large">▶️</div>
+                        </div>
+                    </div>
+                    <div class="reel-overlay">
+                        <div class="reel-content">
+                            <div class="reel-header">
+                                <div class="reel-avatar">${getAvatarEmoji(reel.title)}</div>
+                                <div class="reel-info">
+                                    <h3>${reel.channelTitle || 'Agri Channel'}</h3>
+                                </div>
+                            </div>
+                            <div class="reel-actions">
+                                <button class="action-btn" onclick="event.stopPropagation(); likeReel(${index})">
+                                    <i class="fas fa-heart"></i>
+                                    <span class="action-count">${formatCount(reel.likeCount)}</span>
+                                </button>
+                                <button class="action-btn" onclick="event.stopPropagation(); shareReel(${index})">
+                                    <i class="fas fa-share"></i>
+                                    <span class="action-count">Share</span>
+                                </button>
+                                <button class="action-btn" onclick="event.stopPropagation(); saveReel(${index})">
+                                    <i class="fas fa-bookmark"></i>
+                                    <span class="action-count">Save</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+
+            // Add autoplay functionality
+            setupReelAutoplay();
+
+            // Update indicators
+            const indicatorsContainer = document.querySelector('.reel-indicators');
+            if (indicatorsContainer) {
+                indicatorsContainer.innerHTML = farmingReels.map((_, index) =>
+                    `<span class="indicator ${index === 0 ? 'active' : ''}" onclick="goToReel(${index})"></span>`
+                ).join('');
+            }
+        }
+
+        // Setup autoplay functionality for reels (muted autoplay in feed)
+        function setupReelAutoplay() {
+            const reelItems = document.querySelectorAll('.instagram-reel-item');
+
+            reelItems.forEach((item, index) => {
+                const iframe = item.querySelector('.reel-iframe');
+                const playOverlay = item.querySelector('.play-overlay');
+
+                if (iframe) {
+                    // Intersection Observer to manage playback
+                    const observer = new IntersectionObserver((entries) => {
+                        entries.forEach(entry => {
+                            if (entry.isIntersecting) {
+                                // Video is in view, it should autoplay (already set in iframe)
+                                // Hide any play overlay since videos autoplay muted
+                                playOverlay.style.display = 'none';
+                            } else {
+                                // Pause when out of view
+                                try {
+                                    iframe.contentWindow.postMessage('{"event":"command","func":"pauseVideo","args":""}', '*');
+                                } catch (e) {
+                                    // Ignore errors
+                                }
+                            }
+                        });
+                    }, { threshold: 0.6 }); // 60% of the reel must be visible
+
+                    observer.observe(item);
+
+                    // Set up iframe communication for pause/play control
+                    iframe.addEventListener('load', () => {
+                        iframe.contentWindow.postMessage('{"event":"listening"}', '*');
+                    });
+
+                    // Make entire reel area clickable for fullscreen (no sound in feed)
+                    item.addEventListener('click', (e) => {
+                        // Don't trigger if clicking on action buttons
+                        if (e.target.closest('.action-btn')) return;
+
+                        // Open fullscreen reel with sound
+                        openFullscreenReel(index);
+                    });
+
+                    // Listen for YouTube player state changes
+                    window.addEventListener('message', (event) => {
+                        if (event.origin !== 'https://www.youtube.com') return;
+
+                        try {
+                            const data = JSON.parse(event.data);
+                            if (data.event === 'onStateChange') {
+                                if (data.info === 1) { // Playing
+                                    playOverlay.style.display = 'none';
+                                } else if (data.info === 2) { // Paused
+                                    // Only show play overlay if actually paused
+                                    playOverlay.style.display = 'flex';
+                                }
+                            }
+                        } catch (e) {
+                            // Ignore parsing errors
+                        }
+                    });
+                }
+            });
+        }
+
+        // Helper functions
+        function getAvatarEmoji(title) {
+            const lowerTitle = title.toLowerCase();
+            if (lowerTitle.includes('rice') || lowerTitle.includes('wheat')) return '🌾';
+            if (lowerTitle.includes('tractor') || lowerTitle.includes('farm')) return '🚜';
+            if (lowerTitle.includes('organic') || lowerTitle.includes('vegetable')) return '🌱';
+            if (lowerTitle.includes('dairy') || lowerTitle.includes('cow')) return '🐄';
+            if (lowerTitle.includes('drone') || lowerTitle.includes('tech')) return '🚁';
+            return '👨‍🌾';
+        }
+
+        function getCategoryLabel(title) {
+            const lowerTitle = title.toLowerCase();
+            if (lowerTitle.includes('rice') || lowerTitle.includes('wheat')) return 'Crop Farming';
+            if (lowerTitle.includes('tractor')) return 'Farm Equipment';
+            if (lowerTitle.includes('organic')) return 'Sustainable Farming';
+            if (lowerTitle.includes('dairy') || lowerTitle.includes('cow')) return 'Livestock';
+            if (lowerTitle.includes('drone')) return 'AgriTech';
+            if (lowerTitle.includes('vegetable')) return 'Vegetable Farming';
+            return 'Agriculture';
+        }
+
+        function formatCount(count) {
+            const num = parseInt(count) || 0;
+            if (num >= 1000000) return (num / 1000000).toFixed(1) + 'M';
+            if (num >= 1000) return (num / 1000).toFixed(1) + 'K';
+            return num.toString();
+        }
+
+        function playReel(overlayElement) {
+            const iframe = overlayElement.previousElementSibling;
+            if (iframe && iframe.tagName === 'IFRAME') {
+                // Remove autoplay=0 and add autoplay=1
+                const src = iframe.src.replace('autoplay=0', 'autoplay=1');
+                iframe.src = src;
+                overlayElement.style.display = 'none';
+            }
+        }
+
+        function likeReel(index) {
+            const likeBtn = document.querySelectorAll('.action-btn')[index * 3];
+            if (likeBtn) {
+                likeBtn.classList.toggle('liked');
+                const countSpan = likeBtn.querySelector('.action-count');
+                if (countSpan) {
+                    let count = parseInt(countSpan.textContent.replace('K', '000').replace('M', '000000')) || 0;
+                    count = likeBtn.classList.contains('liked') ? count + 1 : count - 1;
+                    countSpan.textContent = formatCount(count);
+                }
+            }
+        }
+
+        function shareReel(index) {
+            const reel = farmingReels[index];
+            if (!reel) return;
+
+            const reelUrl = `https://www.youtube.com/watch?v=${reel.id}`;
+
+            if (navigator.share) {
+                navigator.share({
+                    title: reel.title || 'Check out this farming reel!',
+                    text: 'Amazing farming content from AgriReels',
+                    url: reelUrl
+                });
+            } else {
+                navigator.clipboard.writeText(reelUrl).then(() => {
+                    showNotification('Link copied to clipboard!');
+                });
+            }
+        }
+
+        function saveReel(index) {
+            const saveBtn = document.querySelectorAll('.action-btn')[index * 3 + 2];
+            if (saveBtn) {
+                saveBtn.classList.toggle('saved');
+                const isSaved = saveBtn.classList.contains('saved');
+                showNotification(isSaved ? 'Reel saved!' : 'Reel removed from saved');
+            }
+        }
+
+        function scrollReels(direction) {
+            const container = document.querySelector('.instagram-reels-container');
+            if (!container) return;
+
+            if (direction === 'next' && currentReelIndex < totalReels - 1) {
+                currentReelIndex++;
+            } else if (direction === 'prev' && currentReelIndex > 0) {
+                currentReelIndex--;
+            }
+
+            updateReelIndicators();
+            const reelWidth = 320; // 300px width + 20px gap
+            container.scrollTo({
+                left: currentReelIndex * reelWidth,
+                behavior: 'smooth'
+            });
+        }
+
+        function goToReel(index) {
+            currentReelIndex = index;
+            updateReelIndicators();
+            const container = document.querySelector('.instagram-reels-container');
+            if (container) {
+                const reelWidth = 320;
+                container.scrollTo({
+                    left: index * reelWidth,
+                    behavior: 'smooth'
+                });
+            }
+        }
+
+        function updateReelIndicators() {
+            const indicators = document.querySelectorAll('.indicator');
+            indicators.forEach((indicator, index) => {
+                if (index === currentReelIndex) {
+                    indicator.classList.add('active');
+                } else {
+                    indicator.classList.remove('active');
+                }
+            });
+        }
+
+        function showNotification(message) {
+            const notification = document.createElement('div');
+            notification.className = 'notification';
+            notification.textContent = message;
+            document.body.appendChild(notification);
+
+            setTimeout(() => {
+                notification.classList.add('show');
+            }, 100);
+
+            setTimeout(() => {
+                notification.classList.remove('show');
+                setTimeout(() => {
+                    notification.remove();
+                }, 300);
+            }, 3000);
+        }
+
+        // Auto-scroll functionality
+        setInterval(() => {
+            if (currentReelIndex < totalReels - 1) {
+                scrollReels('next');
+            } else {
+                currentReelIndex = 0;
+                goToReel(0);
+            }
+        }, 8000); // Auto-scroll every 8 seconds
+
+        // Touch/swipe support
+        let startX = 0;
+        let endX = 0;
+
+        document.addEventListener('touchstart', (e) => {
+            startX = e.touches[0].clientX;
+        });
+
+        document.addEventListener('touchend', (e) => {
+            endX = e.changedTouches[0].clientX;
+            const diffX = startX - endX;
+
+            if (Math.abs(diffX) > 50) { // Minimum swipe distance
+                if (diffX > 0) {
+                    scrollReels('next'); // Swipe left
+                } else {
+                    scrollReels('prev'); // Swipe right
+                }
+            }
+        });
+
+        // Modal functionality - YouTube Shorts style
+        function openReelModal(index) {
+            const reel = farmingReels[index];
+            if (!reel || !reelModal) return;
+
+            // Set up video iframe with audio enabled - YouTube Shorts style
+            if (reelModalVideo) {
+                reelModalVideo.src = `https://www.youtube.com/embed/${reel.id}?autoplay=1&mute=0&controls=0&modestbranding=1&rel=0&showinfo=0&iv_load_policy=3`;
+            }
+
+            // Show modal
+            reelModal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeReelModal() {
+            if (reelModal) {
+                reelModal.classList.remove('active');
+                document.body.style.overflow = '';
+                if (reelModalVideo) {
+                    reelModalVideo.src = '';
+                }
+            }
+        }
+
+        // Full screen reel functions
+        function openFullscreenReel(index) {
+            const reel = farmingReels[index];
+            if (!reel) return;
+
+            const fullscreenPlayer = document.getElementById('fullscreenReelPlayer');
+            const fullscreenVideo = document.getElementById('fullscreenReelVideo');
+            const fullscreenAvatar = document.getElementById('fullscreenAvatar');
+            const fullscreenChannel = document.getElementById('fullscreenChannel');
+            const fullscreenCategory = document.getElementById('fullscreenCategory');
+            const fullscreenDescription = document.getElementById('fullscreenDescription');
+            const fullscreenViews = document.getElementById('fullscreenViews');
+            const fullscreenLikes = document.getElementById('fullscreenLikes');
+            const fullscreenLikeCount = document.getElementById('fullscreenLikeCount');
+
+            if (fullscreenPlayer && fullscreenVideo) {
+                // Start with sound enabled in modal - autoplay with audio
+                fullscreenVideo.src = `https://www.youtube.com/embed/${reel.id}?autoplay=1&mute=0&controls=1&modestbranding=1&rel=0&showinfo=0&iv_load_policy=3&playsinline=1&enablejsapi=1`;
+
+                // Set reel info
+                if (fullscreenAvatar) fullscreenAvatar.textContent = getAvatarEmoji(reel.title);
+                if (fullscreenChannel) fullscreenChannel.textContent = reel.channelTitle || 'Agri Channel';
+                if (fullscreenCategory) fullscreenCategory.textContent = getCategoryLabel(reel.title);
+                if (fullscreenDescription) fullscreenDescription.textContent = reel.title || 'Farming Content';
+                if (fullscreenViews) fullscreenViews.textContent = `👁️ ${formatCount(reel.viewCount)} views`;
+                if (fullscreenLikes) fullscreenLikes.textContent = `👍 ${formatCount(reel.likeCount)} likes`;
+                if (fullscreenLikeCount) fullscreenLikeCount.textContent = formatCount(reel.likeCount);
+
+                // Show fullscreen player
+                fullscreenPlayer.classList.add('active');
+                document.body.style.overflow = 'hidden';
+            }
+        }
+
+        function closeFullscreenReel() {
+            const fullscreenPlayer = document.getElementById('fullscreenReelPlayer');
+            const fullscreenVideo = document.getElementById('fullscreenReelVideo');
+
+            if (fullscreenPlayer) {
+                fullscreenPlayer.classList.remove('active');
+                document.body.style.overflow = '';
+                if (fullscreenVideo) {
+                    fullscreenVideo.src = '';
+                }
+            }
+        }
+
+        function likeFullscreenReel() {
+            const fullscreenLikeBtn = document.querySelector('#fullscreenReelPlayer .action-btn');
+            const fullscreenLikeCount = document.getElementById('fullscreenLikeCount');
+
+            if (fullscreenLikeBtn && fullscreenLikeCount) {
+                fullscreenLikeBtn.classList.toggle('liked');
+                let count = parseInt(fullscreenLikeCount.textContent.replace('K', '000').replace('M', '000000')) || 0;
+                count = fullscreenLikeBtn.classList.contains('liked') ? count + 1 : count - 1;
+                fullscreenLikeCount.textContent = formatCount(count);
+            }
+        }
+
+        function shareFullscreenReel() {
+            const fullscreenVideo = document.getElementById('fullscreenReelVideo');
+            if (!fullscreenVideo || !fullscreenVideo.src) return;
+
+            const videoId = fullscreenVideo.src.match(/embed\/([^?]+)/)?.[1];
+            if (!videoId) return;
+
+            const reelUrl = `https://www.youtube.com/watch?v=${videoId}`;
+
+            if (navigator.share) {
+                navigator.share({
+                    title: 'Check out this farming reel!',
+                    text: 'Amazing farming content from AgriReels',
+                    url: reelUrl
+                });
+            } else {
+                navigator.clipboard.writeText(reelUrl).then(() => {
+                    showNotification('Link copied to clipboard!');
+                });
+            }
+        }
+
+        function saveFullscreenReel() {
+            const fullscreenSaveBtn = document.querySelector('#fullscreenReelPlayer .action-btn:last-child');
+            if (fullscreenSaveBtn) {
+                fullscreenSaveBtn.classList.toggle('saved');
+                const isSaved = fullscreenSaveBtn.classList.contains('saved');
+                showNotification(isSaved ? 'Reel saved!' : 'Reel removed from saved');
+            }
+        }
+
+        // Add modal event listeners
+        document.addEventListener('DOMContentLoaded', () => {
+            const closeReelModalBtn = document.getElementById('closeReelModal');
+            if (closeReelModalBtn) {
+                closeReelModalBtn.addEventListener('click', closeReelModal);
+            }
+
+            // Close modal when clicking outside
+            if (reelModal) {
+                reelModal.addEventListener('click', function(e) {
+                    if (e.target === reelModal) {
+                        closeReelModal();
+                    }
+                });
+            }
+
+            // Close modal on escape key
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape' && reelModal && reelModal.classList.contains('active')) {
+                    closeReelModal();
+                }
+            });
+
+            // Full screen reel event listeners
+            const closeFullscreenBtn = document.getElementById('closeFullscreenReel');
+            if (closeFullscreenBtn) {
+                closeFullscreenBtn.addEventListener('click', closeFullscreenReel);
+            }
+
+            // Close fullscreen on escape key
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape' && document.getElementById('fullscreenReelPlayer')?.classList.contains('active')) {
+                    closeFullscreenReel();
+                }
+            });
+
+            fetchFarmingReels();
+        });
+    </script>
+
+    <img src="assets\iifm-removebg-preview.png" alt="IIFM Logo" class="bottom-left-logo">
+</body>
+</html>

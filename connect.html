@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hardini - Connect & Network</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="connect.css">
+</head>
+<body>
+    <header>
+        <nav>
+            <div class="logo">HARDINI 🌱</div>
+            <div class="nav-links">
+                <a href="index.html">🏠 HOME</a>
+                <a href="supply-chain.html">🔄 SUPPLY CHAIN</a>
+                <a href="#connect" class="active">🤝 CONNECT</a>
+
+                <a href="#login" class="login-btn">👤 LOGIN</a>
+            </div>
+        </nav>
+    </header>
+
+    <main class="connect-main">
+        <!-- Hero Section -->
+        <section class="connect-hero">
+            <h1>Connect with Agricultural Community</h1>
+            <p>Build valuable relationships in the agricultural ecosystem</p>
+        </section>
+
+        <!-- Connection Options Grid -->
+        <section class="connect-options">
+            <div class="options-grid">
+                <!-- Farmers Network -->
+                <div class="connect-card">
+                    <div class="card-icon">👨‍🌾</div>
+                    <h3>Farmers Network</h3>
+                    <p>Connect with experienced farmers, share knowledge, and learn best practices.</p>
+                    <ul class="features-list">
+                        <li>Expert Guidance</li>
+                        <li>Knowledge Sharing</li>
+                        <li>Community Support</li>
+                        <li>Local Networking</li>
+                    </ul>
+                    <button class="connect-btn" data-type="farmers">Join Network</button>
+                </div>
+
+                <!-- Suppliers Hub -->
+                <div class="connect-card">
+                    <div class="card-icon">🏭</div>
+                    <h3>Suppliers Hub</h3>
+                    <p>Find reliable suppliers for seeds, equipment, and agricultural inputs.</p>
+                    <ul class="features-list">
+                        <li>Verified Suppliers</li>
+                        <li>Quality Products</li>
+                        <li>Competitive Prices</li>
+                        <li>Direct Communication</li>
+                    </ul>
+                    <button class="connect-btn" data-type="suppliers">Find Suppliers</button>
+                </div>
+
+                <!-- Market Connect -->
+                <div class="connect-card">
+                    <div class="card-icon">🏪</div>
+                    <h3>Market Connect</h3>
+                    <p>Access direct market opportunities and connect with buyers.</p>
+                    <ul class="features-list">
+                        <li>Direct Selling</li>
+                        <li>Market Updates</li>
+                        <li>Price Tracking</li>
+                        <li>Buyer Network</li>
+                    </ul>
+                    <button class="connect-btn" data-type="market">Explore Markets</button>
+                </div>
+
+                <!-- Expert Connect -->
+                <div class="connect-card">
+                    <div class="card-icon">👨‍🔬</div>
+                    <h3>Expert Connect</h3>
+                    <p>Consult with agricultural experts and get professional advice.</p>
+                    <ul class="features-list">
+                        <li>Expert Consultation</li>
+                        <li>Technical Support</li>
+                        <li>Research Access</li>
+                        <li>Problem Solving</li>
+                    </ul>
+                    <button class="connect-btn" data-type="experts">Connect with Experts</button>
+                </div>
+
+                <!-- Training Hub -->
+                <div class="connect-card">
+                    <div class="card-icon">📚</div>
+                    <h3>Training Hub</h3>
+                    <p>Access training programs and educational resources.</p>
+                    <ul class="features-list">
+                        <li>Online Courses</li>
+                        <li>Workshops</li>
+                        <li>Skill Development</li>
+                        <li>Certification</li>
+                    </ul>
+                    <button class="connect-btn" data-type="training">Start Learning</button>
+                </div>
+
+                <!-- Community Forum -->
+                <div class="connect-card">
+                    <div class="card-icon">💬</div>
+                    <h3>Community Forum</h3>
+                    <p>Join discussions, share experiences, and solve problems together.</p>
+                    <ul class="features-list">
+                        <li>Open Discussions</li>
+                        <li>Problem Solving</li>
+                        <li>Experience Sharing</li>
+                        <li>Community Support</li>
+                    </ul>
+                    <button class="connect-btn" data-type="forum">Join Forum</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Connection Form -->
+        <section class="connect-form-section">
+            <h2>Get Personalized Connections</h2>
+            <div class="form-container">
+                <form id="connectionForm">
+                    <div class="form-group">
+                        <label for="name">Full Name</label>
+                        <input type="text" id="name" required placeholder="Enter your name">
+                    </div>
+                    <div class="form-group">
+                        <label for="role">Your Role</label>
+                        <select id="role" required>
+                            <option value="">Select your role</option>
+                            <option value="farmer">Farmer</option>
+                            <option value="supplier">Supplier</option>
+                            <option value="buyer">Buyer</option>
+                            <option value="expert">Expert</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="interests">Areas of Interest</label>
+                        <div class="checkbox-group">
+                            <label><input type="checkbox" name="interests" value="organic"> Organic Farming</label>
+                            <label><input type="checkbox" name="interests" value="tech"> Agricultural Technology</label>
+                            <label><input type="checkbox" name="interests" value="marketing"> Market Access</label>
+                            <label><input type="checkbox" name="interests" value="training"> Training & Education</label>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="message">Message</label>
+                        <textarea id="message" rows="4" placeholder="Tell us more about your connection needs"></textarea>
+                    </div>
+                    <button type="submit" class="submit-btn">Connect Now 🤝</button>
+                </form>
+            </div>
+        </section>
+
+        <!-- Success Stories -->
+        <section class="success-stories">
+            <h2>Success Stories</h2>
+            <div class="stories-grid">
+                <div class="story-card">
+                    <img src="https://i.pravatar.cc/150?img=1" alt="Farmer" class="story-image">
+                    <div class="story-content">
+                        <h4>Ramesh Kumar</h4>
+                        <p class="role">Organic Farmer</p>
+                        <p class="quote">"Through Hardini's network, I connected with experts who helped me transition to organic farming. My yield has improved by 40%!"</p>
+                    </div>
+                </div>
+                <div class="story-card">
+                    <img src="https://i.pravatar.cc/150?img=2" alt="Supplier" class="story-image">
+                    <div class="story-content">
+                        <h4>Priya Singh</h4>
+                        <p class="role">Agricultural Supplier</p>
+                        <p class="quote">"The platform helped me expand my business by connecting with farmers directly. My customer base has grown significantly."</p>
+                    </div>
+                </div>
+                <div class="story-card">
+                    <img src="https://i.pravatar.cc/150?img=3" alt="Expert" class="story-image">
+                    <div class="story-content">
+                        <h4>Dr. Sharma</h4>
+                        <p class="role">Agricultural Expert</p>
+                        <p class="quote">"I've been able to help hundreds of farmers through this platform. The community here is incredible!"</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Detailed Modal Views -->
+    <!-- Farmers Network Modal -->
+    <div class="detail-modal" id="farmersModal">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <h2>Farmers Network</h2>
+            <div class="modal-grid">
+                <div class="modal-section">
+                    <h3>Connect with Local Farmers</h3>
+                    <div class="farmers-list">
+                        <div class="farmer-card">
+                            <img src="https://i.pravatar.cc/150?img=1" alt="Farmer">
+                            <div class="farmer-info">
+                                <h4>Ramesh Kumar</h4>
+                                <p>Organic Farming Expert</p>
+                                <span class="location">📍 Maharashtra</span>
+                                <button class="connect-btn">Connect</button>
+                            </div>
+                        </div>
+                        <div class="farmer-card">
+                            <img src="https://i.pravatar.cc/150?img=2" alt="Farmer">
+                            <div class="farmer-info">
+                                <h4>Suresh Patel</h4>
+                                <p>Traditional Farming</p>
+                                <span class="location">📍 Gujarat</span>
+                                <button class="connect-btn">Connect</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-section">
+                    <h3>Knowledge Sharing</h3>
+                    <div class="knowledge-posts">
+                        <div class="post">
+                            <h4>Organic Pest Control Methods</h4>
+                            <p>Learn natural ways to protect your crops...</p>
+                            <button class="read-more">Read More</button>
+                        </div>
+                        <div class="post">
+                            <h4>Soil Health Management</h4>
+                            <p>Tips for maintaining soil fertility...</p>
+                            <button class="read-more">Read More</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Suppliers Hub Modal -->
+    <div class="detail-modal" id="suppliersModal">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <h2>Suppliers Hub</h2>
+            <div class="modal-grid">
+                <div class="modal-section">
+                    <h3>Featured Suppliers</h3>
+                    <div class="suppliers-list">
+                        <div class="supplier-card">
+                            <div class="supplier-logo">🌱</div>
+                            <div class="supplier-info">
+                                <h4>GreenSeeds Ltd</h4>
+                                <p>Premium Quality Seeds</p>
+                                <div class="rating">⭐⭐⭐⭐⭐</div>
+                                <button class="contact-btn">Contact Supplier</button>
+                            </div>
+                        </div>
+                        <div class="supplier-card">
+                            <div class="supplier-logo">🚜</div>
+                            <div class="supplier-info">
+                                <h4>AgriTech Equipment</h4>
+                                <p>Modern Farming Equipment</p>
+                                <div class="rating">⭐⭐⭐⭐</div>
+                                <button class="contact-btn">Contact Supplier</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-section">
+                    <h3>Latest Products</h3>
+                    <div class="products-grid">
+                        <div class="product-card">
+                            <img src="path-to-product-image.jpg" alt="Product">
+                            <h4>Organic Seeds Pack</h4>
+                            <p>₹499/kg</p>
+                            <button class="order-btn">Order Now</button>
+                        </div>
+                        <div class="product-card">
+                            <img src="path-to-product-image.jpg" alt="Product">
+                            <h4>Bio Fertilizer</h4>
+                            <p>₹999/pack</p>
+                            <button class="order-btn">Order Now</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Market Connect Modal -->
+    <div class="detail-modal" id="marketModal">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <h2>Market Connect</h2>
+            <div class="modal-grid">
+                <div class="modal-section">
+                    <h3>Market Prices</h3>
+                    <div class="price-table">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Crop</th>
+                                    <th>Current Price</th>
+                                    <th>Trend</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Wheat</td>
+                                    <td>₹2,200/quintal</td>
+                                    <td>↗️ +5%</td>
+                                </tr>
+                                <tr>
+                                    <td>Rice</td>
+                                    <td>₹3,100/quintal</td>
+                                    <td>↘️ -2%</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="modal-section">
+                    <h3>Active Buyers</h3>
+                    <div class="buyers-list">
+                        <div class="buyer-card">
+                            <div class="buyer-info">
+                                <h4>FreshMart</h4>
+                                <p>Looking for: Organic Vegetables</p>
+                                <p>Quantity: 500kg/week</p>
+                                <button class="bid-btn">Place Bid</button>
+                            </div>
+                        </div>
+                        <div class="buyer-card">
+                            <div class="buyer-info">
+                                <h4>AgriExport Co.</h4>
+                                <p>Looking for: Premium Rice</p>
+                                <p>Quantity: 2000kg/month</p>
+                                <button class="bid-btn">Place Bid</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Expert Connect Modal -->
+    <div class="detail-modal" id="expertsModal">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <h2>Expert Connect</h2>
+            <div class="modal-grid">
+                <div class="modal-section">
+                    <h3>Available Experts</h3>
+                    <div class="experts-list">
+                        <div class="expert-card">
+                            <img src="https://i.pravatar.cc/150?img=4" alt="Expert">
+                            <div class="expert-info">
+                                <h4>Dr. Sharma</h4>
+                                <p>Soil Expert</p>
+                                <p>Experience: 15 years</p>
+                                <button class="consult-btn">Book Consultation</button>
+                            </div>
+                        </div>
+                        <div class="expert-card">
+                            <img src="https://i.pravatar.cc/150?img=5" alt="Expert">
+                            <div class="expert-info">
+                                <h4>Dr. Patel</h4>
+                                <p>Crop Disease Specialist</p>
+                                <p>Experience: 12 years</p>
+                                <button class="consult-btn">Book Consultation</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-section">
+                    <h3>Quick Solutions</h3>
+                    <div class="solutions-list">
+                        <div class="solution-card">
+                            <h4>Plant Disease Identification</h4>
+                            <p>Upload a photo of your plant for instant analysis</p>
+                            <button class="upload-btn">Upload Photo</button>
+                        </div>
+                        <div class="solution-card">
+                            <h4>Soil Testing</h4>
+                            <p>Get your soil analyzed by our experts</p>
+                            <button class="test-btn">Request Test</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Training Hub Modal -->
+    <div class="detail-modal" id="trainingModal">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <h2>Training Hub</h2>
+            <div class="modal-grid">
+                <div class="modal-section">
+                    <h3>Featured Courses</h3>
+                    <div class="courses-list">
+                        <div class="course-card">
+                            <div class="course-preview">🌾</div>
+                            <div class="course-info">
+                                <h4>Modern Farming Techniques</h4>
+                                <p>Duration: 4 weeks</p>
+                                <div class="progress-bar">
+                                    <div class="progress" style="width: 0%"></div>
+                                </div>
+                                <button class="enroll-btn">Enroll Now</button>
+                            </div>
+                        </div>
+                        <div class="course-card">
+                            <div class="course-preview">🚜</div>
+                            <div class="course-info">
+                                <h4>Farm Equipment Training</h4>
+                                <p>Duration: 2 weeks</p>
+                                <div class="progress-bar">
+                                    <div class="progress" style="width: 0%"></div>
+                                </div>
+                                <button class="enroll-btn">Enroll Now</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-section">
+                    <h3>Live Workshops</h3>
+                    <div class="workshops-list">
+                        <div class="workshop-card">
+                            <h4>Organic Farming Workshop</h4>
+                            <p>Date: Next Sunday, 10:00 AM</p>
+                            <p>By: Dr. Reddy</p>
+                            <button class="join-btn">Join Workshop</button>
+                        </div>
+                        <div class="workshop-card">
+                            <h4>Pest Control Seminar</h4>
+                            <p>Date: Next Tuesday, 2:00 PM</p>
+                            <p>By: Prof. Singh</p>
+                            <button class="join-btn">Join Workshop</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Community Forum Modal -->
+    <div class="detail-modal" id="forumModal">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <h2>Community Forum</h2>
+            <div class="modal-grid">
+                <div class="modal-section">
+                    <h3>Recent Discussions</h3>
+                    <div class="discussions-list">
+                        <div class="discussion-card">
+                            <div class="discussion-header">
+                                <h4>Best practices for organic farming</h4>
+                                <span class="tags">
+                                    <span class="tag">Organic</span>
+                                    <span class="tag">Tips</span>
+                                </span>
+                            </div>
+                            <p>Started by: Ramesh Kumar</p>
+                            <p>Replies: 23 • Views: 156</p>
+                            <button class="view-btn">View Discussion</button>
+                        </div>
+                        <div class="discussion-card">
+                            <div class="discussion-header">
+                                <h4>Water conservation methods</h4>
+                                <span class="tags">
+                                    <span class="tag">Water</span>
+                                    <span class="tag">Conservation</span>
+                                </span>
+                            </div>
+                            <p>Started by: Priya Singh</p>
+                            <p>Replies: 15 • Views: 98</p>
+                            <button class="view-btn">View Discussion</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-section">
+                    <h3>Start a Discussion</h3>
+                    <div class="new-discussion-form">
+                        <div class="form-group">
+                            <label for="topic">Topic</label>
+                            <input type="text" id="topic" placeholder="Enter discussion topic">
+                        </div>
+                        <div class="form-group">
+                            <label for="category">Category</label>
+                            <select id="category">
+                                <option value="">Select category</option>
+                                <option value="organic">Organic Farming</option>
+                                <option value="tech">Technology</option>
+                                <option value="market">Market</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="description">Description</label>
+                            <textarea id="description" rows="4" placeholder="Describe your topic..."></textarea>
+                        </div>
+                        <button class="post-btn">Post Discussion</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3>About Connect</h3>
+                <p>Building bridges in the agricultural community through technology and innovation.</p>
+            </div>
+            <div class="footer-section">
+                <h3>Quick Links</h3>
+                <ul>
+                    <li><a href="#farmers">Farmers Network</a></li>
+                    <li><a href="#experts">Expert Connect</a></li>
+                    <li><a href="#forum">Community Forum</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h3>Contact</h3>
+                <p>Email: connect@hardini.com</p>
+                <p>Phone: +91 123 456 7890</p>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2024 Hardini Technologies. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script src="connect.js"></script>
+</body>
+</html>
