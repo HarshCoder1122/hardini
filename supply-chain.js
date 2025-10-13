@@ -54,8 +54,15 @@ document.addEventListener('DOMContentLoaded', () => {
         // Simulate loading (remove in production and replace with actual API call)
         setTimeout(() => {
             const featureDetails = getFeatureDetails(feature);
+            const sectionIcon = getSectionIcon(feature);
             modalContent.innerHTML = `
-                <h2 class="modal-title">${featureDetails.title}</h2>
+                <div class="modal-header-with-icon">
+                    ${sectionIcon}
+                    <div class="modal-header-main">
+                        <span class="modal-section-icon">${getFeatureIcon(feature)}</span>
+                        <h2 class="modal-title">${featureDetails.title}</h2>
+                    </div>
+                </div>
                 <div class="feature-content">
                     ${featureDetails.content}
                 </div>
@@ -285,144 +292,222 @@ document.addEventListener('DOMContentLoaded', () => {
     // Feature details content
     function getFeatureDetails(feature) {
         const details = {
-            // Farmers Section
+            // Farmers Section Enhanced
             'crop-planning': {
-                title: '🌱 Crop Planning',
+                title: '🌱 Smart Crop Planning AI',
                 content: `
                     <div class="detail-section">
-                        <h3>AI-Powered Planning Tools</h3>
+                        <h3>🤖 Next-Generation Planning Tools</h3>
                         <ul>
-                            <li>Soil analysis and recommendations</li>
-                            <li>Weather pattern integration</li>
-                            <li>Market demand forecasting</li>
-                            <li>Crop rotation suggestions</li>
+                            <li>🧪 Advanced soil analysis with pH and nutrient mapping</li>
+                            <li>🌤️ AI weather prediction for 14-day forecasts</li>
+                            <li>📈 Market demand forecasting with price trends</li>
+                            <li>🔄 Automated crop rotation for soil health maximization</li>
                         </ul>
                         <div class="planning-tools">
-                            <button class="tool-btn">Soil Analysis</button>
-                            <button class="tool-btn">Weather Forecast</button>
-                            <button class="tool-btn">Market Insights</button>
+                            <button class="tool-btn">🧪 Soil Analysis Pro</button>
+                            <button class="tool-btn">🌤️ Weather AIDE</button>
+                            <button class="tool-btn">📈 Market Insights AI</button>
+                        </div>
+                        <div class="ai-features">
+                            <div class="feature-stat">
+                                <span class="stat-number">95%</span>
+                                <span class="stat-label">Prediction Accuracy</span>
+                            </div>
+                            <div class="feature-stat">
+                                <span class="stat-number">50%</span>
+                                <span class="stat-label">Yield Increase</span>
+                            </div>
                         </div>
                     </div>
                 `,
                 actions: `
                     <div class="action-section">
-                        <button class="primary-btn">Start Planning</button>
-                        <button class="secondary-btn">View Templates</button>
+                        <button class="primary-btn">🚀 Start AI Planning</button>
+                        <button class="secondary-btn">📋 View Templates</button>
                     </div>
                 `
             },
             'resource-management': {
-                title: '⚡ Resource Management',
+                title: '💧 Water & Resource Optimization',
                 content: `
                     <div class="detail-section">
-                        <h3>Resource Tracking Tools</h3>
+                        <h3>🌡️ IoT Smart Resource Management</h3>
                         <ul>
-                            <li>Water usage monitoring</li>
-                            <li>Fertilizer inventory management</li>
-                            <li>Equipment maintenance scheduling</li>
-                            <li>Labor allocation</li>
+                            <li>💧 Real-time water usage monitoring with drip irrigation control</li>
+                            <li>🌱 Automated fertilizer injection with nutrient precision delivery</li>
+                            <li>🔧 Predictive maintenance for equipment health monitoring</li>
+                            <li>👷‍♂️ AI labor allocation with task scheduling optimization</li>
                         </ul>
                         <div class="resource-stats">
                             <div class="stat">
                                 <span class="stat-value">85%</span>
-                                <span class="stat-label">Resource Efficiency</span>
+                                <span class="stat-label">💦 Water Savings</span>
                             </div>
                             <div class="stat">
                                 <span class="stat-value">24/7</span>
-                                <span class="stat-label">Monitoring</span>
+                                <span class="stat-label">📱 IoT Monitoring</span>
+                            </div>
+                        </div>
+                        <div class="savings-calculator">
+                            <h4>💰 Annual Savings Potential</h4>
+                            <div class="savings-grid">
+                                <div class="saving-item">🌊 $2,400 Water</div>
+                                <div class="saving-item">🌿 $1,800 Fertilisers</div>
+                                <div class="saving-item">⚙️ $3,200 Equipment</div>
+                                <div class="saving-item">👥 $1,600 Labor</div>
                             </div>
                         </div>
                     </div>
                 `,
                 actions: `
                     <div class="action-section">
-                        <button class="primary-btn">Track Resources</button>
-                        <button class="secondary-btn">View Reports</button>
+                        <button class="primary-btn">🚀 Start IoT Tracking</button>
+                        <button class="secondary-btn">📊 View Analytics</button>
                     </div>
                 `
             },
             'harvest-scheduling': {
-                title: '📅 Harvest Scheduling',
+                title: '🌾 Intelligent Harvest Timing',
                 content: `
                     <div class="detail-section">
-                        <h3>Smart Scheduling System</h3>
+                        <h3>🎯 Predictive Analytics for Perfect Timing</h3>
                         <ul>
-                            <li>Optimal harvest time prediction</li>
-                            <li>Labor force coordination</li>
-                            <li>Equipment availability planning</li>
-                            <li>Weather integration</li>
+                            <li>🍎 ML algorithms predict optimal ripeness with crop sensor data</li>
+                            <li>👷 Dynamic labor allocation with weather-based adjustments</li>
+                            <li>🚜 Equipment utilization optimization with maintenance alerts</li>
+                            <li>🌤️ Satellite weather monitoring with harvest window suggestions</li>
                         </ul>
+                        <div class="yield-predictions">
+                            <h4>📊 Expected Yield Improvements</h4>
+                            <div class="yield-stats">
+                                <div class="yield-item">
+                                    <span class="yield-value">+35%</span>
+                                    <span class="yield-label">🕒 Timing Accuracy</span>
+                                </div>
+                                <div class="yield-item">
+                                    <span class="yield-value">$1,200</span>
+                                    <span class="yield-label">🌽 Per Acre Savings</span>
+                                </div>
+                            </div>
+                        </div>
                         <div class="calendar-preview">
-                            <div class="calendar-header">Upcoming Harvests</div>
+                            <div class="calendar-header">📅 Next 2 Weeks Harvest Schedule</div>
                             <div class="calendar-body">
-                                <!-- Calendar content would be dynamically generated -->
+                                <div class="harvest-schedule">
+                                    <div class="schedule-item">🌽 Wheat - Tomorrow (95% Ready)</div>
+                                    <div class="schedule-item">🍅 Tomatoes - Day 5 (Optimal Window)</div>
+                                    <div class="schedule-item">🥔 Potatoes - Day 8 (Peak Quality)</div>
+                                    <div class="schedule-item">🌰 Rice - Day 12 (Weather Delay Risk)</div>
+                                </div>
                             </div>
                         </div>
                     </div>
                 `,
                 actions: `
                     <div class="action-section">
-                        <button class="primary-btn">Schedule Harvest</button>
-                        <button class="secondary-btn">View Calendar</button>
+                        <button class="primary-btn">🚀 Optimize Schedule</button>
+                        <button class="secondary-btn">📅 View Full Calendar</button>
                     </div>
                 `
             },
-            // Processing Section
+            // Processing Section Enhanced
             'cleaning-sorting': {
-                title: '�� Cleaning & Sorting',
+                title: '🤖 Automated AI Processing Hub',
                 content: `
                     <div class="detail-section">
-                        <h3>Automated Processing Systems</h3>
+                        <h3>🔬 Precision Sorting with Computer Vision</h3>
                         <ul>
-                            <li>AI-powered sorting technology</li>
-                            <li>Quality grading automation</li>
-                            <li>Waste reduction systems</li>
-                            <li>Cleaning process optimization</li>
+                            <li>👁️ High-definition camera systems with pattern recognition AI</li>
+                            <li>⚖️ Dynamic weight measurement with defect detection</li>
+                            <li>♻️ Smart waste separation for composting and recycling</li>
+                            <li>⚡ Real-time processing optimization with ML algorithms</li>
                         </ul>
                         <div class="process-stats">
                             <div class="stat">
-                                <span class="stat-value">99%</span>
-                                <span class="stat-label">Accuracy</span>
+                                <span class="stat-value">99.7%</span>
+                                <span class="stat-label">🔍 Sorting Accuracy</span>
                             </div>
                             <div class="stat">
-                                <span class="stat-value">2x</span>
-                                <span class="stat-label">Faster Processing</span>
+                                <span class="stat-value">3x</span>
+                                <span class="stat-label">🚀 Processing Speed</span>
+                            </div>
+                        </div>
+                        <div class="processing-demo">
+                            <h4>🎬 Live Processing Feed</h4>
+                            <div class=" processing-stats-grid">
+                                <div class="live-stat">🌾 Wheat: 2.1 tons/hr (97% Quality)</div>
+                                <div class="live-stat">🍅 Tomatoes: 1.8 tons/hr (98% Grade A)</div>
+                                <div class="live-stat">🥔 Potatoes: 1.5 tons/hr (99% Accepted)</div>
+                                <div class="live-stat">🏭 Waste: 3% (Recycled for Compost)</div>
                             </div>
                         </div>
                     </div>
                 `,
                 actions: `
                     <div class="action-section">
-                        <button class="primary-btn">Start Process</button>
-                        <button class="secondary-btn">View Status</button>
+                        <button class="primary-btn">🎯 Start AI Processing</button>
+                        <button class="secondary-btn">📊 Live Dashboard</button>
                     </div>
                 `
             },
-            // Distribution Section
+            // Distribution Section Enhanced
             'route-optimization': {
-                title: '🚛 Route Optimization',
+                title: '🚛 Intelligent Logistics Network',
                 content: `
                     <div class="detail-section">
-                        <h3>Smart Routing System</h3>
+                        <h3>🗺️ AI-Powered Route Optimization</h3>
                         <ul>
-                            <li>Real-time traffic integration</li>
-                            <li>Multi-stop route planning</li>
-                            <li>Fuel efficiency optimization</li>
-                            <li>Delivery time estimation</li>
+                            <li>🚦 Real-time traffic integration with machine learning predictions</li>
+                            <li>📍 Multi-stop route planning with capacity optimization</li>
+                            <li>⛽ Fuel efficiency optimization (up to 30% savings)</li>
+                            <li>🕒 Delivery time estimation with 90% accuracy</li>
                         </ul>
-                        <div class="map-preview">
-                            <!-- Map interface would be integrated here -->
+                        <div class="logistics-metrics">
+                            <h4>📊 Fleet Performance Dashboard</h4>
+                            <div class="fleet-stats">
+                                <div class="metric-card">
+                                    <span class="metric-value">28%</span>
+                                    <span class="metric-label">🔥 Fuel Saved</span>
+                                </div>
+                                <div class="metric-card">
+                                    <span class="metric-value">15%</span>
+                                    <span class="metric-label">⚡ Time Reduced</span>
+                                </div>
+                                <div class="metric-card">
+                                    <span class="metric-value">$8,200</span>
+                                    <span class="metric-label">💰 Monthly Savings</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="route-types">
+                            <h4>🚛 Transportation Modes</h4>
+                            <div class="transport-grid">
+                                <div class="transport-option">🚚 Standard Trucks</div>
+                                <div class="transport-option">❄️ Refrigerated Vans</div>
+                                <div class="transport-option">✈️ Air Freight</div>
+                                <div class="transport-option">🛤️ Rail Transport</div>
+                            </div>
+                        </div>
+                        <div class="live-tracking">
+                            <h4>📍 Live Fleet Tracking</h4>
+                            <div class="tracking-items">
+                                <div class="tracker">🚛 Truck #247 - Delhi → Mumbai (ETA: 2h 30m)</div>
+                                <div class="tracker">❄️ Cold Truck #113 - Bangalore → Chennai (ETA: 4h 15m)</div>
+                                <div class="tracker">🚚 Truck #389 - Jaipur → Ahmedabad (ETA: 3h 45m)</div>
+                            </div>
                         </div>
                     </div>
                 `,
                 actions: `
                     <div class="action-section">
-                        <button class="primary-btn">Plan Routes</button>
-                        <button class="secondary-btn">View Active Routes</button>
+                        <button class="primary-btn">🗺️ Start Route Planning</button>
+                        <button class="secondary-btn">📱 Fleet Dashboard</button>
                     </div>
                 `
             },
-            // Add more feature details as needed
+
+        // Add more feature details as needed
         };
 
         return details[feature] || {
@@ -430,6 +515,36 @@ document.addEventListener('DOMContentLoaded', () => {
             content: '<p>Details coming soon...</p>',
             actions: ''
         };
+    }
+
+    // Function to get feature icons for modal headers
+    function getFeatureIcon(feature) {
+        const featureIcons = {
+            'crop-planning': '🌱',
+            'resource-management': '💧',
+            'harvest-scheduling': '🌾',
+            'cleaning-sorting': '🤖',
+            'quality-assessment': '🎯',
+            'packaging': '📦',
+            'storage': '🏭',
+            'route-optimization': '🚛'
+        };
+        return featureIcons[feature] || '🛠️';
+    }
+
+    // Function to get section logo for modal header (Farmers, Processing, Distribution logos)
+    function getSectionIcon(feature) {
+        const sectionLogos = {
+            'crop-planning': '<img src="images/farmer-icon.png" alt="Farmers Logo" class="modal-logo">',
+            'resource-management': '<img src="images/farmer-icon.png" alt="Farmers Logo" class="modal-logo">',
+            'harvest-scheduling': '<img src="images/farmer-icon.png" alt="Farmers Logo" class="modal-logo">',
+            'cleaning-sorting': '<img src="images/processing-icon.png" alt="Processing Logo" class="modal-logo">',
+            'quality-assessment': '<img src="images/processing-icon.png" alt="Processing Logo" class="modal-logo">',
+            'packaging': '<img src="images/processing-icon.png" alt="Processing Logo" class="modal-logo">',
+            'storage': '<img src="images/processing-icon.png" alt="Processing Logo" class="modal-logo">',
+            'route-optimization': '<img src="images/distribution-icon.png" alt="Distribution Logo" class="modal-logo">'
+        };
+        return sectionLogos[feature] || '';
     }
 
     // Add animation on scroll
@@ -716,4 +831,4 @@ document.addEventListener('DOMContentLoaded', () => {
     if (localStorage.getItem('isLoggedIn') === 'true') {
         updateUIForLoggedInUser();
     }
-}); 
+});

@@ -9,13 +9,14 @@
 body {
     background-color: #001a12;
     color: #ffffff;
+    /* CACHE BUSTER - Testing if changes are visible - FORCE REFRESH */
 }
 
-/* Header Styles */
+/* Header Styles - Matches index.html */
 header {
     position: fixed;
     width: 100%;
-    padding: 1.5rem 4rem;
+    padding: 1rem 1.5rem;
     z-index: 100;
     background: rgba(0, 26, 18, 0.95);
     backdrop-filter: blur(10px);
@@ -28,57 +29,91 @@ nav {
 }
 
 .logo {
-    font-size: 2rem;
+    font-size: 1.8rem;
     font-weight: 700;
     letter-spacing: 2px;
     cursor: pointer;
     transition: transform 0.3s ease;
-    color: #4CAF50;
-    text-shadow: 0 0 10px rgba(76, 175, 80, 0.3);
+}
+
+.logo:hover {
+    transform: scale(1.05);
 }
 
 .nav-links {
     display: flex;
-    gap: 2.5rem;
+    gap: 2rem;
     align-items: center;
 }
 
 .nav-links a {
     color: #ffffff;
     text-decoration: none;
-    font-size: 1.1rem;
+    font-size: 1rem;
     transition: all 0.3s ease;
     position: relative;
-    padding: 0.5rem 1rem;
-    border-radius: 8px;
 }
 
-.nav-links a:hover {
-    background: rgba(76, 175, 80, 0.1);
-    transform: translateY(-2px);
+.nav-links a::after {
+    content: '';
+    position: absolute;
+    bottom: -5px;
+    left: 0;
+    width: 0;
+    height: 2px;
+    background-color: #4CAF50;
+    transition: width 0.3s ease;
 }
 
-.nav-links a.active {
-    background: #4CAF50;
-    color: white;
+.nav-links a:hover::after {
+    width: 100%;
 }
 
 .login-btn {
-    padding: 0.8rem 2rem !important;
-    border: 2px solid #4CAF50;
-    border-radius: 50px !important;
-    font-weight: 600;
+    padding: 0.5rem 1.5rem;
+    border: 1px solid #4CAF50;
+    border-radius: 5px;
+    transition: all 0.3s ease;
 }
 
 .login-btn:hover {
-    background-color: #4CAF50 !important;
+    background-color: #4CAF50;
+    color: #ffffff;
     transform: translateY(-2px);
-    box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
+}
+
+/* Mobile Menu */
+.burger {
+    display: none;
+}
+
+@media (max-width: 768px) {
+    .burger {
+        display: block;
+        font-size: 1.5rem;
+        cursor: pointer;
+    }
+
+    .nav-links {
+        position: fixed;
+        top: 70px;
+        right: -100%;
+        width: 100%;
+        height: calc(100vh - 70px);
+        background: rgba(0, 26, 18, 0.95);
+        flex-direction: column;
+        padding: 2rem;
+        transition: right 0.3s ease;
+    }
+
+    .nav-links.nav-active {
+        right: 0;
+    }
 }
 
 /* Hero Section */
 .supply-chain-hero {
-    padding: 8rem 2rem 4rem;
+    padding: 6rem 2rem 2rem;
     text-align: center;
     background: linear-gradient(rgba(0, 26, 18, 0.8), rgba(0, 26, 18, 0.8)),
                 url('images/supply-chain-bg.jpg');
@@ -87,14 +122,14 @@ nav {
 }
 
 .supply-chain-hero h1 {
-    font-size: 3.5rem;
+    font-size: 2.5rem;
     margin-bottom: 1rem;
     color: #ffffff;
     text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
 }
 
 .supply-chain-hero p {
-    font-size: 1.2rem;
+    font-size: 1rem;
     color: #4CAF50;
     max-width: 600px;
     margin: 0 auto;
@@ -102,18 +137,18 @@ nav {
 
 /* Supply Chain Grid */
 .supply-chain-grid {
-    padding: 6rem 2rem;
+    padding: 4rem 2rem 2rem;
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-    gap: 2.5rem;
-    max-width: 1600px;
+    gap: 2rem;
+    max-width: 1400px;
     margin: 0 auto;
 }
 
 .chain-card {
     background: rgba(255, 255, 255, 0.05);
     border-radius: 25px;
-    padding: 2.5rem;
+    padding: 1.5rem;
     transition: all 0.4s ease;
     border: 1px solid rgba(76, 175, 80, 0.2);
     position: relative;
@@ -167,11 +202,20 @@ nav {
     filter: drop-shadow(0 0 5px rgba(76, 175, 80, 0.5));
 }
 
+/* Section Emoji Styling */
+.section-emoji {
+    font-size: 4rem;
+    display: block;
+    text-align: center;
+    margin: 0 auto;
+    line-height: 1;
+}
+
 .chain-card h2 {
     text-align: center;
     color: #4CAF50;
     margin-bottom: 2.5rem;
-    font-size: 2rem;
+    font-size: 1.4rem;
     font-weight: 700;
     text-shadow: 0 0 10px rgba(76, 175, 80, 0.3);
 }
@@ -184,10 +228,10 @@ nav {
 .feature {
     background: rgba(255, 255, 255, 0.08);
     border-radius: 20px;
-    padding: 2rem;
+    padding: 1rem;
     display: flex;
     align-items: flex-start;
-    gap: 1.5rem;
+    gap: 1rem;
     transition: all 0.4s ease;
     border: 1px solid transparent;
 }
@@ -224,13 +268,13 @@ nav {
 .feature-details h3 {
     color: #ffffff;
     margin-bottom: 1rem;
-    font-size: 1.4rem;
+    font-size: 1.1rem;
     font-weight: 600;
 }
 
 .feature-details p {
     color: rgba(255, 255, 255, 0.8);
-    font-size: 1rem;
+    font-size: 0.9rem;
     margin-bottom: 1.5rem;
     line-height: 1.6;
 }
@@ -297,6 +341,50 @@ nav {
     transform: translateY(20px);
     opacity: 0;
     animation: modalFadeIn 0.5s ease forwards;
+}
+
+.modal-header-with-icon {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.modal-logo {
+    width: 80px;
+    height: 80px;
+    object-fit: contain;
+    border-radius: 20px;
+    border: 3px solid rgba(76, 175, 80, 0.3);
+    padding: 8px;
+    transition: all 0.3s ease;
+}
+
+.modal-logo:hover {
+    transform: scale(1.05);
+    border-color: #4CAF50;
+}
+
+.modal-header-main {
+    flex: 1;
+}
+
+.modal-section-icon {
+    font-size: 2rem;
+    background: linear-gradient(135deg, rgba(76, 175, 80, 0.1) 0%, rgba(76, 175, 80, 0.2) 100%);
+    border-radius: 15px;
+    padding: 0.8rem;
+    border: 2px solid #4CAF50;
+    display: block;
+    width: fit-content;
+    margin-bottom: 0.5rem;
+}
+
+.modal-title {
+    color: #4CAF50;
+    font-size: 2rem;
+    font-weight: 700;
+    margin: 0;
 }
 
 @keyframes modalFadeIn {
@@ -786,4 +874,4 @@ nav {
         gap: 1rem;
         align-items: flex-start;
     }
-} 
+}

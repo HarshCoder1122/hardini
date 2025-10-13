@@ -1,195 +1,115 @@
-# 🌾 Hardini - Agricultural Technology Platform
+# 🌾 HARDINI Agriculture App
 
-A modern full-stack platform that bridges technology and farming experiences to create sustainable agricultural solutions with YouTube integration and AI-powered farming tools.
+Empowering Agriculture Through Innovation and Technology
 
-## 🚀 Features
+## 🚀 Quick Start
 
-### Frontend
-- 🌐 Modern, responsive web design
-- 🎥 Instagram-style farming reels (autoplay muted)
-- 🛍️ Comprehensive agricultural marketplace
-- 🤖 AI-powered farming chatbot
-- 📞 Interactive contact forms with maps
-- 📱 Mobile-first responsive layout
+### Option 1: Quick Launch (Recommended)
+- **Windows:** Double-click `launch.bat`
+- **Mac/Linux:** Run `chmod +x launch.sh && ./launch.sh`
 
-### Backend
-- 📺 YouTube API integration for farming videos
-- 🔍 Advanced content filtering and search
-- 🌐 RESTful API architecture
-- 📊 Real-time data processing
-- 🔒 CORS-enabled secure communication
+### Option 2: Permanent Service (24/7)
+For production use or development, install as a permanent background service:
 
-### Development
-- ⚡ Concurrent frontend/backend development server
-- 🔄 Hot reload capabilities
-- 📊 Auto-restart server with nodemon
-- 🛠️ Cross-platform compatibility
-
-## 🛠️ Technologies Used
-
-### Frontend
-- **HTML5** - Semantic markup
-- **CSS3** - Modern styling with animations
-- **JavaScript ES6+** - Interactive functionality
-- **Google Fonts (Poppins)** - Typography
-- **Font Awesome** - Icons
-
-### Backend
-- **Node.js** - Runtime environment
-- **Express.js** - Web framework
-- **YouTube Data API v3** - Video content
-- **Axios** - HTTP client
-- **CORS** - Cross-origin resource sharing
-
-### Development Tools
-- **npm** - Package management
-- **concurrently** - Parallel process execution
-- **nodemon** - Auto-restart development server
-
-## 📋 Setup & Installation
-
-### Prerequisites
-- Node.js (v14+ recommended)
-- npm (comes with Node.js)
-- Modern web browser
-
-### Quick Start
-
-1. **Clone the repository**
-   ```bash
-   git clone <repository-url>
-   cd hardini-app
-   ```
-
-2. **Install all dependencies**
-   ```bash
-   npm run install:all
-   ```
-
-3. **Start the development servers**
-   ```bash
-   npm start
-   ```
-   Or
-   ```bash
-   npm run dev
-   ```
-
-4. **Access the application**
-   - Frontend: `http://localhost:8000`
-   - Backend API: `http://localhost:3001`
-   - API Health Check: `http://localhost:3001/api/health`
-
-### Manual Commands
-
-**Start both servers concurrently:**
-```bash
-npm run dev
+#### Windows (PowerShell - Administrator)
+```powershell
+# Run PowerShell as Administrator
+.\start-hardini-service.ps1
+# Server runs permanently with auto-restart
+# Press Ctrl+C to stop (keeps running on failures)
 ```
 
-**Start backend only:**
+#### Linux/Mac with systemd
 ```bash
-npm run backend
+# Install as permanent service (requires sudo)
+sudo ./hardini-service.sh --install
+
+# Then manage the service
+./hardini-service.sh start    # Start permanent service
+./hardini-service.sh stop     # Stop service
+./hardini-service.sh restart  # Restart service
+./hardini-service.sh status   # Check status
+./hardini-service.sh logs     # View real-time logs
 ```
 
-**Start backend with hot reload (development):**
+### Manual Start (For Development)
 ```bash
-npm run backend:dev
+# Start backend server
+cd backend && node server.js
+
+# Open index.html in browser
+# The app should automatically connect to the backend at localhost:3001
 ```
 
-**Start frontend only:**
+## 📱 App Features
+
+- 🌅 **Beautiful Landing Page** - Modern IIFM Coalescence'25 design
+- 📱 **Responsive Design** - Works on all devices
+- 🎥 **AgriReels** - YouTube integration for farming videos
+- 🏪 **AgriMart Outlet** - Premium agricultural products
+- ♻️ **Waste Management** - Smart waste utilization solutions
+- 👨‍🌾 **Farmer Network** - Connect with expert farmers
+- 🤖 **AI Chatbot** - Integrated assistance system
+
+## 🛠️ Tech Stack
+
+- **Frontend:** HTML5, CSS3, JavaScript
+- **Backend:** Node.js, Express
+- **APIs:** YouTube Data API v3
+- **Design:** Modern UI/UX with smooth animations
+
+## 📝 API Endpoints
+
+- `GET /api/health` - Health check
+- `GET /api/reels` - Fetch farming videos
+- `GET /api/reels/:videoId` - Specific video details
+
+## 🔧 Development
+
 ```bash
-npm run frontend
+# Install backend dependencies
+cd backend && npm install
+
+# Start development server
+npm start
+
+# Access the app at http://localhost:3001
 ```
 
-## 📁 Project Structure
+## 📄 Project Structure
 
 ```
 hardini-app/
-├── index.html              # Main homepage
-├── styles.css             # Global styles
-├── script.js             # Main script
-├── reels.html            # Reels page
-├── reels.js             # Reels functionality
-├── connect.html         # Connect page
-├── supply-chain.html    # Supply chain page
-├── package.json         # Root package.json
-├── backend/             # Backend application
-│   ├── server.js        # Express server
-│   ├── package.json     # Backend dependencies
-│   └── .env            # Environment variables
-├── assets/              # Static assets
-│   └── seed-icon.svg
-├── images/              # Image assets
-└── README.md           # This file
+├── backend/                 # Node.js backend
+│   ├── server.js           # Main server file
+│   ├── package.json        # Dependencies
+│   └── .env               # Environment variables
+├── assets/                 # Static assets (images)
+├── styles.css             # Main stylesheet
+├── index.html             # Main application
+├── launch.bat             # Windows launcher
+├── launch.sh              # Unix/Mac launcher
+└── README.md              # This file
 ```
 
-## 🔧 Environment Configuration
+## 🌐 Browser Support
 
-Create `backend/.env` file:
-
-```env
-YOUTUBE_API_KEY=your_youtube_api_key_here
-PORT=3001
-```
-
-**Note:** Get YouTube API key from [Google Cloud Console](https://console.cloud.google.com/)
-
-## 🎯 Usage
-
-### Browsing Reels
-- Reels autoplay muted on the homepage
-- Click any reel to open it with sound
-- Use navigation arrows or swipe to browse
-- Auto-scroll through reels every 8 seconds
-
-### Marketplace
-- Browse agricultural products by category
-- Interactive product cards with ordering
-- Equipment rental with detailed terms
-
-### Learning Platform
-- Connect with experienced farmers
-- Access mentorship programs
-- AI-powered chatbot for queries
-
-### API Endpoints
-- `GET /api/health` - Server health check
-- `GET /api/reels?limit=N` - Fetch farming videos
-- `GET /api/reels/:videoId` - Get specific video details
-
-## 🚀 Deployment
-
-### Production Build
-```bash
-# Backend (consider using PM2)
-npm run backend
-
-# Frontend can be served statically or through Node.js
-```
-
-### Docker (Optional)
-Create a `Dockerfile` for containerized deployment.
-
-## 🤝 Contributing
-
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
-
-## 📄 License
-
-MIT License - see LICENSE file for details
+- Chrome 90+
+- Firefox 90+
+- Safari 14+
+- Edge 90+
 
 ## 📞 Contact
 
-Hardini Technologies
-- Website: [Coming Soon]
-- Email: info@hardini.com
-- Support: support@hardini.com
+**Indian Institute of Forest Management**
+Bhopal, Madhya Pradesh, India
+
+For support: support@hardini.com
+
+## 📜 License
+
+This project is part of IIFM Coalescence'25 initiative.
 
 ---
 
-**Built with ❤️ for sustainable agriculture** 🌱🚀
+*Built with ❤️ by IIFM Students*

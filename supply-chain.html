@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Supply Chain - Hardini</title>
+    <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="supply-chain.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 </head>
@@ -15,56 +16,61 @@
                 <a href="index.html">🏠 HOME</a>
                 <a href="supply-chain.html" class="active">🔄 SUPPLY CHAIN</a>
                 <a href="connect.html">🤝 CONNECT</a>
-
+                <a href="reels.html">🎥 REELS</a>
                 <a href="#login" class="login-btn">👤 LOGIN</a>
+            </div>
+            <div class="burger">
+                <span class="bar"></span>
+                <span class="bar"></span>
+                <span class="bar"></span>
             </div>
         </nav>
     </header>
 
     <main>
         <section class="supply-chain-hero">
-            <h1>Supply Chain Management</h1>
-            <p>End-to-end visibility and control of your agricultural supply chain</p>
+            <h1>🚀 Smart Agriculture Supply Chain</h1>
+            <p>Transform your farming operations with 🌟 cutting-edge supply chain technology and 📊 comprehensive farm-to-market solutions for 📈 maximum profitability & efficiency</p>
         </section>
 
         <section class="supply-chain-grid">
             <!-- Farmers Section -->
             <div class="chain-card farmers-card" id="farmers">
                 <div class="card-icon">
-                    <img src="images/farmer-icon.png" alt="Farmer Icon">
+                    <span class="section-emoji">🌾</span>
                 </div>
                 <h2>Farmers</h2>
                 <div class="features-list">
                     <div class="feature">
                         <span class="feature-icon">🌱</span>
                         <div class="feature-details">
-                            <h3>Crop Planning</h3>
-                            <p>AI-powered crop planning based on market demand and soil conditions</p>
-                            <button class="action-btn" onclick="showDetails('crop-planning')">Plan Crops</button>
+                            <h3>🌱 Smart Crop Planning AI</h3>
+                            <p>🤖 AI-driven crop selection with data analysis for maximum yield and profitability 📈</p>
+                            <button class="action-btn" onclick="showDetails('crop-planning')">🚀 Start AI Planning</button>
                         </div>
                     </div>
                     <div class="feature">
-                        <span class="feature-icon">⚡</span>
+                        <span class="feature-icon">💧</span>
                         <div class="feature-details">
-                            <h3>Resource Management</h3>
-                            <p>Track and optimize usage of water, fertilizers, and equipment</p>
-                            <button class="action-btn" onclick="showDetails('resource-management')">Manage Resources</button>
+                            <h3>💧 Water & Resource Optimization</h3>
+                            <p>🌡️ Intelligent irrigation systems and resource tracking for sustainable farming 🔄</p>
+                            <button class="action-btn" onclick="showDetails('resource-management')">🔄 Optimize Resources</button>
                         </div>
                     </div>
                     <div class="feature">
                         <span class="feature-icon">📅</span>
                         <div class="feature-details">
-                            <h3>Harvest Scheduling</h3>
-                            <p>Optimize harvest timing based on crop maturity and market prices</p>
-                            <button class="action-btn" onclick="showDetails('harvest-scheduling')">Schedule Harvest</button>
+                            <h3>🌾 Intelligent Harvest Timing</h3>
+                            <p>🎯 Predictive analytics for perfect harvest timing and market price optimization 💰</p>
+                            <button class="action-btn" onclick="showDetails('harvest-scheduling')">⏰ Plan Harvest</button>
                         </div>
                     </div>
                     <div class="feature">
-                        <span class="feature-icon">✅</span>
+                        <span class="feature-icon">🔬</span>
                         <div class="feature-details">
-                            <h3>Quality Control</h3>
-                            <p>Monitor crop health and maintain quality standards</p>
-                            <button class="action-btn" onclick="showDetails('quality-control')">Check Quality</button>
+                            <h3>🔍 Advanced Quality Monitoring</h3>
+                            <p>🕒 Real-time crop health monitoring and automated quality control systems ✅</p>
+                            <button class="action-btn" onclick="showDetails('quality-control')">🔬 Monitor Quality</button>
                         </div>
                     </div>
                 </div>
@@ -73,40 +79,40 @@
             <!-- Processing Section -->
             <div class="chain-card processing-card" id="processing">
                 <div class="card-icon">
-                    <img src="images/processing-icon.png" alt="Processing Icon">
+                    <span class="section-emoji">🏭</span>
                 </div>
                 <h2>Processing</h2>
                 <div class="features-list">
                     <div class="feature">
                         <span class="feature-icon">🧹</span>
                         <div class="feature-details">
-                            <h3>Cleaning & Sorting</h3>
-                            <p>Automated cleaning and sorting systems for efficient processing</p>
-                            <button class="action-btn" onclick="showDetails('cleaning-sorting')">View Process</button>
+                            <h3>🤖 Automated Cleaning & Sorting</h3>
+                            <p>Smart machines that clean and sort crops for top-quality processing 💪</p>
+                            <button class="action-btn" onclick="showDetails('cleaning-sorting')">⚙️ View Process</button>
                         </div>
                     </div>
                     <div class="feature">
                         <span class="feature-icon">🎯</span>
                         <div class="feature-details">
-                            <h3>Quality Assessment</h3>
-                            <p>Advanced quality grading using AI and machine learning</p>
-                            <button class="action-btn" onclick="showDetails('quality-assessment')">Assess Quality</button>
+                            <h3>🔍 AI Quality Assessment</h3>
+                            <p>Cutting-edge AI technology for precise quality grading and analysis 📈</p>
+                            <button class="action-btn" onclick="showDetails('quality-assessment')">🎖️ Assess Quality</button>
                         </div>
                     </div>
                     <div class="feature">
                         <span class="feature-icon">📦</span>
                         <div class="feature-details">
-                            <h3>Packaging</h3>
-                            <p>Smart packaging solutions with traceability features</p>
-                            <button class="action-btn" onclick="showDetails('packaging')">Package Products</button>
+                            <h3>📱 Smart Packaging Solutions</h3>
+                            <p>Intelligent packaging with full traceability from farm to consumer 🔒</p>
+                            <button class="action-btn" onclick="showDetails('packaging')">📦 Package Products</button>
                         </div>
                     </div>
                     <div class="feature">
                         <span class="feature-icon">🏭</span>
                         <div class="feature-details">
-                            <h3>Storage Solutions</h3>
-                            <p>Temperature-controlled storage with real-time monitoring</p>
-                            <button class="action-btn" onclick="showDetails('storage')">Manage Storage</button>
+                            <h3>🌡️ Climate-Controlled Storage</h3>
+                            <p>Temperature-controlled warehouse systems with live monitoring 🕒</p>
+                            <button class="action-btn" onclick="showDetails('storage')">📊 Manage Storage</button>
                         </div>
                     </div>
                 </div>
@@ -115,40 +121,40 @@
             <!-- Distribution Section -->
             <div class="chain-card distribution-card" id="distribution">
                 <div class="card-icon">
-                    <img src="images/distribution-icon.png" alt="Distribution Icon">
+                    <span class="section-emoji">🚛</span>
                 </div>
                 <h2>Distribution</h2>
                 <div class="features-list">
                     <div class="feature">
                         <span class="feature-icon">🚛</span>
                         <div class="feature-details">
-                            <h3>Route Optimization</h3>
-                            <p>Smart routing for efficient delivery and reduced costs</p>
-                            <button class="action-btn" onclick="showDetails('route-optimization')">Optimize Routes</button>
+                            <h3>🚛 Route Optimization</h3>
+                            <p>🗺️ Smart routing for efficient delivery and reduced costs 📉</p>
+                            <button class="action-btn" onclick="showDetails('route-optimization')">🗺️ Optimize Routes</button>
                         </div>
                     </div>
                     <div class="feature">
                         <span class="feature-icon">❄️</span>
                         <div class="feature-details">
-                            <h3>Cold Chain Management</h3>
-                            <p>Temperature-controlled transportation with live monitoring</p>
-                            <button class="action-btn" onclick="showDetails('cold-chain')">Monitor Chain</button>
+                            <h3>❄️ Cold Chain Management</h3>
+                            <p>🌡️ Temperature-controlled transportation with live monitoring 📱</p>
+                            <button class="action-btn" onclick="showDetails('cold-chain')">❄️ Monitor Chain</button>
                         </div>
                     </div>
                     <div class="feature">
                         <span class="feature-icon">📊</span>
                         <div class="feature-details">
-                            <h3>Inventory Tracking</h3>
-                            <p>Real-time inventory management across locations</p>
-                            <button class="action-btn" onclick="showDetails('inventory')">Track Inventory</button>
+                            <h3>📊 Inventory Tracking</h3>
+                            <p>📱 Real-time inventory management across locations 🏪</p>
+                            <button class="action-btn" onclick="showDetails('inventory')">📦 Track Inventory</button>
                         </div>
                     </div>
                     <div class="feature">
                         <span class="feature-icon">🕒</span>
                         <div class="feature-details">
-                            <h3>Delivery Scheduling</h3>
-                            <p>Automated delivery scheduling and tracking</p>
-                            <button class="action-btn" onclick="showDetails('delivery')">Schedule Delivery</button>
+                            <h3>🕒 Delivery Scheduling</h3>
+                            <p>⚡ Automated delivery scheduling and tracking 🚀</p>
+                            <button class="action-btn" onclick="showDetails('delivery')">🚚 Schedule Delivery</button>
                         </div>
                     </div>
                 </div>
@@ -157,40 +163,40 @@
             <!-- Retail Section -->
             <div class="chain-card retail-card" id="retail">
                 <div class="card-icon">
-                    <img src="images/retail-icon.png" alt="Retail Icon">
+                    <span class="section-emoji">🏪</span>
                 </div>
                 <h2>Retail</h2>
                 <div class="features-list">
                     <div class="feature">
                         <span class="feature-icon">📦</span>
                         <div class="feature-details">
-                            <h3>Stock Management</h3>
-                            <p>Smart inventory management with automatic reordering</p>
-                            <button class="action-btn" onclick="showDetails('stock-management')">Manage Stock</button>
+                            <h3>📦 Smart Stock Management</h3>
+                            <p>🤖 AI-powered inventory management with automatic reordering 🔄</p>
+                            <button class="action-btn" onclick="showDetails('stock-management')">📊 Manage Stock</button>
                         </div>
                     </div>
                     <div class="feature">
                         <span class="feature-icon">✔️</span>
                         <div class="feature-details">
-                            <h3>Quality Checks</h3>
-                            <p>Regular quality inspections and freshness monitoring</p>
-                            <button class="action-btn" onclick="showDetails('retail-quality')">Check Quality</button>
+                            <h3>✅ Quality Checks Pro</h3>
+                            <p>🔍 Regular quality inspections and freshness monitoring 🥬</p>
+                            <button class="action-btn" onclick="showDetails('retail-quality')">🔬 Check Quality</button>
                         </div>
                     </div>
                     <div class="feature">
                         <span class="feature-icon">💰</span>
                         <div class="feature-details">
-                            <h3>Price Optimization</h3>
-                            <p>Dynamic pricing based on demand and freshness</p>
-                            <button class="action-btn" onclick="showDetails('pricing')">Optimize Price</button>
+                            <h3>💰 Price Optimization</h3>
+                            <p>📈 Dynamic pricing based on demand and freshness trends 📊</p>
+                            <button class="action-btn" onclick="showDetails('pricing')">💡 Optimize Price</button>
                         </div>
                     </div>
                     <div class="feature">
                         <span class="feature-icon">📊</span>
                         <div class="feature-details">
-                            <h3>Consumer Insights</h3>
-                            <p>Analytics-driven consumer behavior tracking</p>
-                            <button class="action-btn" onclick="showDetails('consumer-insights')">View Insights</button>
+                            <h3>📊 Consumer Insights AI</h3>
+                            <p>👥 Analytics-driven consumer behavior tracking and predictions 🤖</p>
+                            <button class="action-btn" onclick="showDetails('consumer-insights')">📈 View Insights</button>
                         </div>
                     </div>
                 </div>
@@ -199,40 +205,40 @@
             <!-- Consumers Section -->
             <div class="chain-card consumers-card" id="consumers">
                 <div class="card-icon">
-                    <img src="images/consumer-icon.png" alt="Consumer Icon">
+                    <span class="section-emoji">👥</span>
                 </div>
                 <h2>Consumers</h2>
                 <div class="features-list">
                     <div class="feature">
                         <span class="feature-icon">ℹ️</span>
                         <div class="feature-details">
-                            <h3>Product Information</h3>
-                            <p>Detailed product origin and nutritional information</p>
-                            <button class="action-btn" onclick="showDetails('product-info')">View Info</button>
+                            <h3>ℹ️ Smart Product Info</h3>
+                            <p>🥬 Detailed product origin and nutritional information 🥕</p>
+                            <button class="action-btn" onclick="showDetails('product-info')">📖 View Info</button>
                         </div>
                     </div>
                     <div class="feature">
                         <span class="feature-icon">🎯</span>
                         <div class="feature-details">
-                            <h3>Quality Assurance</h3>
-                            <p>Verify product quality and authenticity</p>
-                            <button class="action-btn" onclick="showDetails('consumer-quality')">Verify Quality</button>
+                            <h3>🎯 Quality Assurance Pro</h3>
+                            <p>✅ Verify product quality and authenticity 🔒</p>
+                            <button class="action-btn" onclick="showDetails('consumer-quality')">🔍 Verify Quality</button>
                         </div>
                     </div>
                     <div class="feature">
                         <span class="feature-icon">💬</span>
                         <div class="feature-details">
-                            <h3>Feedback System</h3>
-                            <p>Direct feedback channel to farmers and producers</p>
-                            <button class="action-btn" onclick="showDetails('feedback')">Give Feedback</button>
+                            <h3>💬 Feedback System AI</h3>
+                            <p>🤝 Direct feedback channel to farmers and producers 📡</p>
+                            <button class="action-btn" onclick="showDetails('feedback')">💭 Give Feedback</button>
                         </div>
                     </div>
                     <div class="feature">
                         <span class="feature-icon">🔍</span>
                         <div class="feature-details">
-                            <h3>Traceability</h3>
-                            <p>Track product journey from farm to table</p>
-                            <button class="action-btn" onclick="showDetails('traceability')">Track Product</button>
+                            <h3>🔍 Full Traceability</h3>
+                            <p>🚚 Track product journey from farm to table 🏡</p>
+                            <button class="action-btn" onclick="showDetails('traceability')">📍 Track Product</button>
                         </div>
                     </div>
                 </div>
