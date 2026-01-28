@@ -1,0 +1,672 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Supply Chain - Hardini</title>
+    <link rel="icon"
+        href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌱</text></svg>">
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="supply-chain.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+
+    <!-- Supabase CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+
+<body>
+    <header>
+        <nav>
+            <div class="logo">HARDINI 🌱</div>
+            <div class="nav-links">
+                <a href="index.html">🏠 HOME</a>
+                <a href="supply-chain.html" class="active">🔄 SUPPLY CHAIN</a>
+                <a href="connect.html">🤝 CONNECT</a>
+                <a href="reels.html">🎥 REELS</a>
+                <a href="soil-probe.html">🌱 SOILPROBE</a>
+                <button class="auth-toggle-btn" id="authToggleBtn" onclick="toggleAuth()">🔐 LOGIN</button>
+            </div>
+        </nav>
+    </header>
+
+    <main>
+        <section class="supply-chain-hero">
+            <h1>Supply Chain Management</h1>
+            <p>End-to-end visibility and control of your agricultural supply chain</p>
+        </section>
+
+        <section class="supply-chain-grid">
+            <!-- Farmers Section -->
+            <div class="chain-card farmers-card" id="farmers">
+                <div class="card-icon">
+                    <span class="card-emoji">👨‍🌾</span>
+                </div>
+                <h2>Farmers</h2>
+                <ul class="features-list">
+                    <li>Crop Planning</li>
+                    <li>Resource Management</li>
+                    <li>Harvest Scheduling</li>
+                    <li>Quality Control</li>
+                </ul>
+                <button class="chain-btn" onclick="showFarmersModal()">View Network</button>
+            </div>
+
+            <!-- Processing Section -->
+            <div class="chain-card processing-card" id="processing">
+                <div class="card-icon">
+                    <span class="card-emoji">🏭</span>
+                </div>
+                <h2>Processing</h2>
+                <ul class="features-list">
+                    <li>Cleaning & Sorting</li>
+                    <li>Quality Assessment</li>
+                    <li>Packaging</li>
+                    <li>Storage Solutions</li>
+                </ul>
+                <button class="chain-btn" onclick="showProcessingModal()">View Process</button>
+            </div>
+
+            <!-- Distribution Section -->
+            <div class="chain-card distribution-card" id="distribution">
+                <div class="card-icon">
+                    <span class="card-emoji">🚚</span>
+                </div>
+                <h2>Distribution</h2>
+                <ul class="features-list">
+                    <li>Route Optimization</li>
+                    <li>Cold Chain Management</li>
+                    <li>Inventory Tracking</li>
+                    <li>Delivery Scheduling</li>
+                </ul>
+                <button class="chain-btn" onclick="showDistributionModal()">View Distribution</button>
+            </div>
+
+            <!-- Retail Section -->
+            <div class="chain-card retail-card" id="retail">
+                <div class="card-icon">
+                    <span class="card-emoji">🛒</span>
+                </div>
+                <h2>Retail</h2>
+                <ul class="features-list">
+                    <li>Stock Management</li>
+                    <li>Quality Checks</li>
+                    <li>Price Optimization</li>
+                    <li>Consumer Insights</li>
+                </ul>
+                <button class="chain-btn" onclick="showRetailModal()">View Retail</button>
+            </div>
+
+            <!-- Consumers Section -->
+            <div class="chain-card consumers-card" id="consumers">
+                <div class="card-icon">
+                    <span class="card-emoji">👥</span>
+                </div>
+                <h2>Consumers</h2>
+                <ul class="features-list">
+                    <li>Product Information</li>
+                    <li>Quality Assurance</li>
+                    <li>Feedback System</li>
+                    <li>Traceability</li>
+                </ul>
+                <button class="chain-btn" onclick="showConsumersModal()">View Consumers</button>
+            </div>
+        </section>
+    </main>
+
+    <!-- Feature Details Modal -->
+    <div id="detailsModal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <div id="modalContent">
+                <!-- Content will be dynamically inserted here -->
+            </div>
+        </div>
+    </div>
+
+    <script src="supply-chain.js"></script>
+
+    <!-- Authentication Script -->
+    <script>
+        // ============================================
+        // ESSENTIAL UI FUNCTIONS (Must be defined first)
+        // ============================================
+
+        function toggleAuth() {
+            const authModal = document.getElementById('authModal');
+            if (authModal) {
+                authModal.style.display = 'flex';
+                switchToLogin();
+            }
+        }
+
+        function openProfile() {
+            const authModal = document.getElementById('authModal');
+            if (authModal) {
+                authModal.style.display = 'flex';
+                const tabs = document.querySelectorAll('.auth-tab');
+                tabs.forEach(tab => tab.classList.remove('active'));
+                const profileTab = document.querySelector('[data-tab="profile"]');
+                if (profileTab) profileTab.classList.add('active');
+                if (currentUser) updateProfileTab(currentUser);
+            }
+        }
+
+        async function logout() {
+            try {
+                if (supabaseClient) {
+                    await supabaseClient.auth.signOut();
+                }
+                closeAuthModal();
+            } catch (error) {
+                console.error('Logout error:', error);
+                showNotification('Failed to logout', 'error');
+            }
+        }
+
+        function closeAuthModal() {
+            const authModal = document.getElementById('authModal');
+            if (authModal) authModal.style.display = 'none';
+        }
+
+        function switchToLogin() {
+            const loginTab = document.querySelector('[data-tab="login"]');
+            const signupTab = document.querySelector('[data-tab="signup"]');
+            if (signupTab) signupTab.classList.remove('active');
+            if (loginTab) loginTab.classList.add('active');
+        }
+
+        function switchToSignUp() {
+            const loginTab = document.querySelector('[data-tab="login"]');
+            const signupTab = document.querySelector('[data-tab="signup"]');
+            if (loginTab) loginTab.classList.remove('active');
+            if (signupTab) signupTab.classList.add('active');
+        }
+
+        function showNotification(message, type = 'info') {
+            const notification = document.createElement('div');
+            notification.className = `notification ${type}`;
+            notification.innerHTML = `
+                <span class="notification-icon">${type === 'success' ? '✅' : type === 'error' ? '❌' : 'ℹ️'}</span>
+                <span class="notification-text">${message}</span>
+            `;
+            document.body.appendChild(notification);
+            setTimeout(() => notification.classList.add('show'), 100);
+            setTimeout(() => {
+                notification.classList.remove('show');
+                setTimeout(() => notification.remove(), 300);
+            }, 4000);
+        }
+
+        // ============================================
+        // SUPABASE CONFIGURATION
+        // ============================================
+        const SUPABASE_URL = 'https://aahedprzvceldzcmmvpp.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFhaGVkcHJ6dmNlbGR6Y21tdnBwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjE2NTg5NzAsImV4cCI6MjA3NzIzNDk3MH0.z98v917ye2PU76gfk4cqfTGUGNMfPKqTJdBgkFkyVDo';
+
+        let supabaseClient = null;
+        try {
+            if (window.supabase && window.supabase.createClient) {
+                supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+            }
+        } catch (error) {
+            console.error('Failed to initialize Supabase:', error);
+        }
+
+        let currentUser = null;
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            if (supabaseClient) {
+                const { data: { user }, error } = await supabaseClient.auth.getUser();
+                if (user && !error) {
+                    currentUser = user;
+                    updateUIForLoggedInUser(user);
+                }
+                supabaseClient.auth.onAuthStateChange(async (event, session) => {
+                    if (event === 'SIGNED_IN' && session?.user) {
+                        currentUser = session.user;
+                        updateUIForLoggedInUser(session.user);
+                        closeAuthModal();
+                        showNotification('Welcome back! 🌾', 'success');
+                    } else if (event === 'SIGNED_OUT') {
+                        currentUser = null;
+                        updateUIForLoggedOutUser();
+                        showNotification('Successfully logged out!', 'info');
+                    }
+                });
+            }
+            initializeAuthForms();
+        });
+
+        // Update UI for logged in user
+        function updateUIForLoggedInUser(user) {
+            const authToggleBtn = document.getElementById('authToggleBtn');
+
+            if (authToggleBtn) {
+                authToggleBtn.style.display = 'none';
+            }
+
+            // Add user menu if it doesn't exist
+            let userMenu = document.getElementById('userMenu');
+            if (!userMenu) {
+                userMenu = document.createElement('div');
+                userMenu.id = 'userMenu';
+                userMenu.className = 'user-menu';
+                userMenu.innerHTML = `
+                    <div class="user-info" onclick="openProfile()" style="cursor: pointer;" title="Click to open profile">
+                        <span id="userAvatar">👨‍🌾</span>
+                        <span id="userName">User</span>
+                    </div>
+                    <div class="user-dropdown">
+                        <button onclick="openProfile()">👤 Profile</button>
+                        <button onclick="logout()">🚪 Logout</button>
+                    </div>
+                `;
+                authToggleBtn.parentNode.appendChild(userMenu);
+            }
+
+            // Update user info
+            const userAvatar = document.getElementById('userAvatar');
+            const userName = document.getElementById('userName');
+
+            if (userAvatar) userAvatar.textContent = getUserEmoji(user.email);
+            if (userName) userName.textContent = user.user_metadata?.full_name || user.email.split('@')[0];
+        }
+
+        // Update UI for logged out user
+        function updateUIForLoggedOutUser() {
+            const authToggleBtn = document.getElementById('authToggleBtn');
+            const userMenu = document.getElementById('userMenu');
+
+            if (authToggleBtn) authToggleBtn.style.display = 'inline-block';
+            if (userMenu) userMenu.remove();
+
+            // Reset button text
+            if (authToggleBtn) authToggleBtn.textContent = '🔐 LOGIN';
+        }
+
+        // Initialize authentication forms
+        function initializeAuthForms() {
+            // Check if auth modal exists, if not, create it
+            if (!document.getElementById('authModal')) {
+                createAuthModal();
+            }
+
+            // Login form
+            const loginForm = document.getElementById('loginForm');
+            if (loginForm) loginForm.addEventListener('submit', handleLogin);
+
+            // Signup form
+            const signupForm = document.getElementById('signupForm');
+            if (signupForm) signupForm.addEventListener('submit', handleSignup);
+        }
+
+        // Create auth modal if it doesn't exist
+        function createAuthModal() {
+            const authModal = document.createElement('div');
+            authModal.id = 'authModal';
+            authModal.className = 'auth-modal';
+            authModal.innerHTML = `
+                <div class="modal-content auth-modal-content">
+                    <span class="close-modal" id="closeAuthModal">&times;</span>
+
+                    <!-- Login Tab -->
+                    <div class="auth-tab active" data-tab="login">
+                        <h2>Login to Your Account 🌾</h2>
+                        <div class="auth-form-container">
+                            <form id="loginForm" class="auth-form">
+                                <div class="form-group">
+                                    <label for="loginEmail">Email Address</label>
+                                    <input type="email" id="loginEmail" name="email" required placeholder="Enter your email">
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="loginPassword">Password</label>
+                                    <input type="password" id="loginPassword" name="password" required placeholder="Enter your password">
+                                </div>
+
+                                <div class="form-options">
+                                    <label class="remember-me">
+                                        <input type="checkbox" id="rememberMe">
+                                        Remember me
+                                    </label>
+                                    <a href="#" class="forgot-password">Forgot Password?</a>
+                                </div>
+
+                                <button type="submit" class="auth-btn">Login 🚀</button>
+                            </form>
+
+                            <div class="auth-divider">
+                                <span>or</span>
+                            </div>
+
+                            <div class="social-login">
+                                <button class="social-btn google-btn" onclick="loginWithGoogle()">
+                                    <span>📧</span> Continue with Google
+                                </button>
+                            </div>
+
+                            <p class="auth-switch">Don't have an account? <a href="#" onclick="switchToSignUp()">Sign Up</a></p>
+                        </div>
+                    </div>
+
+                    <!-- Sign Up Tab -->
+                    <div class="auth-tab" data-tab="signup">
+                        <h2>Join the Hardini Community 🌱</h2>
+                        <div class="auth-form-container">
+                            <form id="signupForm" class="auth-form">
+                                <div class="form-group">
+                                    <label for="signupName">Full Name</label>
+                                    <input type="text" id="signupName" name="fullName" required placeholder="Enter your full name">
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="signupEmail">Email Address</label>
+                                    <input type="email" id="signupEmail" name="email" required placeholder="Enter your email">
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="signupPhone">Phone Number (Optional)</label>
+                                    <input type="tel" id="signupPhone" name="phone" placeholder="Enter your phone number">
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="signupPassword">Password</label>
+                                    <input type="password" id="signupPassword" name="password" required placeholder="Create a password">
+                                    <small class="password-hint">Password must be at least 8 characters</small>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="signupConfirmPassword">Confirm Password</label>
+                                    <input type="password" id="signupConfirmPassword" name="confirmPassword" required placeholder="Confirm your password">
+                                </div>
+
+                                <div class="terms-agreement">
+                                    <label class="terms-checkbox">
+                                        <input type="checkbox" id="termsAgree" required>
+                                        I agree to the <a href="#" target="_blank">Terms of Service</a> and <a href="#" target="_blank">Privacy Policy</a>
+                                    </label>
+                                </div>
+
+                                <button type="submit" class="auth-btn">Create Account 🌾</button>
+                            </form>
+
+                            <div class="auth-divider">
+                                <span>or</span>
+                            </div>
+
+                            <div class="social-login">
+                                <button class="social-btn google-btn" onclick="signUpWithGoogle()">
+                                    <span>📧</span> Continue with Google
+                                </button>
+                            </div>
+
+                            <p class="auth-switch">Already have an account? <a href="#" onclick="switchToLogin()">Login</a></p>
+                        </div>
+                    </div>
+
+                    <!-- User Profile Tab -->
+                    <div class="auth-tab" data-tab="profile">
+                        <h2>Your Profile 👨‍🌾</h2>
+                        <div class="auth-form-container">
+                            <div class="profile-info">
+                                <div class="profile-avatar">
+                                    <span id="profileAvatar">👨‍🌾</span>
+                                </div>
+                                <div class="profile-details">
+                                    <h3 id="profileName">User Name</h3>
+                                    <p id="profileEmail">user@example.com</p>
+                                </div>
+                            </div>
+
+                            <div class="profile-actions">
+                                <button class="profile-btn" onclick="editProfile()">
+                                    <span>✏️</span> Edit Profile
+                                </button>
+                                <button class="profile-btn" onclick="viewOrders()">
+                                    <span>📦</span> My Orders
+                                </button>
+                                <button class="profile-btn" onclick="viewFarms()">
+                                    <span>🌾</span> My Farms
+                                </button>
+                                <button class="profile-btn" onclick="settings()">
+                                    <span>⚙️</span> Settings
+                                </button>
+                            </div>
+
+                            <button class="logout-btn" onclick="logout()">Logout</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(authModal);
+
+            // Close modal button
+            const closeModalBtn = document.getElementById('closeAuthModal');
+            if (closeModalBtn) closeModalBtn.addEventListener('click', closeAuthModal);
+        }
+
+        // Handle login
+        async function handleLogin(e) {
+            e.preventDefault();
+
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+
+            try {
+                const { data, error } = await supabaseClient.auth.signInWithPassword({
+                    email: email,
+                    password: password
+                });
+
+                if (error) {
+                    throw error;
+                }
+
+                // Success will be handled by the auth state change listener
+            } catch (error) {
+                console.error('Authentication error:', error);
+                showNotification('Invalid email or password', 'error');
+            }
+        }
+
+        // Handle signup
+        async function handleSignup(e) {
+            e.preventDefault();
+
+            const fullName = document.getElementById('signupName').value;
+            const email = document.getElementById('signupEmail').value;
+            const phone = document.getElementById('signupPhone').value;
+            const password = document.getElementById('signupPassword').value;
+            const confirmPassword = document.getElementById('signupConfirmPassword').value;
+
+            // Validate passwords match
+            if (password !== confirmPassword) {
+                showNotification('Passwords do not match', 'error');
+                return;
+            }
+
+            // Password must be at least 8 characters
+            if (password.length < 8) {
+                showNotification('Password must be at least 8 characters', 'error');
+                return;
+            }
+
+            try {
+                const { data, error } = await supabaseClient.auth.signUp({
+                    email: email,
+                    password: password,
+                    options: {
+                        data: {
+                            full_name: fullName,
+                            phone: phone
+                        }
+                    }
+                });
+
+                if (error) {
+                    throw error;
+                }
+
+                if (data.user && !data.session) {
+                    showNotification('Please check your email for verification link', 'success');
+                    switchToLogin();
+                } else if (data.session) {
+                    showNotification('Account created successfully! 🌾', 'success');
+                }
+
+            } catch (error) {
+                console.error('Signup error:', error);
+                if (error.message.includes('already registered')) {
+                    showNotification('Email already registered. Try logging in instead.', 'warning');
+                    switchToLogin();
+                } else {
+                    showNotification('Failed to create account. Please try again.', 'error');
+                }
+            }
+        }
+
+        // Google authentication functions
+        async function loginWithGoogle() {
+            try {
+                const { data, error } = await supabaseClient.auth.signInWithOAuth({
+                    provider: 'google',
+                    options: {
+                        redirectTo: window.location.origin + window.location.pathname
+                    }
+                });
+
+                if (error) {
+                    throw error;
+                }
+            } catch (error) {
+                console.error('Google login error:', error);
+                showNotification('Failed to initiate Google login', 'error');
+            }
+        }
+
+        async function signUpWithGoogle() {
+            await loginWithGoogle();
+        }
+
+        // UI helper functions
+        function toggleAuth() {
+            const authModal = document.getElementById('authModal');
+            if (authModal) {
+                authModal.style.display = 'flex';
+                switchToLogin();
+            }
+        }
+
+        function closeAuthModal() {
+            const authModal = document.getElementById('authModal');
+            if (authModal) {
+                authModal.style.display = 'none';
+            }
+        }
+
+        function switchToSignUp() {
+            const loginTab = document.querySelector('[data-tab="login"]');
+            const signupTab = document.querySelector('[data-tab="signup"]');
+
+            if (loginTab) loginTab.classList.remove('active');
+            if (signupTab) signupTab.classList.add('active');
+        }
+
+        function switchToLogin() {
+            const loginTab = document.querySelector('[data-tab="login"]');
+            const signupTab = document.querySelector('[data-tab="signup"]');
+
+            if (signupTab) signupTab.classList.remove('active');
+            if (loginTab) loginTab.classList.add('active');
+        }
+
+        function openProfile() {
+            const authModal = document.getElementById('authModal');
+            if (authModal) {
+                authModal.style.display = 'flex';
+
+                const tabs = document.querySelectorAll('.auth-tab');
+                tabs.forEach(tab => tab.classList.remove('active'));
+
+                const profileTab = document.querySelector('[data-tab="profile"]');
+                if (profileTab) profileTab.classList.add('active');
+
+                if (currentUser) {
+                    updateProfileTab(currentUser);
+                }
+            }
+        }
+
+        function updateProfileTab(user) {
+            const profileAvatar = document.getElementById('profileAvatar');
+            const profileName = document.getElementById('profileName');
+            const profileEmail = document.getElementById('profileEmail');
+
+            if (profileAvatar) profileAvatar.textContent = getUserEmoji(user.email);
+            if (profileName) profileName.textContent = user.user_metadata?.full_name || user.email.split('@')[0];
+            if (profileEmail) profileEmail.textContent = user.email;
+        }
+
+        // Placeholder functions
+        function editProfile() {
+            showNotification('Profile editing feature coming soon!', 'info');
+        }
+
+        function viewOrders() {
+            showNotification('Order history feature coming soon!', 'info');
+        }
+
+        function viewFarms() {
+            showNotification('Farm management feature coming soon!', 'info');
+        }
+
+        function settings() {
+            showNotification('Settings feature coming soon!', 'info');
+        }
+
+        // Logout function
+        async function logout() {
+            try {
+                const { error } = await supabaseClient.auth.signOut();
+                if (error) {
+                    throw error;
+                }
+                // Success will be handled by the auth state change listener
+            } catch (error) {
+                console.error('Logout error:', error);
+                showNotification('Failed to logout', 'error');
+            }
+        }
+
+        // Utility functions
+        function getUserEmoji(email) {
+            const letters = (email + 'default').substring(0, 2).toLowerCase();
+            const emojiOptions = ['👨‍🌾', '👩‍🌾', '🌾', '🌱', '🚜', '🌽', '🍎', '🥕'];
+            const index = letters.charCodeAt(0) + letters.charCodeAt(1);
+            return emojiOptions[index % emojiOptions.length];
+        }
+
+        // Enhanced notification function
+        function showNotification(message, type = 'info') {
+            const notification = document.createElement('div');
+            notification.className = `notification ${type}`;
+            notification.innerHTML = `
+                <span class="notification-icon">
+                    ${type === 'success' ? '✅' : type === 'error' ? '❌' : type === 'warning' ? '⚠️' : 'ℹ️'}
+                </span>
+                <span class="notification-text">${message}</span>
+            `;
+            document.body.appendChild(notification);
+
+            setTimeout(() => notification.classList.add('show'), 100);
+            setTimeout(() => {
+                notification.classList.remove('show');
+                setTimeout(() => notification.remove(), 300);
+            }, 4000);
+        }
+    </script>
+</body>
+
+</html>

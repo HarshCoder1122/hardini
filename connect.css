@@ -1,0 +1,703 @@
+/* Connect Page Styles */
+.connect-main {
+    padding-top: 80px;
+    min-height: 100vh;
+    background: linear-gradient(rgba(0, 26, 18, 0.95), rgba(0, 26, 18, 0.95)),
+                url('path-to-your-background-image.jpg');
+}
+
+/* Hero Section */
+.connect-hero {
+    text-align: center;
+    padding: 60px 20px;
+    background: rgba(76, 175, 80, 0.1);
+    margin-bottom: 40px;
+}
+
+.connect-hero h1 {
+    font-size: 3rem;
+    color: #4CAF50;
+    margin-bottom: 20px;
+    animation: fadeInUp 1s ease;
+}
+
+.connect-hero p {
+    font-size: 1.2rem;
+    color: #ffffff;
+    opacity: 0.9;
+    animation: fadeInUp 1s ease 0.2s;
+}
+
+/* Connection Options */
+.connect-options {
+    padding: 40px 20px;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+.options-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 30px;
+    margin: 0 auto;
+}
+
+.connect-card {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 15px;
+    padding: 30px;
+    text-align: center;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    border: 1px solid rgba(76, 175, 80, 0.2);
+}
+
+.connect-card:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 10px 20px rgba(76, 175, 80, 0.2);
+}
+
+.card-icon {
+    font-size: 2.5rem;
+    margin-bottom: 20px;
+    background: rgba(76, 175, 80, 0.1);
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 20px;
+    border: 2px solid #4CAF50;
+}
+
+.connect-card h3 {
+    color: #4CAF50;
+    margin-bottom: 15px;
+    font-size: 1.4rem;
+}
+
+.connect-card p {
+    color: #ffffff;
+    opacity: 0.9;
+    margin-bottom: 20px;
+    line-height: 1.6;
+}
+
+.features-list {
+    list-style: none;
+    padding: 0;
+    margin-bottom: 25px;
+    text-align: left;
+}
+
+.features-list li {
+    color: #ffffff;
+    opacity: 0.9;
+    margin-bottom: 10px;
+    padding-left: 25px;
+    position: relative;
+}
+
+.features-list li::before {
+    content: '✓';
+    color: #4CAF50;
+    position: absolute;
+    left: 0;
+}
+
+.connect-btn {
+    background: #4CAF50;
+    color: white;
+    border: none;
+    padding: 12px 30px;
+    border-radius: 25px;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    width: 100%;
+}
+
+.connect-btn:hover {
+    background: #45a049;
+    transform: translateY(-2px);
+}
+
+/* Connection Form Section */
+.connect-form-section {
+    padding: 60px 20px;
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.connect-form-section h2 {
+    text-align: center;
+    color: #4CAF50;
+    margin-bottom: 40px;
+}
+
+.form-container {
+    background: rgba(255, 255, 255, 0.05);
+    padding: 40px;
+    border-radius: 15px;
+    border: 1px solid rgba(76, 175, 80, 0.2);
+}
+
+.form-group {
+    margin-bottom: 25px;
+}
+
+.form-group label {
+    display: block;
+    color: #4CAF50;
+    margin-bottom: 10px;
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+    width: 100%;
+    padding: 12px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(76, 175, 80, 0.2);
+    border-radius: 5px;
+    color: white;
+    font-size: 1rem;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+    outline: none;
+    border-color: #4CAF50;
+}
+
+.checkbox-group {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+}
+
+.checkbox-group label {
+    display: flex;
+    align-items: center;
+    color: white;
+    cursor: pointer;
+}
+
+.checkbox-group input[type="checkbox"] {
+    width: auto;
+    margin-right: 10px;
+}
+
+.submit-btn {
+    background: #4CAF50;
+    color: white;
+    border: none;
+    padding: 15px 30px;
+    border-radius: 25px;
+    font-size: 1.1rem;
+    cursor: pointer;
+    width: 100%;
+    transition: all 0.3s ease;
+}
+
+.submit-btn:hover {
+    background: #45a049;
+    transform: translateY(-2px);
+}
+
+/* Success Stories */
+.success-stories {
+    padding: 60px 20px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.success-stories h2 {
+    text-align: center;
+    color: #4CAF50;
+    margin-bottom: 40px;
+}
+
+.stories-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 30px;
+}
+
+.story-card {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 15px;
+    padding: 30px;
+    text-align: center;
+    border: 1px solid rgba(76, 175, 80, 0.2);
+    transition: transform 0.3s ease;
+}
+
+.story-card:hover {
+    transform: translateY(-5px);
+}
+
+.story-image {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    margin-bottom: 20px;
+    border: 3px solid #4CAF50;
+}
+
+.story-content h4 {
+    color: #4CAF50;
+    margin-bottom: 5px;
+    font-size: 1.2rem;
+}
+
+.story-content .role {
+    color: #ffffff;
+    opacity: 0.8;
+    margin-bottom: 15px;
+    font-size: 0.9rem;
+}
+
+.story-content .quote {
+    color: #ffffff;
+    opacity: 0.9;
+    line-height: 1.6;
+    font-style: italic;
+}
+
+/* Animations */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+    .options-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 768px) {
+    .connect-hero h1 {
+        font-size: 2rem;
+    }
+
+    .options-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .form-container {
+        padding: 20px;
+    }
+
+    .checkbox-group {
+        grid-template-columns: 1fr;
+    }
+
+    .stories-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Loading States */
+.connect-btn.loading,
+.submit-btn.loading {
+    position: relative;
+    color: transparent;
+}
+
+.connect-btn.loading::after,
+.submit-btn.loading::after {
+    content: '';
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    border: 2px solid #ffffff;
+    border-radius: 50%;
+    border-top-color: transparent;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: translate(-50%, -50%) rotate(360deg);
+    }
+}
+
+/* Connect Page Modals - Using main styles.css for authentication modals */
+
+.modal-section h3 {
+    color: #4CAF50;
+    margin-bottom: 20px;
+}
+
+/* Farmers Network Modal */
+.farmers-list {
+    display: grid;
+    gap: 20px;
+}
+
+.farmer-card {
+    display: flex;
+    gap: 15px;
+    background: rgba(255, 255, 255, 0.05);
+    padding: 15px;
+    border-radius: 10px;
+    border: 1px solid rgba(76, 175, 80, 0.2);
+}
+
+.farmer-card img {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    border: 2px solid #4CAF50;
+}
+
+.farmer-info {
+    flex: 1;
+}
+
+.farmer-info h4 {
+    color: #4CAF50;
+    margin-bottom: 5px;
+}
+
+.location {
+    display: block;
+    margin: 5px 0;
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.knowledge-posts {
+    display: grid;
+    gap: 15px;
+}
+
+.post {
+    background: rgba(255, 255, 255, 0.05);
+    padding: 15px;
+    border-radius: 10px;
+    border: 1px solid rgba(76, 175, 80, 0.2);
+}
+
+.post h4 {
+    color: #4CAF50;
+    margin-bottom: 10px;
+}
+
+.read-more {
+    background: none;
+    border: 1px solid #4CAF50;
+    color: #4CAF50;
+    padding: 5px 15px;
+    border-radius: 15px;
+    margin-top: 10px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.read-more:hover {
+    background: #4CAF50;
+    color: white;
+}
+
+/* Suppliers Hub Modal */
+.supplier-card {
+    display: flex;
+    gap: 15px;
+    background: rgba(255, 255, 255, 0.05);
+    padding: 15px;
+    border-radius: 10px;
+    border: 1px solid rgba(76, 175, 80, 0.2);
+    margin-bottom: 15px;
+}
+
+.supplier-logo {
+    font-size: 2rem;
+    width: 60px;
+    height: 60px;
+    background: rgba(76, 175, 80, 0.1);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid #4CAF50;
+}
+
+.supplier-info {
+    flex: 1;
+}
+
+.rating {
+    margin: 5px 0;
+    color: gold;
+}
+
+.products-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 15px;
+}
+
+.product-card {
+    background: rgba(255, 255, 255, 0.05);
+    padding: 15px;
+    border-radius: 10px;
+    text-align: center;
+    border: 1px solid rgba(76, 175, 80, 0.2);
+}
+
+.product-card img {
+    width: 100%;
+    height: 120px;
+    object-fit: cover;
+    border-radius: 5px;
+    margin-bottom: 10px;
+}
+
+/* Market Connect Modal */
+.price-table {
+    overflow-x: auto;
+}
+
+.price-table table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.price-table th,
+.price-table td {
+    padding: 10px;
+    text-align: left;
+    border-bottom: 1px solid rgba(76, 175, 80, 0.2);
+}
+
+.price-table th {
+    color: #4CAF50;
+}
+
+.buyers-list {
+    display: grid;
+    gap: 15px;
+}
+
+.buyer-card {
+    background: rgba(255, 255, 255, 0.05);
+    padding: 15px;
+    border-radius: 10px;
+    border: 1px solid rgba(76, 175, 80, 0.2);
+}
+
+/* Expert Connect Modal */
+.expert-card {
+    display: flex;
+    gap: 15px;
+    background: rgba(255, 255, 255, 0.05);
+    padding: 15px;
+    border-radius: 10px;
+    border: 1px solid rgba(76, 175, 80, 0.2);
+    margin-bottom: 15px;
+}
+
+.expert-card img {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    border: 2px solid #4CAF50;
+}
+
+.solutions-list {
+    display: grid;
+    gap: 15px;
+}
+
+.solution-card {
+    background: rgba(255, 255, 255, 0.05);
+    padding: 15px;
+    border-radius: 10px;
+    border: 1px solid rgba(76, 175, 80, 0.2);
+}
+
+/* Training Hub Modal */
+.course-card {
+    display: flex;
+    gap: 15px;
+    background: rgba(255, 255, 255, 0.05);
+    padding: 15px;
+    border-radius: 10px;
+    border: 1px solid rgba(76, 175, 80, 0.2);
+    margin-bottom: 15px;
+}
+
+.course-preview {
+    font-size: 2rem;
+    width: 60px;
+    height: 60px;
+    background: rgba(76, 175, 80, 0.1);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid #4CAF50;
+}
+
+.progress-bar {
+    height: 5px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 3px;
+    margin: 10px 0;
+}
+
+.progress {
+    height: 100%;
+    background: #4CAF50;
+    border-radius: 3px;
+    transition: width 0.3s ease;
+}
+
+.workshops-list {
+    display: grid;
+    gap: 15px;
+}
+
+.workshop-card {
+    background: rgba(255, 255, 255, 0.05);
+    padding: 15px;
+    border-radius: 10px;
+    border: 1px solid rgba(76, 175, 80, 0.2);
+}
+
+/* Community Forum Modal */
+.discussion-card {
+    background: rgba(255, 255, 255, 0.05);
+    padding: 15px;
+    border-radius: 10px;
+    border: 1px solid rgba(76, 175, 80, 0.2);
+    margin-bottom: 15px;
+}
+
+.discussion-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 10px;
+}
+
+.tags {
+    display: flex;
+    gap: 5px;
+}
+
+.tag {
+    background: rgba(76, 175, 80, 0.2);
+    color: #4CAF50;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 0.8rem;
+}
+
+/* Common Button Styles */
+.connect-btn, .contact-btn, .bid-btn, .consult-btn,
+.upload-btn, .test-btn, .enroll-btn, .join-btn,
+.view-btn, .post-btn {
+    background: #4CAF50;
+    color: white;
+    border: none;
+    padding: 8px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 0.9rem;
+}
+
+.connect-btn:hover, .contact-btn:hover, .bid-btn:hover,
+.consult-btn:hover, .upload-btn:hover, .test-btn:hover,
+.enroll-btn:hover, .join-btn:hover, .view-btn:hover,
+.post-btn:hover {
+    background: #45a049;
+    transform: translateY(-2px);
+}
+
+/* Modal Animations */
+@keyframes modalFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.modal-content {
+    animation: modalFadeIn 0.3s ease;
+}
+
+/* Responsive Design for Modals */
+@media (max-width: 768px) {
+    .modal-content {
+        margin: 20px;
+        padding: 20px;
+    }
+
+    .modal-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .farmer-card, .supplier-card, .expert-card, .course-card {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+    }
+
+    .farmer-info, .supplier-info, .expert-info, .course-info {
+        width: 100%;
+    }
+}
+
+/* Using main styles.css for consistency - removed conflicting notification styles */
+
+/* Loading States */
+.loading {
+    position: relative;
+    color: transparent !important;
+}
+
+.loading::after {
+    content: '';
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    border: 2px solid #ffffff;
+    border-radius: 50%;
+    border-top-color: transparent;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: translate(-50%, -50%) rotate(360deg);
+    }
+}
+
+/* Disabled Button States */
+button:disabled {
+    background: #45a049 !important;
+    opacity: 0.7;
+    cursor: not-allowed;
+}

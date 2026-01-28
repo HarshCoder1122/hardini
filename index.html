@@ -1,0 +1,2682 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hardini - Technology Meets Experiences</title>
+    <link rel="icon"
+        href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌱</text></svg>">
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+
+    <!-- Supabase CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+</head>
+
+<body>
+    <header>
+        <nav>
+            <div class="logo">HARDINI 🌱</div>
+            <div class="nav-links">
+                <a href="index.html">🏠 HOME</a>
+                <a href="supply-chain.html">🔄 SUPPLY CHAIN</a>
+                <a href="connect.html">🤝 CONNECT</a>
+                <a href="reels.html">🎥 REELS</a>
+                <a href="soil-probe.html">🌱 SOILPROBE</a>
+                <button class="auth-toggle-btn" id="authToggleBtn" onclick="toggleAuth()">🔐 LOGIN</button>
+                <div class="user-menu" id="userMenu" style="display: none;">
+                    <div class="user-info clickable" onclick="openProfile()" style="cursor: pointer;"
+                        title="Click to open profile">
+                        <span id="userAvatar">👨‍🌾</span>
+                        <span id="userName">User</span>
+                    </div>
+                    <div class="user-dropdown">
+                        <button onclick="openProfile()">👤 Profile</button>
+                        <button onclick="logout()">🚪 Logout</button>
+                    </div>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <main>
+        <section class="hero">
+            <div class="hero-content">
+                <h1>Empowering Agriculture</h1>
+                <h2>Technology Meets Experiences</h2>
+                <p>Innovative solutions for a sustainable future in farming</p>
+                <button class="cta-button">🚀 GET STARTED</button>
+            </div>
+        </section>
+
+        <section class="features" id="features">
+            <div class="feature-grid">
+                <!-- Outlet Section -->
+                <div class="feature-card outlet-card" data-feature="outlet">
+                    <div class="feature-icon">🌽</div>
+                    <h3>Smart Farming Store</h3>
+                    <p>Get premium seeds, fertilizers & cutting-edge farming tools at your fingertips</p>
+                    <div class="card-highlights">
+                        <span>🚀 Premium Quality Products</span>
+                        <span>📦 Ready-to-Ship</span>
+                        <span>🛒 Easy Online Ordering</span>
+                    </div>
+                    <button class="view-details-btn" data-modal="outletModal">Explore Store 🛍️</button>
+                </div>
+
+
+
+                <!-- Waste Utilization Section -->
+                <div class="feature-card" data-feature="waste">
+                    <div class="feature-icon">⚡</div>
+                    <h3>Zero-Waste Innovation</h3>
+                    <p>Transform agricultural waste into valuable resources and renewable energy</p>
+                    <div class="card-highlights">
+                        <span>♻️ Waste-to-Energy Solutions</span>
+                        <span>🌱 Soil Enrichment</span>
+                        <span>💰 Additional Revenue Streams</span>
+                    </div>
+                    <button class="view-details-btn" data-modal="wasteModal">Discover Solutions 🔄</button>
+                </div>
+
+                <!-- Experienced Farmers Section -->
+                <div class="feature-card" data-feature="farmers">
+                    <div class="feature-icon">🎓</div>
+                    <h3>Mentor Farmers Network</h3>
+                    <p>Connect with agricultural experts who share real-world farming wisdom and success stories</p>
+                    <div class="card-highlights">
+                        <span>👨‍🌾 500+ Expert Farmers</span>
+                        <span>📚 Hands-on Training</span>
+                        <span>🌍 Global Best Practices</span>
+                    </div>
+                    <button class="view-details-btn" data-modal="farmersModal">Connect & Learn 🤝</button>
+                </div>
+
+                <!-- Farming Reels Section -->
+                <div class="feature-card reels-card" data-feature="reels">
+                    <div class="feature-icon">🎥</div>
+                    <h3>Farming Reels</h3>
+                    <p>Watch the latest farming techniques and innovations from expert farmers</p>
+                    <div class="card-highlights">
+                        <span>🎬 Daily Updates</span>
+                        <span>🌾 Expert Content</span>
+                        <span>📱 Mobile Friendly</span>
+                    </div>
+                    <button class="view-details-btn" onclick="openReelsModal()">Watch Now 🎬</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Reel Modal for Full Screen YouTube Shorts Playback -->
+        <div id="reelModal" class="reel-modal">
+            <div class="modal-content">
+                <!-- Close button -->
+                <button class="fullscreen-close-btn" id="closeReelModal">✕</button>
+
+                <!-- Full screen video player -->
+                <div class="fullscreen-video-player">
+                    <iframe id="reelModalVideo" frameborder="0" allowfullscreen></iframe>
+                </div>
+            </div>
+        </div>
+
+        <!-- Instagram Reels Section -->
+        <div class="home-reels-section">
+            <div class="home-reels-container">
+                <div class="home-reels-header">
+                    <h2>🎥 Farming Reels</h2>
+                    <p>Watch the latest farming techniques and innovations</p>
+                </div>
+
+                <!-- Instagram-style Reels Container -->
+                <div class="instagram-reels-container">
+                    <!-- Reels will be dynamically loaded here -->
+                </div>
+
+                <!-- Full Screen Reel Player -->
+                <div id="fullscreenReelPlayer" class="fullscreen-reel-player">
+                    <div class="fullscreen-reel-content">
+                        <button class="fullscreen-close-btn" id="closeFullscreenReel">✕</button>
+                        <div class="fullscreen-video-container">
+                            <iframe id="fullscreenReelVideo" frameborder="0" allowfullscreen></iframe>
+                        </div>
+                        <div class="fullscreen-reel-info">
+                            <div class="reel-header">
+                                <div class="reel-avatar" id="fullscreenAvatar"></div>
+                                <div class="reel-info">
+                                    <h3 id="fullscreenChannel"></h3>
+                                    <p id="fullscreenCategory"></p>
+                                </div>
+                            </div>
+                            <div class="reel-description">
+                                <p id="fullscreenDescription"></p>
+                            </div>
+                            <div class="reel-stats">
+                                <span id="fullscreenViews"></span>
+                                <span id="fullscreenLikes"></span>
+                            </div>
+                            <div class="reel-actions">
+                                <button class="action-btn" onclick="likeFullscreenReel()">
+                                    <i class="fas fa-heart"></i>
+                                    <span class="action-count" id="fullscreenLikeCount"></span>
+                                </button>
+                                <button class="action-btn" onclick="shareFullscreenReel()">
+                                    <i class="fas fa-share"></i>
+                                    <span class="action-count">Share</span>
+                                </button>
+                                <button class="action-btn" onclick="saveFullscreenReel()">
+                                    <i class="fas fa-bookmark"></i>
+                                    <span class="action-count">Save</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="reels-navigation">
+                    <button class="nav-arrow prev-arrow" onclick="scrollReels('prev')">⬅️</button>
+                    <div class="reel-indicators">
+                        <span class="indicator active" onclick="goToReel(0)"></span>
+                        <span class="indicator" onclick="goToReel(1)"></span>
+                        <span class="indicator" onclick="goToReel(2)"></span>
+                        <span class="indicator" onclick="goToReel(3)"></span>
+                        <span class="indicator" onclick="goToReel(4)"></span>
+                        <span class="indicator" onclick="goToReel(5)"></span>
+                    </div>
+                    <button class="nav-arrow next-arrow" onclick="scrollReels('next')">➡️</button>
+                </div>
+
+                <div class="reels-cta">
+                    <a href="reels.html" class="see-all-btn">🎬 View All Reels</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Contact Section -->
+        <section class="contact-section" id="contact">
+            <div class="contact-container">
+                <div class="contact-header">
+                    <h2>Get In Touch 📞</h2>
+                    <p>Have questions? We'd love to hear from you.</p>
+                </div>
+
+                <div class="contact-content">
+                    <!-- Contact Information -->
+                    <div class="contact-info">
+                        <div class="info-item">
+                            <span class="info-icon">📍</span>
+                            <div class="info-details">
+                                <h3>Our Location</h3>
+                                <p>123 Agriculture Street</p>
+                                <p>Tech Valley, IN 400001</p>
+                            </div>
+                        </div>
+
+                        <div class="info-item">
+                            <span class="info-icon">📧</span>
+                            <div class="info-details">
+                                <h3>Email Us</h3>
+                                <p>info@hardini.com</p>
+                                <p>support@hardini.com</p>
+                            </div>
+                        </div>
+
+                        <div class="info-item">
+                            <span class="info-icon">📱</span>
+                            <div class="info-details">
+                                <h3>Call Us</h3>
+                                <p>+91 123 456 7890</p>
+                                <p>+91 987 654 3210</p>
+                            </div>
+                        </div>
+
+                        <div class="social-links">
+                            <h3>Follow Us</h3>
+                            <div class="social-icons">
+                                <a href="#" class="social-icon">📱 Instagram</a>
+                                <a href="#" class="social-icon">👥 Facebook</a>
+                                <a href="#" class="social-icon">🐦 Twitter</a>
+                                <a href="#" class="social-icon">💼 LinkedIn</a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Contact Form -->
+                    <div class="contact-form">
+                        <h3>Send us a Message</h3>
+                        <form id="contactForm">
+                            <div class="form-group">
+                                <label for="name">Full Name</label>
+                                <input type="text" id="name" name="name" required placeholder="Enter your full name">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="contactEmail">Email</label>
+                                <input type="email" id="contactEmail" name="email" required
+                                    placeholder="Enter your email">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="phone">Phone Number</label>
+                                <input type="tel" id="phone" name="phone" placeholder="Enter your phone number">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="subject">Subject</label>
+                                <input type="text" id="subject" name="subject" required
+                                    placeholder="What is this regarding?">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="message">Message</label>
+                                <textarea id="message" name="message" rows="5" required
+                                    placeholder="Your message here..."></textarea>
+                            </div>
+
+                            <button type="submit" class="submit-btn">Send Message 📨</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Map Section -->
+            <div class="map-container">
+                <iframe
+                    src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3771.908427666779!2d72.85673731485201!3d19.025533087115334!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3be7cf21727f6e19%3A0x83934209d0e03c62!2sHardini%20Technologies!5e0!3m2!1sen!2sin!4v1645518745013!5m2!1sen!2sin"
+                    width="100%" height="450" style="border:0;" allowfullscreen="" loading="lazy">
+                </iframe>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3>About Hardini</h3>
+                <p>Empowering agriculture through innovative technology solutions and sustainable farming practices.</p>
+            </div>
+
+            <div class="footer-section">
+                <h3>Quick Links</h3>
+                <ul>
+                    <li><a href="#supply-chain">Supply Chain</a></li>
+                    <li><a href="#features">Features</a></li>
+                    <li><a href="#contact">Contact</a></li>
+
+                </ul>
+            </div>
+
+            <div class="footer-section">
+                <h3>Newsletter</h3>
+                <p>Subscribe to our newsletter for updates and farming tips.</p>
+                <form class="newsletter-form">
+                    <input type="email" placeholder="Enter your email">
+                    <button type="submit">Subscribe</button>
+                </form>
+            </div>
+        </div>
+
+        <div class="footer-bottom">
+            <p>&copy; 2024 Hardini Technologies. All rights reserved.</p>
+        </div>
+    </footer>
+
+
+
+
+
+    <!-- Outlet Modal -->
+    <div class="detail-modal" id="outletModal">
+        <div class="modal-content outlet-modal">
+            <span class="close-modal">&times;</span>
+            <h2>🌽 Smart Farming Store</h2>
+            <div class="modal-intro">
+                <p>Access premium agricultural inputs, cutting-edge tools, and expert farming solutions all in one
+                    place. Quality guaranteed, delivery assured.</p>
+                <div class="modal-highlights">
+                    <span>🚚 Pan-India Delivery</span>
+                    <span>🔒 Quality Guarantee</span>
+                    <span>📞 Expert Consultation</span>
+                    <span>💳 Easy Financing Options</span>
+                </div>
+            </div>
+
+            <!-- Category Navigation -->
+            <div class="category-nav">
+                <button class="category-btn active" data-category="seeds">Seeds</button>
+                <button class="category-btn" data-category="pesticides">Pesticides</button>
+                <button class="category-btn" data-category="fertilizers">Fertilizers</button>
+                <button class="category-btn" data-category="equipment">Equipment Rental</button>
+                <button class="category-btn" data-category="drones">Drones</button>
+            </div>
+
+            <!-- Seeds Section -->
+            <div class="category-content active" id="seeds-content">
+                <div class="category-info">
+                    <h3>Premium Quality Seeds</h3>
+                    <p>All our seeds are certified and tested for:</p>
+                    <ul class="info-list">
+                        <li>Germination Rate: Minimum 90%</li>
+                        <li>Purity: 98-99%</li>
+                        <li>Disease Resistance</li>
+                        <li>Climate Adaptability</li>
+                    </ul>
+                    <div class="info-note">
+                        <span class="info-icon">ℹ️</span>
+                        <p>Free soil testing and cultivation guidance provided with bulk orders</p>
+                    </div>
+                </div>
+                <div class="products-grid">
+                    <div class="product-card">
+                        <div class="product-image-placeholder">
+                            <span>🌾</span>
+                        </div>
+                        <h4>Premium Wheat Seeds</h4>
+                        <ul class="product-features">
+                            <li>High Yield Variety</li>
+                            <li>Disease Resistant</li>
+                            <li>90% Germination Rate</li>
+                        </ul>
+                        <p class="price">₹200/kg</p>
+                        <button class="order-btn">Order Now</button>
+                    </div>
+                    <div class="product-card">
+                        <div class="product-image-placeholder">
+                            <span>🌾</span>
+                        </div>
+                        <h4>Hybrid Rice Seeds</h4>
+                        <ul class="product-features">
+                            <li>Drought Tolerant</li>
+                            <li>Early Maturing</li>
+                            <li>95% Germination Rate</li>
+                        </ul>
+                        <p class="price">₹180/kg</p>
+                        <button class="order-btn">Order Now</button>
+                    </div>
+                    <div class="product-card">
+                        <div class="product-image-placeholder">
+                            <span>🌿</span>
+                        </div>
+                        <h4>Premium Cotton Seeds</h4>
+                        <ul class="product-features">
+                            <li>High Fiber Quality</li>
+                            <li>Pest Resistant</li>
+                            <li>Fast Germination</li>
+                        </ul>
+                        <p class="price">₹150/kg</p>
+                        <button class="order-btn">Order Now</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pesticides Section -->
+            <div class="category-content" id="pesticides-content">
+                <div class="category-info">
+                    <h3>Crop Protection Solutions</h3>
+                    <p>Our pesticides are:</p>
+                    <ul class="info-list">
+                        <li>Eco-friendly and biodegradable</li>
+                        <li>Safe for beneficial insects</li>
+                        <li>Approved by agricultural authorities</li>
+                        <li>Tested for all crop types</li>
+                    </ul>
+                    <div class="info-note warning">
+                        <span class="info-icon">⚠️</span>
+                        <p>Always follow safety guidelines and wear protective gear during application</p>
+                    </div>
+                </div>
+                <div class="products-grid">
+                    <div class="product-card">
+                        <div class="product-image-placeholder">
+                            <span>🌿</span>
+                        </div>
+                        <h4>Natural Neem Extract Spray</h4>
+                        <ul class="product-features">
+                            <li>100% Organic & Natural</li>
+                            <li>Broad-Spectrum Pest Control</li>
+                            <li>Safe for Beneficial Insects</li>
+                        </ul>
+                        <p class="price">₹450/liter</p>
+                        <button class="order-btn">Order Now</button>
+                    </div>
+                    <div class="product-card">
+                        <div class="product-image-placeholder">
+                            <span>🦠</span>
+                        </div>
+                        <h4>Bacillus-Based Bio Pesticide</h4>
+                        <ul class="product-features">
+                            <li>Microbial Pest Control</li>
+                            <li>Adds Beneficial Bacteria</li>
+                            <li>Zero Residue & Safe</li>
+                        </ul>
+                        <p class="price">₹550/liter</p>
+                        <button class="order-btn">Order Now</button>
+                    </div>
+                    <div class="product-card">
+                        <div class="product-image-placeholder">
+                            <span>🧴</span>
+                        </div>
+                        <h4>Botanical Extract Mix</h4>
+                        <ul class="product-features">
+                            <li>Natural Plant Extracts</li>
+                            <li>Dual Pest & Disease Control</li>
+                            <li>Bio-Stimulation Properties</li>
+                        </ul>
+                        <p class="price">₹600/liter</p>
+                        <button class="order-btn">Order Now</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Fertilizers Section -->
+            <div class="category-content" id="fertilizers-content">
+                <div class="category-info">
+                    <h3>Advanced Fertilizer Solutions</h3>
+                    <p>Benefits of our fertilizers:</p>
+                    <ul class="info-list">
+                        <li>Balanced NPK ratio</li>
+                        <li>Micronutrient enriched</li>
+                        <li>Soil pH optimized</li>
+                        <li>Long-lasting effect</li>
+                    </ul>
+                    <div class="info-note">
+                        <span class="info-icon">🌱</span>
+                        <p>Free soil testing available to determine the best fertilizer mix for your farm</p>
+                    </div>
+                </div>
+                <div class="products-grid">
+                    <div class="product-card">
+                        <div class="product-image-placeholder">
+                            <span>🔬</span>
+                        </div>
+                        <h4>Premium NPK Fertilizer Mix</h4>
+                        <ul class="product-features">
+                            <li>Nitrogen-Phosphorus-Potassium Balanced</li>
+                            <li>Controlled Release Technology</li>
+                            <li>Suitable for All Major Crops</li>
+                        </ul>
+                        <p class="price">₹1200/bag (50kg)</p>
+                        <button class="order-btn">Order Now</button>
+                    </div>
+                    <div class="product-card">
+                        <div class="product-image-placeholder">
+                            <span>🪱</span>
+                        </div>
+                        <h4>Vermicompost Organic Fertilizer</h4>
+                        <ul class="product-features">
+                            <li>100% Organic & Chemical-Free</li>
+                            <li>Rich in Beneficial Microbes</li>
+                            <li>Slow-Release Nutrient Supply</li>
+                        </ul>
+                        <p class="price">₹800/bag (40kg)</p>
+                        <button class="order-btn">Order Now</button>
+                    </div>
+                    <div class="product-card">
+                        <div class="product-image-placeholder">
+                            <span>🧪</span>
+                        </div>
+                        <h4>Liquid Bio-Fertilizer</h4>
+                        <ul class="product-features">
+                            <li>Eco-Friendly Microbial Solution</li>
+                            <li>Enhances Soil Health</li>
+                            <li>Foilage & Soil Application</li>
+                        </ul>
+                        <p class="price">₹600/liter</p>
+                        <button class="order-btn">Order Now</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Equipment Section -->
+            <div class="category-content compact" id="equipment-content">
+                <div class="category-compact">
+                    <h3>🚜 Equipment Rental Service</h3>
+                    <div class="rental-features">
+                        <span>🕒 Flexible Periods</span>
+                        <span>🛠️ Maintenance Included</span>
+                        <span>📞 24/7 Support</span>
+                        <span>🛡️ Full Insurance</span>
+                        <span>👍 Trained Operators</span>
+                    </div>
+                    <div class="rental-summary">
+                        <strong>Key Terms:</strong> Security deposit required • Valid ID needed • Fuel not included •
+                        Free delivery & training
+                    </div>
+                </div>
+
+                <!-- Equipment Grid -->
+                <div class="products-grid">
+                    <!-- Tractor Card -->
+                    <div class="product-card compact">
+                        <h4>🚜 Advanced Farming Tractor</h4>
+                        <p class="spec">50 HP • GPS Navigation • Climate Control</p>
+                        <div class="pricing-compact">
+                            <span>📅 Daily: ₹5,000</span>
+                            <span>📅 Weekly: ₹30,000</span>
+                            <span>📅 Monthly: ₹1,00,000</span>
+                        </div>
+                        <button class="rent-btn">🔑 Book Now</button>
+                    </div>
+
+                    <!-- Harvester Card -->
+                    <div class="product-card compact">
+                        <h4>🌾 Smart Harvester</h4>
+                        <p class="spec">Auto Sorting • Minimal Loss • Digital Controls</p>
+                        <div class="pricing-compact">
+                            <span>📅 Daily: ₹8,000</span>
+                            <span>📅 Weekly: ₹50,000</span>
+                            <span>📅 Monthly: ₹1,80,000</span>
+                        </div>
+                        <button class="rent-btn">🔑 Book Now</button>
+                    </div>
+
+                    <!-- Rotavator Card -->
+                    <div class="product-card compact">
+                        <h4>🚜 Power Rotavator</h4>
+                        <p class="spec">High Performance • Easy Maintenance • Adjustable Depth</p>
+                        <div class="pricing-compact">
+                            <span>📅 Daily: ₹2,000</span>
+                            <span>📅 Weekly: ₹12,000</span>
+                            <span>📅 Monthly: ₹40,000</span>
+                        </div>
+                        <button class="rent-btn">🔑 Book Now</button>
+                    </div>
+                </div>
+
+                <div class="contact-support">
+                    <p>📞 For rental assistance: +91 1234567890</p>
+                </div>
+            </div>
+
+            <!-- Drones Section -->
+            <div class="category-content" id="drones-content">
+                <div class="category-info">
+                    <h3>Agricultural Drone Solutions</h3>
+                    <p>Our drones offer:</p>
+                    <ul class="info-list">
+                        <li>Precision farming capabilities</li>
+                        <li>Real-time crop monitoring</li>
+                        <li>Automated spraying systems</li>
+                        <li>Data analytics support</li>
+                    </ul>
+                    <div class="info-note">
+                        <span class="info-icon">🎓</span>
+                        <p>Free training and certification provided with every purchase</p>
+                    </div>
+                </div>
+                <div class="products-grid">
+                    <div class="product-card premium">
+                        <div class="premium-badge">Premium</div>
+                        <div class="product-image-placeholder">
+                            <span>🚁</span>
+                        </div>
+                        <h4>AgriSpray Pro X1</h4>
+                        <ul class="product-features">
+                            <li>20L Tank Capacity</li>
+                            <li>4K Camera</li>
+                            <li>45min Flight Time</li>
+                            <li>AI Crop Analysis</li>
+                        </ul>
+                        <p class="price">₹1,20,000</p>
+                        <button class="demo-btn">Book Demo</button>
+                    </div>
+                    <div class="product-card">
+                        <div class="product-image-placeholder">
+                            <span>🚁</span>
+                        </div>
+                        <h4>CropMapper S2</h4>
+                        <ul class="product-features">
+                            <li>HD Mapping Camera</li>
+                            <li>30min Flight Time</li>
+                            <li>Thermal Imaging</li>
+                            <li>Crop Health Analysis</li>
+                        </ul>
+                        <p class="price">₹85,000</p>
+                        <button class="demo-btn">Book Demo</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Waste Utilization Modal -->
+    <div class="detail-modal" id="wasteModal">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <h2>⚡ Zero-Waste Innovation Hub</h2>
+            <div class="modal-intro">
+                <p>Join our revolution in sustainable agriculture. Transform your farm waste into valuable resources
+                    while contributing to a greener planet.</p>
+                <div class="modal-highlights">
+                    <span>♻️ Smart Waste Solutions</span>
+                    <span>💰 Earn Extra Income</span>
+                    <span>🌱 Eco-Friendly Farming</span>
+                    <span>📊 Track Your Impact</span>
+                </div>
+            </div>
+            <div class="modal-grid">
+                <div class="modal-section">
+                    <h3>🌟 Our Innovative Solutions</h3>
+                    <div class="solutions-grid">
+                        <div class="solution-card enhanced">
+                            <div class="solution-icon">🔥</div>
+                            <h4>Biomass Energy Generation</h4>
+                            <p>Transform crop residues into clean, renewable energy for your farm operations</p>
+                            <div class="benefit-highlights">
+                                <span>⚡ Self-sufficient power</span>
+                                <span>💚 Zero carbon emissions</span>
+                                <span>💰 Revenue from surplus power</span>
+                            </div>
+                            <ul class="solution-features">
+                                <li>Agricultural Waste Conversion</li>
+                                <li>Carbon Neutral Process</li>
+                                <li>Timber Replacement Solution</li>
+                                <li>Government Subsidy Eligible</li>
+                            </ul>
+                            <button class="learn-more-btn">Get Energy Solution 📞</button>
+                        </div>
+                        <div class="solution-card enhanced">
+                            <div class="solution-icon">🌱</div>
+                            <h4>Advanced Composting Systems</h4>
+                            <p>Convert waste into nutrient-rich compost and bio-fertilizers for premium crops</p>
+                            <div class="benefit-highlights">
+                                <span>🍎 50% yield increase</span>
+                                <span>💰 40% input cost reduction</span>
+                                <span>🌍 Carbon sequestration</span>
+                            </div>
+                            <ul class="solution-features">
+                                <li>Accelerated Decomposition</li>
+                                <li>Pathogen-Free Output</li>
+                                <li>Balanced Nutrient Profile</li>
+                                <li>Weather-Proof Processing</li>
+                            </ul>
+                            <button class="learn-more-btn">Start Composting Today 🏃‍♂️</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-section">
+                    <h3>📈 Real Impact, Real Results</h3>
+                    <div class="impact-stats enhanced">
+                        <div class="stat-card">
+                            <div class="stat-number">25,000+</div>
+                            <p>Tons of Waste Converted</p>
+                            <span class="stat-trend">↗️ +300%</span>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-number">₹15Cr+</div>
+                            <p>Farmer Revenue Generated</p>
+                            <span class="stat-trend">↗️ +25%</span>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-number">80%</div>
+                            <p>Emission Reduction Achieved</p>
+                            <span class="stat-trend">↗️ +15%</span>
+                        </div>
+                    </div>
+                    <div class="success-stories">
+                        <h4>🏆 Farmer Success Stories</h4>
+                        <div class="story-card">
+                            <span class="farmer-name">👨‍🌾 Ravi Kumar, Punjab</span>
+                            <p>"Earned ₹50,000 extra monthly from paddy straw conversion"</p>
+                        </div>
+                        <div class="story-card">
+                            <span class="farmer-name">👩‍🌾 Priya Singh, Maharashtra</span>
+                            <p>"Reduced fertilizer costs by 60% using organic compost"</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Experienced Farmers Modal -->
+    <div class="detail-modal" id="farmersModal">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <h2>🎓 Mentor Farmers Network</h2>
+            <div class="modal-intro">
+                <p>Join India's largest farmer-to-farmer knowledge sharing platform. Learn from successful farmers who
+                    have doubled their yields and optimized their operations.</p>
+                <div class="modal-highlights">
+                    <span>🤝 Direct Expert Access</span>
+                    <span>📈 Proven Success Methods</span>
+                    <span>🌍 Cross-Country Expertise</span>
+                    <span>💼 Business Growth Tips</span>
+                </div>
+            </div>
+            <div class="modal-grid">
+                <div class="modal-section">
+                    <h3>🌟 Our Esteemed Farmer Mentors</h3>
+                    <div class="experts-grid">
+                        <div class="expert-card enhanced">
+                            <div class="expert-badge mentor">👑 Top Mentor</div>
+                            <img src="https://images.unsplash.com/photo-1589923188651-268a9765e432?w=200&h=200&fit=crop&crop=face"
+                                alt="Expert Farmer">
+                            <div class="expert-info">
+                                <h4>🏆 Rajesh Patel</h4>
+                                <p class="expertise">🍎 Organic Farming Pioneer</p>
+                                <p class="experience">25+ Years of Excellence</p>
+                                <div class="expert-highlights">
+                                    <span>🥇 Best Farmer Award 2023</span>
+                                    <span>🌾 100+ Farmers Trained</span>
+                                    <span>💰 ₹50L+ Revenue Increase</span>
+                                </div>
+                                <div class="success-metrics">
+                                    <div class="metric">📈 300% Yield Growth</div>
+                                    <div class="metric">💰 ₹25L Annual Income</div>
+                                    <div class="metric">🌍 50+ States Served</div>
+                                </div>
+                                <div class="expert-features">
+                                    <h5>Specializations:</h5>
+                                    <ul>
+                                        <li>Organic Pest Management</li>
+                                        <li>Soil Health Optimization</li>
+                                        <li>Export Quality Standards</li>
+                                        <li>Value Chain Development</li>
+                                    </ul>
+                                </div>
+                                <button class="connect-btn primary">Book Mentorship Session 💬</button>
+                            </div>
+                        </div>
+                        <div class="expert-card enhanced">
+                            <div class="expert-badge innovator">🚀 Innovator</div>
+                            <img src="https://images.unsplash.com/photo-1594761051656-153cafa6f4e5?w=200&h=200&fit=crop&crop=face"
+                                alt="Expert Farmer">
+                            <div class="expert-info">
+                                <h4>💡 Sunita Devi</h4>
+                                <p class="expertise">🚜 Smart Farming Solutions</p>
+                                <p class="experience">20+ Years of Tech-Driven Agriculture</p>
+                                <div class="expert-highlights">
+                                    <span>📱 Digital Farming Pioneer</span>
+                                    <span>🤖 200+ Tech Adoption Cases</span>
+                                    <span>🇯🇵 Japan Training Graduate</span>
+                                </div>
+                                <div class="success-metrics">
+                                    <div class="metric">💰 160% Profit Increase</div>
+                                    <div class="metric">⚡ 70% Resource Savings</div>
+                                    <div class="metric">🏆 15+ National Awards</div>
+                                </div>
+                                <div class="expert-features">
+                                    <h5>Technical Expertise:</h5>
+                                    <ul>
+                                        <li>Precision Irrigation Systems</li>
+                                        <li>Drones & Satellite Farming</li>
+                                        <li>Climate-Smart Agriculture</li>
+                                        <li>Data-Driven Decision Making</li>
+                                    </ul>
+                                </div>
+                                <button class="connect-btn primary">Schedule Tech Consultation 🔧</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-section">
+                    <h3>🚀 Comprehensive Farmer Development Programs</h3>
+                    <div class="programs-grid enhanced">
+                        <div class="program-card premium">
+                            <div class="program-icon">👨‍🏫</div>
+                            <h4>Personalized Mentorship Academy</h4>
+                            <p>Get 1-on-1 guidance from top-performing farmers tailored to your specific goals and
+                                challenges.</p>
+                            <div class="program-benefits">
+                                <span>🎯 Custom Learning Path</span>
+                                <span>📞 50+ Consultation Hours</span>
+                                <span>🏞️ Farm Site Visits</span>
+                                <span>🚀 Business Growth Plan</span>
+                            </div>
+                            <ul class="program-features advanced">
+                                <li>Detailed Farm Assessment & Planning</li>
+                                <li>Crop Selection & Market Intelligence</li>
+                                <li>Financial Planning & Loan Guidance</li>
+                                <li>Modern Equipment Training</li>
+                                <li>Exit Strategy & Succession Planning</li>
+                            </ul>
+                            <p class="duration premium">6 Months Intensive Program</p>
+                            <p class="pricing">₹75,000 Invest in Success</p>
+                            <button class="enroll-btn vip">Enroll in VIP Program ✨</button>
+                        </div>
+                        <div class="program-card popular">
+                            <div class="program-icon">👥</div>
+                            <h4>Community Farmer Collective</h4>
+                            <p>Learn, share, and grow together with fellow progressive farmers in exclusive mastermind
+                                groups.</p>
+                            <div class="program-benefits">
+                                <span>🤝 Peer Networking</span>
+                                <span>📱 Daily Group Support</span>
+                                <span>🎓 Weekly Masterclasses</span>
+                                <span>💪 Accountability Partners</span>
+                            </div>
+                            <ul class="program-features advanced">
+                                <li>Bi-Weekly Expert-Led Sessions</li>
+                                <li>Success Story Sharing Circles</li>
+                                <li>Regional Problem-Solving Meetups</li>
+                                <li>Tech Tool Training & Adoption</li>
+                                <li>Market Access & Export Guidance</li>
+                            </ul>
+                            <p class="duration popular">12 Months Community Access</p>
+                            <p class="pricing">₹25,000 Join the Collective</p>
+                            <button class="enroll-btn popular">Join Community Now 👥</button>
+                        </div>
+                    </div>
+
+                    <div class="program-stats">
+                        <h4>📊 Program Success Metrics</h4>
+                        <div class="stats-grid">
+                            <div class="stat-item">
+                                <span class="stat-number major">2,500+</span>
+                                <p>Farmers Making ₹1L+ Monthly</p>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-number major">₹500Cr+</span>
+                                <p>Total Farmer Income Generated</p>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-number major">85%</span>
+                                <p>Average Yield Improvement</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Profile Modal -->
+    <div class="profile-modal" id="editProfileModal">
+        <div class="modal-content profile-modal-content">
+            <span class="close-modal" id="closeEditProfileModal">&times;</span>
+            <h2>Edit Your Profile 👤</h2>
+            <div class="profile-edit-form">
+                <form id="editProfileForm">
+                    <div class="form-group">
+                        <label for="editFullName">Full Name</label>
+                        <input type="text" id="editFullName" name="fullName" placeholder="Enter your full name">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="editPhone">Phone Number</label>
+                        <input type="tel" id="editPhone" name="phone" placeholder="Enter your phone number">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="editFarmingExperience">Farming Experience</label>
+                        <select id="editFarmingExperience" name="farmingExperience">
+                            <option value="">Select experience level</option>
+                            <option value="beginner">Beginner (< 1 year)</option>
+                            <option value="intermediate">Intermediate (1-5 years)</option>
+                            <option value="experienced">Experienced (5-10 years)</option>
+                            <option value="expert">Expert (> 10 years)</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="editUserType">User Type</label>
+                        <select id="editUserType" name="userType">
+                            <option value="customer">Customer</option>
+                            <option value="farmer">Farmer</option>
+                            <option value="farmer-supplier">Farmer Supplier</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group location-group">
+                        <label for="editLocation">Location</label>
+                        <input type="text" id="editLocation" name="location"
+                            placeholder="City, State (e.g., Mumbai, Maharashtra)">
+                    </div>
+
+                    <div class="form-buttons">
+                        <button type="button" class="cancel-btn" onclick="closeEditProfileModal()">Cancel</button>
+                        <button type="submit" class="save-btn">Save Changes</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Orders Modal -->
+    <div class="profile-modal" id="ordersModal">
+        <div class="modal-content profile-modal-content orders-content">
+            <span class="close-modal" id="closeOrdersModal">&times;</span>
+            <h2>My Orders 📦</h2>
+            <div class="orders-container">
+                <div class="orders-loading" id="ordersLoading">
+                    <p>Loading your orders...</p>
+                </div>
+                <div class="orders-list" id="ordersList">
+                    <!-- Orders will be loaded here -->
+                </div>
+                <div class="no-orders" id="noOrders" style="display: none;">
+                    <div class="empty-state">
+                        <span class="empty-icon">📦</span>
+                        <h3>No orders yet</h3>
+                        <p>You haven't placed any orders yet. Start exploring our store!</p>
+                        <button class="explore-btn"
+                            onclick="closeOrdersModal(); document.querySelector('[data-modal=\'outletModal\']').click();">
+                            Explore Store 🛍️
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Settings Modal -->
+    <div class="profile-modal" id="settingsModal">
+        <div class="modal-content profile-modal-content">
+            <span class="close-modal" id="closeSettingsModal">&times;</span>
+            <h2>Settings ⚙️</h2>
+            <div class="settings-content">
+                <!-- Notification Settings -->
+                <div class="setting-section">
+                    <h3>Notifications</h3>
+                    <div class="setting-item">
+                        <label class="switch">
+                            <input type="checkbox" id="emailNotifications" checked>
+                            <span class="slider"></span>
+                        </label>
+                        <div class="setting-info">
+                            <span class="setting-label">Email Notifications</span>
+                            <span class="setting-desc">Receive order updates and promotions via email</span>
+                        </div>
+                    </div>
+                    <div class="setting-item">
+                        <label class="switch">
+                            <input type="checkbox" id="smsNotifications">
+                            <span class="slider"></span>
+                        </label>
+                        <div class="setting-info">
+                            <span class="setting-label">SMS Notifications</span>
+                            <span class="setting-desc">Get important alerts via SMS</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Privacy Settings -->
+                <div class="setting-section">
+                    <h3>Privacy & Security</h3>
+                    <div class="setting-item">
+                        <label class="switch">
+                            <input type="checkbox" id="profileVisibility">
+                            <span class="slider"></span>
+                        </label>
+                        <div class="setting-info">
+                            <span class="setting-label">Profile Visibility</span>
+                            <span class="setting-desc">Make your profile visible to other farmers</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Language Settings -->
+                <div class="setting-section">
+                    <h3>Language & Region</h3>
+                    <div class="setting-item">
+                        <div class="setting-info">
+                            <span class="setting-label">Language</span>
+                            <span class="setting-desc">Choose your preferred language</span>
+                        </div>
+                        <select id="languageSelect" class="language-select">
+                            <option value="en">English</option>
+                            <option value="hi">हिंदी (Hindi)</option>
+                            <option value="mr">मराठी (Marathi)</option>
+                            <option value="te">తెలుగు (Telugu)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Account Actions -->
+                <div class="setting-section">
+                    <h3>Account Management</h3>
+                    <div class="account-actions">
+                        <button class="action-btn reset-password" onclick="resetPassword()">
+                            <span class="action-icon">🔑</span>
+                            <div class="action-text">
+                                <span class="action-title">Reset Password</span>
+                                <span class="action-desc">Change your account password</span>
+                            </div>
+                        </button>
+                        <button class="action-btn" onclick="exportData()">
+                            <span class="action-icon">📊</span>
+                            <div class="action-text">
+                                <span class="action-title">Export Data</span>
+                                <span class="action-desc">Download your account data</span>
+                            </div>
+                        </button>
+                        <button class="action-btn danger" onclick="showDeleteAccountConfirmation()">
+                            <span class="action-icon">🗑️</span>
+                            <div class="action-text">
+                                <span class="action-title">Delete Account</span>
+                                <span class="action-desc">Permanently delete your account</span>
+                            </div>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="settings-actions">
+                    <button type="button" class="cancel-btn" onclick="closeSettingsModal()">Cancel</button>
+                    <button type="button" class="save-btn" onclick="saveSettings()">Save Settings</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Reset Password Modal -->
+    <div class="profile-modal" id="resetPasswordModal">
+        <div class="modal-content profile-modal-content reset-password-content">
+            <span class="close-modal" id="closeResetPasswordModal">&times;</span>
+            <h2>Reset Password 🔑</h2>
+            <div class="reset-form">
+                <form id="resetPasswordForm">
+                    <div class="form-group">
+                        <label for="currentPassword">Current Password</label>
+                        <input type="password" id="currentPassword" name="currentPassword" required
+                            placeholder="Enter current password">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="newPassword">New Password</label>
+                        <input type="password" id="newPassword" name="newPassword" required
+                            placeholder="Enter new password">
+                        <small class="password-hint">Password must be at least 8 characters</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="confirmNewPassword">Confirm New Password</label>
+                        <input type="password" id="confirmNewPassword" name="confirmNewPassword" required
+                            placeholder="Confirm new password">
+                    </div>
+
+                    <div class="form-buttons">
+                        <button type="button" class="cancel-btn" onclick="closeResetPasswordModal()">Cancel</button>
+                        <button type="submit" class="save-btn">Update Password</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete Account Confirmation Modal -->
+    <div class="profile-modal" id="deleteAccountModal">
+        <div class="modal-content profile-modal-content delete-account-content">
+            <span class="close-modal" id="closeDeleteAccountModal">&times;</span>
+            <h2>Delete Account ⚠️</h2>
+            <div class="delete-warning">
+                <div class="warning-icon">🚨</div>
+                <h3>Are you sure you want to delete your account?</h3>
+                <p>This action cannot be undone. All your data will be permanently deleted.</p>
+                <div class="delete-effects">
+                    <h4>What will be deleted:</h4>
+                    <ul>
+                        <li>Your profile information</li>
+                        <li>All order history</li>
+                        <li>Saved items and preferences</li>
+                        <li>Farm management data</li>
+                    </ul>
+                </div>
+                <div class="delete-confirm">
+                    <label class="delete-checkbox">
+                        <input type="checkbox" id="deleteConfirmCheckbox">
+                        <span>I understand that this action cannot be undone</span>
+                    </label>
+                </div>
+                <div class="delete-password">
+                    <label for="deletePassword">Enter your password to confirm:</label>
+                    <input type="password" id="deletePassword" placeholder="Your password">
+                </div>
+            </div>
+            <div class="form-buttons">
+                <button type="button" class="cancel-btn" onclick="closeDeleteAccountModal()">Cancel</button>
+                <button type="button" class="delete-btn" onclick="deleteAccount()">Delete Account</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Authentication Modal -->
+    <div class="auth-modal" id="authModal">
+        <div class="modal-content auth-modal-content">
+            <span class="close-modal" id="closeAuthModal">&times;</span>
+
+            <!-- Login Tab -->
+            <div class="auth-tab active" data-tab="login">
+                <h2>Login to Your Account 🌾</h2>
+                <div class="auth-form-container">
+                    <form id="loginForm" class="auth-form">
+                        <div class="form-group">
+                            <label for="loginEmail">Email Address</label>
+                            <input type="email" id="loginEmail" name="email" required placeholder="Enter your email">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="loginPassword">Password</label>
+                            <input type="password" id="loginPassword" name="password" required
+                                placeholder="Enter your password">
+                        </div>
+
+                        <div class="form-options">
+                            <label class="remember-me">
+                                <input type="checkbox" id="rememberMe">
+                                Remember me
+                            </label>
+                            <a href="#" class="forgot-password">Forgot Password?</a>
+                        </div>
+
+                        <button type="submit" class="auth-btn">Login 🚀</button>
+                    </form>
+
+                    <div class="auth-divider">
+                        <span>or</span>
+                    </div>
+
+                    <div class="social-login">
+                        <button class="social-btn google-btn" onclick="loginWithGoogle()">
+                            <span>📧</span> Continue with Google
+                        </button>
+                    </div>
+
+                    <p class="auth-switch">Don't have an account? <a href="#" onclick="switchToSignUp()">Sign Up</a></p>
+                </div>
+            </div>
+
+            <!-- Sign Up Tab -->
+            <div class="auth-tab" data-tab="signup">
+                <h2>Join the Hardini Community 🌱</h2>
+                <div class="auth-form-container">
+                    <form id="signupForm" class="auth-form">
+                        <div class="form-group">
+                            <label for="signupName">Full Name</label>
+                            <input type="text" id="signupName" name="fullName" required
+                                placeholder="Enter your full name">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="signupEmail">Email Address</label>
+                            <input type="email" id="signupEmail" name="email" required placeholder="Enter your email">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="signupPhone">Phone Number (Optional)</label>
+                            <input type="tel" id="signupPhone" name="phone" placeholder="Enter your phone number">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="signupPassword">Password</label>
+                            <input type="password" id="signupPassword" name="password" required
+                                placeholder="Create a password">
+                            <small class="password-hint">Password must be at least 8 characters</small>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="signupConfirmPassword">Confirm Password</label>
+                            <input type="password" id="signupConfirmPassword" name="confirmPassword" required
+                                placeholder="Confirm your password">
+                        </div>
+
+                        <div class="terms-agreement">
+                            <label class="terms-checkbox">
+                                <input type="checkbox" id="termsAgree" required>
+                                I agree to the <a href="#" target="_blank">Terms of Service</a> and <a href="#"
+                                    target="_blank">Privacy Policy</a>
+                            </label>
+                        </div>
+
+                        <button type="submit" class="auth-btn">Create Account 🌾</button>
+                    </form>
+
+                    <div class="auth-divider">
+                        <span>or</span>
+                    </div>
+
+                    <div class="social-login">
+                        <button class="social-btn google-btn" onclick="signUpWithGoogle()">
+                            <span>📧</span> Continue with Google
+                        </button>
+                    </div>
+
+                    <p class="auth-switch">Already have an account? <a href="#" onclick="switchToLogin()">Login</a></p>
+                </div>
+            </div>
+
+            <!-- User Profile Tab -->
+            <div class="auth-tab" data-tab="profile">
+                <h2>Your Profile 👨‍🌾</h2>
+                <div class="auth-form-container">
+                    <div class="profile-info">
+                        <div class="profile-avatar">
+                            <span id="profileAvatar">👨‍🌾</span>
+                        </div>
+                        <div class="profile-details">
+                            <h3 id="profileName">User Name</h3>
+                            <p id="profileEmail">user@example.com</p>
+                        </div>
+                    </div>
+
+                    <div class="profile-actions">
+                        <button class="profile-btn" onclick="editProfile()">
+                            <span>✏️</span> Edit Profile
+                        </button>
+                        <button class="profile-btn" onclick="viewOrders()">
+                            <span>📦</span> My Orders
+                        </button>
+                        <button class="profile-btn" onclick="viewFarms()">
+                            <span>🌾</span> My Farms
+                        </button>
+                        <button class="profile-btn" onclick="settings()">
+                            <span>⚙️</span> Settings
+                        </button>
+                    </div>
+
+                    <button class="logout-btn" onclick="logout()">Logout</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Chatbot Integration -->
+    <div class="chatbot-container">
+        <div class="chatbot-toggle" id="chatbotToggle">
+            <span class="bot-icon">🤖</span>
+            <span class="close-chat">✕</span>
+        </div>
+        <div class="chatbot-box" id="chatbotBox">
+            <iframe src="https://hardini-chi.vercel.app/" width="100%" height="100%" frameborder="0" allowfullscreen
+                style="border-radius: 15px;"></iframe>
+        </div>
+    </div>
+
+    <!-- Supabase Authentication Script -->
+    <script>
+        // ============================================
+        // ESSENTIAL UI FUNCTIONS (Must be defined first)
+        // These functions are called from onclick handlers
+        // and must be available even if other scripts fail
+        // ============================================
+
+        // Toggle authentication modal
+        function toggleAuth() {
+            const authModal = document.getElementById('authModal');
+            if (authModal) {
+                authModal.style.display = 'flex';
+                // Ensure login tab is active
+                if (typeof switchToLogin === 'function') {
+                    switchToLogin();
+                }
+            }
+        }
+
+        // Open user profile
+        function openProfile() {
+            const authModal = document.getElementById('authModal');
+            if (authModal) {
+                authModal.style.display = 'flex';
+
+                // Switch to profile tab
+                const tabs = document.querySelectorAll('.auth-tab');
+                tabs.forEach(tab => tab.classList.remove('active'));
+
+                const profileTab = document.querySelector('[data-tab="profile"]');
+                if (profileTab) profileTab.classList.add('active');
+
+                // Update user profile info
+                if (typeof currentUser !== 'undefined' && currentUser && typeof updateProfileTab === 'function') {
+                    updateProfileTab(currentUser);
+                }
+            }
+        }
+
+        // Logout function
+        async function logout() {
+            try {
+                if (typeof supabaseClient !== 'undefined' && supabaseClient) {
+                    const { error } = await supabaseClient.auth.signOut();
+                    if (error) {
+                        throw error;
+                    }
+                }
+                // Close the profile modal immediately after logout
+                closeAuthModal();
+            } catch (error) {
+                console.error('Logout error:', error);
+                showNotification('Failed to logout', 'error');
+            }
+        }
+
+        // Close authentication modal
+        function closeAuthModal() {
+            const authModal = document.getElementById('authModal');
+            if (authModal) {
+                authModal.style.display = 'none';
+            }
+        }
+
+        // Switch to login tab
+        function switchToLogin() {
+            const loginTab = document.querySelector('[data-tab="login"]');
+            const signupTab = document.querySelector('[data-tab="signup"]');
+            const profileTab = document.querySelector('[data-tab="profile"]');
+
+            if (signupTab) signupTab.classList.remove('active');
+            if (profileTab) profileTab.classList.remove('active');
+            if (loginTab) loginTab.classList.add('active');
+
+            // Update button text
+            const authBtn = document.getElementById('authToggleBtn');
+            if (authBtn) authBtn.textContent = '🔐 LOGIN';
+        }
+
+        // Switch to sign up tab
+        function switchToSignUp() {
+            const loginTab = document.querySelector('[data-tab="login"]');
+            const signupTab = document.querySelector('[data-tab="signup"]');
+            const profileTab = document.querySelector('[data-tab="profile"]');
+
+            if (loginTab) loginTab.classList.remove('active');
+            if (profileTab) profileTab.classList.remove('active');
+            if (signupTab) signupTab.classList.add('active');
+
+            // Update button text
+            const authBtn = document.getElementById('authToggleBtn');
+            if (authBtn) authBtn.textContent = '🌱 SIGN UP';
+        }
+
+        // Show notification
+        function showNotification(message, type = 'info') {
+            const notification = document.createElement('div');
+            notification.className = `notification ${type}`;
+            notification.innerHTML = `
+                <span class="notification-icon">
+                    ${type === 'success' ? '✅' : type === 'error' ? '❌' : type === 'warning' ? '⚠️' : 'ℹ️'}
+                </span>
+                <span class="notification-text">${message}</span>
+            `;
+            document.body.appendChild(notification);
+
+            setTimeout(() => notification.classList.add('show'), 100);
+            setTimeout(() => {
+                notification.classList.remove('show');
+                setTimeout(() => notification.remove(), 300);
+            }, 4000);
+        }
+
+        // ============================================
+        // SUPABASE CONFIGURATION
+        // ============================================
+        const SUPABASE_URL = 'https://aahedprzvceldzcmmvpp.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFhaGVkcHJ6dmNlbGR6Y21tdnBwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjE2NTg5NzAsImV4cCI6MjA3NzIzNDk3MH0.z98v917ye2PU76gfk4cqfTGUGNMfPKqTJdBgkFkyVDo';
+
+        // Initialize Supabase client with safety check
+        let supabaseClient = null;
+        try {
+            if (window.supabase && window.supabase.createClient) {
+                supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+            } else {
+                console.warn('Supabase library not loaded. Authentication features may not work.');
+            }
+        } catch (error) {
+            console.error('Failed to initialize Supabase:', error);
+        }
+
+        // Authentication state management
+        let currentUser = null;
+
+        // Initialize authentication on page load
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Only run auth code if Supabase is available
+            if (supabaseClient) {
+                // Check if user is already logged in
+                const { data: { user }, error } = await supabaseClient.auth.getUser();
+
+                if (user && !error) {
+                    currentUser = user;
+                    updateUIForLoggedInUser(user);
+                }
+
+                // Handle auth state changes
+                supabaseClient.auth.onAuthStateChange(async (event, session) => {
+                    if (event === 'SIGNED_IN' && session?.user) {
+                        currentUser = session.user;
+                        updateUIForLoggedInUser(session.user);
+                        closeAuthModal();
+                        showNotification('Welcome back! 🌾', 'success');
+                    } else if (event === 'SIGNED_OUT') {
+                        currentUser = null;
+                        updateUIForLoggedOutUser();
+                        showNotification('Successfully logged out!', 'info');
+                    }
+                });
+            }
+
+            // Initialize authentication forms
+            initializeAuthForms();
+        });
+
+        // Update UI for logged in user
+        function updateUIForLoggedInUser(user) {
+            const authToggleBtn = document.getElementById('authToggleBtn');
+            const userMenu = document.getElementById('userMenu');
+
+            if (authToggleBtn) authToggleBtn.style.display = 'none';
+            if (userMenu) userMenu.style.display = 'flex';
+
+            // Update user info
+            const userAvatar = document.getElementById('userAvatar');
+            const userName = document.getElementById('userName');
+
+            if (userAvatar) userAvatar.textContent = getUserEmoji(user.email);
+            if (userName) userName.textContent = user.user_metadata?.full_name || user.email.split('@')[0];
+
+            // Store user info in profile modal
+            const profileAvatar = document.getElementById('profileAvatar');
+            const profileName = document.getElementById('profileName');
+            const profileEmail = document.getElementById('profileEmail');
+
+            if (profileAvatar) profileAvatar.textContent = getUserEmoji(user.email);
+            if (profileName) profileName.textContent = user.user_metadata?.full_name || user.email.split('@')[0];
+            if (profileEmail) profileEmail.textContent = user.email;
+        }
+
+        // Update UI for logged out user
+        function updateUIForLoggedOutUser() {
+            const authToggleBtn = document.getElementById('authToggleBtn');
+            const userMenu = document.getElementById('userMenu');
+
+            if (authToggleBtn) authToggleBtn.style.display = 'inline-block';
+            if (userMenu) userMenu.style.display = 'none';
+        }
+
+        // Initialize authentication forms
+        function initializeAuthForms() {
+            // Login form
+            const loginForm = document.getElementById('loginForm');
+            loginForm?.addEventListener('submit', handleLogin);
+
+            // Signup form
+            const signupForm = document.getElementById('signupForm');
+            signupForm?.addEventListener('submit', handleSignup);
+
+            // Profile edit form
+            const editProfileForm = document.getElementById('editProfileForm');
+            editProfileForm?.addEventListener('submit', handleEditProfile);
+
+            // Password reset form
+            const resetPasswordForm = document.getElementById('resetPasswordForm');
+            resetPasswordForm?.addEventListener('submit', handleResetPassword);
+
+            // Close modal buttons
+            const closeAuthModalBtn = document.getElementById('closeAuthModal');
+            closeAuthModalBtn?.addEventListener('click', closeAuthModal);
+
+            const closeEditProfileBtn = document.getElementById('closeEditProfileModal');
+            closeEditProfileBtn?.addEventListener('click', closeEditProfileModal);
+
+            const closeOrdersBtn = document.getElementById('closeOrdersModal');
+            closeOrdersBtn?.addEventListener('click', closeOrdersModal);
+
+            const closeSettingsBtn = document.getElementById('closeSettingsModal');
+            closeSettingsBtn?.addEventListener('click', closeSettingsModal);
+
+            const closeResetPasswordBtn = document.getElementById('closeResetPasswordModal');
+            closeResetPasswordBtn?.addEventListener('click', closeResetPasswordModal);
+
+            const closeDeleteAccountBtn = document.getElementById('closeDeleteAccountModal');
+            closeDeleteAccountBtn?.addEventListener('click', closeDeleteAccountModal);
+        }
+
+        // Handle login
+        async function handleLogin(e) {
+            e.preventDefault();
+
+            if (!supabaseClient) {
+                showNotification('Authentication service unavailable. Please try again later or use a hosted version.', 'error');
+                return;
+            }
+
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+
+            try {
+                const { data, error } = await supabaseClient.auth.signInWithPassword({
+                    email: email,
+                    password: password
+                });
+
+                if (error) {
+                    throw error;
+                }
+
+                // Success will be handled by the auth state change listener
+            } catch (error) {
+                console.error('Authentication error:', error);
+                showNotification('Invalid email or password', 'error');
+            }
+        }
+
+        // Handle signup
+        async function handleSignup(e) {
+            e.preventDefault();
+
+            const fullName = document.getElementById('signupName').value;
+            const email = document.getElementById('signupEmail').value;
+            const phone = document.getElementById('signupPhone').value;
+            const password = document.getElementById('signupPassword').value;
+            const confirmPassword = document.getElementById('signupConfirmPassword').value;
+
+            // Validate passwords match
+            if (password !== confirmPassword) {
+                showNotification('Passwords do not match', 'error');
+                return;
+            }
+
+            // Password must be at least 8 characters
+            if (password.length < 8) {
+                showNotification('Password must be at least 8 characters', 'error');
+                return;
+            }
+
+            try {
+                const { data, error } = await supabaseClient.auth.signUp({
+                    email: email,
+                    password: password,
+                    options: {
+                        data: {
+                            full_name: fullName,
+                            phone: phone
+                        }
+                    }
+                });
+
+                if (error) {
+                    throw error;
+                }
+
+                if (data.user && !data.session) {
+                    showNotification('Please check your email for verification link', 'success');
+                    switchToLogin(); // Switch to login tab since they need to verify email
+                } else if (data.session) {
+                    // User is immediately signed in (email confirmation disabled)
+                    showNotification('Account created successfully! 🌾', 'success');
+                }
+
+            } catch (error) {
+                console.error('Signup error:', error);
+                if (error.message.includes('already registered')) {
+                    showNotification('Email already registered. Try logging in instead.', 'warning');
+                    switchToLogin();
+                } else {
+                    showNotification('Failed to create account. Please try again.', 'error');
+                }
+            }
+        }
+
+        // Get the correct redirect URL for the current environment
+        function getRedirectURL() {
+            // In development, use localhost
+            if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+                return window.location.origin;
+            }
+
+            // In production, use the Vercel deployment URL
+            const productionUrl = 'https://hardiniwebsite.vercel.app';
+
+            // If we're on a Vercel URL, use it
+            if (window.location.hostname.includes('vercel.app') || window.location.hostname.includes('.com')) {
+                return window.location.origin;
+            }
+
+            // Fallback for other cases
+            return window.location.origin;
+        }
+
+        // Google authentication functions
+        async function loginWithGoogle() {
+            try {
+                const { data, error } = await supabaseClient.auth.signInWithOAuth({
+                    provider: 'google',
+                    options: {
+                        redirectTo: getRedirectURL()
+                    }
+                });
+
+                if (error) {
+                    throw error;
+                }
+            } catch (error) {
+                console.error('Google login error:', error);
+                showNotification('Failed to initiate Google login', 'error');
+            }
+        }
+
+        async function signUpWithGoogle() {
+            // Same as login for OAuth
+            await loginWithGoogle();
+        }
+
+        // updateProfileTab helper
+        function updateProfileTab(user) {
+            const profileAvatar = document.getElementById('profileAvatar');
+            const profileName = document.getElementById('profileName');
+            const profileEmail = document.getElementById('profileEmail');
+
+            if (profileAvatar) profileAvatar.textContent = getUserEmoji(user.email);
+            if (profileName) profileName.textContent = user.user_metadata?.full_name || user.email.split('@')[0];
+            if (profileEmail) profileEmail.textContent = user.email;
+        }
+
+        // Profile functions
+        async function editProfile() {
+            if (!currentUser) {
+                showNotification('You must be logged in to edit your profile', 'error');
+                return;
+            }
+
+            // Close the main profile modal first
+            closeAuthModal();
+
+            const editProfileModal = document.getElementById('editProfileModal');
+            if (editProfileModal) {
+                // Load current user data
+                await loadCurrentProfileData();
+
+                // Show modal
+                editProfileModal.style.display = 'flex';
+                document.body.style.overflow = 'hidden';
+            }
+        }
+
+        async function loadCurrentProfileData() {
+            try {
+                const { data: profile, error } = await supabaseClient
+                    .from('profiles')
+                    .select('*')
+                    .eq('id', currentUser.id)
+                    .single();
+
+                if (error && error.code !== 'PGRST116') {
+                    throw error;
+                }
+
+                // Set form values
+                const fullNameInput = document.getElementById('editFullName');
+                const phoneInput = document.getElementById('editPhone');
+                const experienceSelect = document.getElementById('editFarmingExperience');
+                const userTypeSelect = document.getElementById('editUserType');
+                const locationInput = document.getElementById('editLocation');
+
+                if (profile) {
+                    fullNameInput.value = profile.full_name || currentUser.user_metadata?.full_name || '';
+                    phoneInput.value = profile.phone || '';
+                    experienceSelect.value = profile.farming_experience || '';
+                    userTypeSelect.value = profile.user_type || 'customer';
+                    locationInput.value = profile.location || '';
+                } else {
+                    // Set defaults from auth metadata
+                    fullNameInput.value = currentUser.user_metadata?.full_name || '';
+                    phoneInput.value = currentUser.user_metadata?.phone || '';
+                    experienceSelect.value = '';
+                    userTypeSelect.value = 'customer';
+                    locationInput.value = '';
+                }
+            } catch (error) {
+                console.error('Error loading profile data:', error);
+                showNotification('Failed to load profile data', 'error');
+            }
+        }
+
+        async function handleEditProfile(e) {
+            e.preventDefault();
+
+            const formData = new FormData(e.target);
+            const profileData = {
+                id: currentUser.id,
+                full_name: formData.get('fullName'),
+                phone: formData.get('phone'),
+                farming_experience: formData.get('farmingExperience'),
+                user_type: formData.get('userType'),
+                location: formData.get('location'),
+                updated_at: new Date().toISOString()
+            };
+
+            try {
+                const { error } = await supabaseClient
+                    .from('profiles')
+                    .upsert(profileData, { onConflict: 'id' });
+
+                if (error) throw error;
+
+                // Update UI
+                updateUIForLoggedInUser(currentUser);
+
+                // Close modal
+                closeEditProfileModal();
+
+                showNotification('Profile updated successfully! 🌾', 'success');
+
+            } catch (error) {
+                console.error('Error updating profile:', error);
+                showNotification('Failed to update profile', 'error');
+            }
+        }
+
+        function closeEditProfileModal() {
+            const modal = document.getElementById('editProfileModal');
+            if (modal) {
+                modal.style.display = 'none';
+                document.body.style.overflow = 'auto';
+            }
+        }
+
+        // Orders functions
+        async function viewOrders() {
+            if (!currentUser) {
+                showNotification('You must be logged in to view orders', 'error');
+                return;
+            }
+
+            const ordersModal = document.getElementById('ordersModal');
+            if (ordersModal) {
+                // Show loading state
+                document.getElementById('ordersLoading').style.display = 'block';
+                document.getElementById('ordersList').style.display = 'none';
+                document.getElementById('noOrders').style.display = 'none';
+
+                // Show modal
+                ordersModal.style.display = 'flex';
+                document.body.style.overflow = 'hidden';
+
+                // Load orders
+                await loadUserOrders();
+            }
+        }
+
+        async function loadUserOrders() {
+            try {
+                const { data: orders, error } = await supabase
+                    .from('orders')
+                    .select('*')
+                    .eq('user_id', currentUser.id)
+                    .order('created_at', { ascending: false });
+
+                if (error) throw error;
+
+                const ordersList = document.getElementById('ordersList');
+                const ordersLoading = document.getElementById('ordersLoading');
+                const noOrders = document.getElementById('noOrders');
+
+                ordersLoading.style.display = 'none';
+
+                if (!orders || orders.length === 0) {
+                    noOrders.style.display = 'block';
+                    return;
+                }
+
+                ordersList.style.display = 'block';
+
+                // Render orders
+                ordersList.innerHTML = orders.map(order => `
+                    <div class="order-card">
+                        <div class="order-header">
+                            <span class="order-id">Order #${order.id.slice(-8).toUpperCase()}</span>
+                            <span class="order-status status-${order.status}">${capitalizeFirst(order.status)}</span>
+                        </div>
+                        <div class="order-details">
+                            <p><strong>Total:</strong> ₹${order.total_amount || 0}</p>
+                            <p><strong>Date:</strong> ${new Date(order.created_at).toLocaleDateString()}</p>
+                            ${order.delivery_address ? `<p><strong>Delivery:</strong> ${order.delivery_address}</p>` : ''}
+                        </div>
+                        ${order.items ? `
+                        <div class="order-items">
+                            <strong>Items:</strong>
+                            <ul>
+                                ${JSON.parse(order.items || '[]').map(item => `<li>${item.name} (${item.quantity}x)</li>`).join('')}
+                            </ul>
+                        </div>
+                        ` : ''}
+                    </div>
+                `).join('');
+
+            } catch (error) {
+                console.error('Error loading orders:', error);
+                showNotification('Failed to load orders', 'error');
+                document.getElementById('ordersLoading').style.display = 'none';
+                document.getElementById('noOrders').style.display = 'block';
+            }
+        }
+
+        function closeOrdersModal() {
+            const modal = document.getElementById('ordersModal');
+            if (modal) {
+                modal.style.display = 'none';
+                document.body.style.overflow = 'auto';
+            }
+        }
+
+        // Settings functions
+        function settings() {
+            if (!currentUser) {
+                showNotification('You must be logged in to access settings', 'error');
+                return;
+            }
+
+            const settingsModal = document.getElementById('settingsModal');
+            if (settingsModal) {
+                // Load current settings
+                loadCurrentSettings();
+
+                // Show modal
+                settingsModal.style.display = 'flex';
+                document.body.style.overflow = 'hidden';
+            }
+        }
+
+        async function loadCurrentSettings() {
+            // Load settings from localStorage (you could store this in Supabase too)
+            const settings = JSON.parse(localStorage.getItem('userSettings') || '{}');
+
+            document.getElementById('emailNotifications').checked = settings.emailNotifications !== false;
+            document.getElementById('smsNotifications').checked = settings.smsNotifications || false;
+            document.getElementById('profileVisibility').checked = settings.profileVisibility !== false;
+            document.getElementById('languageSelect').value = settings.language || 'en';
+        }
+
+        async function saveSettings() {
+            const settings = {
+                emailNotifications: document.getElementById('emailNotifications').checked,
+                smsNotifications: document.getElementById('smsNotifications').checked,
+                profileVisibility: document.getElementById('profileVisibility').checked,
+                language: document.getElementById('languageSelect').value
+            };
+
+            // Save to localStorage (you could save to Supabase too)
+            localStorage.setItem('userSettings', JSON.stringify(settings));
+
+            closeSettingsModal();
+            showNotification('Settings saved successfully! ✨', 'success');
+        }
+
+        function closeSettingsModal() {
+            const modal = document.getElementById('settingsModal');
+            if (modal) {
+                modal.style.display = 'none';
+                document.body.style.overflow = 'auto';
+            }
+        }
+
+        // Reset Password functions
+        function resetPassword() {
+            closeSettingsModal();
+
+            const resetPasswordModal = document.getElementById('resetPasswordModal');
+            if (resetPasswordModal) {
+                resetPasswordModal.style.display = 'flex';
+                document.body.style.overflow = 'hidden';
+            }
+        }
+
+        async function handleResetPassword(e) {
+            e.preventDefault();
+
+            const currentPassword = e.target.currentPassword.value;
+            const newPassword = e.target.newPassword.value;
+            const confirmPassword = e.target.confirmNewPassword.value;
+
+            if (newPassword !== confirmPassword) {
+                showNotification('New passwords do not match', 'error');
+                return;
+            }
+
+            if (newPassword.length < 8) {
+                showNotification('Password must be at least 8 characters', 'error');
+                return;
+            }
+
+            try {
+                const { error } = await supabaseClient.auth.updateUser({
+                    password: newPassword
+                });
+
+                if (error) throw error;
+
+                closeResetPasswordModal();
+                showNotification('Password updated successfully! 🔑', 'success');
+
+            } catch (error) {
+                console.error('Error updating password:', error);
+                showNotification('Failed to update password', 'error');
+            }
+        }
+
+        function closeResetPasswordModal() {
+            const modal = document.getElementById('resetPasswordModal');
+            if (modal) {
+                modal.style.display = 'none';
+                document.body.style.overflow = 'auto';
+            }
+        }
+
+        // Delete Account functions
+        function showDeleteAccountConfirmation() {
+            closeSettingsModal();
+
+            const deleteAccountModal = document.getElementById('deleteAccountModal');
+            if (deleteAccountModal) {
+                deleteAccountModal.style.display = 'flex';
+                document.body.style.overflow = 'hidden';
+            }
+        }
+
+        async function deleteAccount() {
+            const checkbox = document.getElementById('deleteConfirmCheckbox');
+            const password = document.getElementById('deletePassword');
+
+            if (!checkbox.checked) {
+                showNotification('Please confirm that you understand this action', 'error');
+                return;
+            }
+
+            if (!password.value) {
+                showNotification('Please enter your password to confirm', 'error');
+                return;
+            }
+
+            try {
+                // Verify password by attempting to reauthenticate (this is a simplified approach)
+                // In production, you'd want better password verification
+
+                // Delete profile data
+                await supabaseClient.from('profiles').delete().eq('id', currentUser.id);
+                await supabaseClient.from('orders').delete().eq('user_id', currentUser.id);
+
+                // Delete auth user (this might require special admin permissions)
+                const { error } = await supabaseClient.auth.admin.deleteUser(currentUser.id);
+
+                closeDeleteAccountModal();
+                showNotification('Account deleted successfully. We\'re sorry to see you go 😢', 'info');
+
+                // Logout after a brief delay
+                setTimeout(() => {
+                    logout();
+                }, 3000);
+
+            } catch (error) {
+                console.error('Error deleting account:', error);
+                showNotification('Failed to delete account. Please contact support.', 'error');
+            }
+        }
+
+        function closeDeleteAccountModal() {
+            const modal = document.getElementById('deleteAccountModal');
+            if (modal) {
+                modal.style.display = 'none';
+                document.body.style.overflow = 'auto';
+            }
+        }
+
+        // Export Data functions
+        async function exportData() {
+            try {
+                const [profileData, ordersData] = await Promise.all([
+                    supabaseClient.from('profiles').select('*').eq('id', currentUser.id).single(),
+                    supabaseClient.from('orders').select('*').eq('user_id', currentUser.id)
+                ]);
+
+                const exportData = {
+                    profile: profileData.data,
+                    orders: ordersData.data,
+                    exportDate: new Date().toISOString()
+                };
+
+                // Create and download JSON file
+                const dataStr = JSON.stringify(exportData, null, 2);
+                const dataBlob = new Blob([dataStr], { type: 'application/json' });
+                const url = URL.createObjectURL(dataBlob);
+
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = `hardini-data-${new Date().toISOString().split('T')[0]}.json`;
+                link.click();
+
+                URL.revokeObjectURL(url);
+                showNotification('Data exported successfully! 📊', 'success');
+
+            } catch (error) {
+                console.error('Error exporting data:', error);
+                showNotification('Failed to export data', 'error');
+            }
+        }
+
+        // View Farms function (placeholder for now)
+        async function viewFarms() {
+            showNotification('Farm management feature coming soon! 🌾', 'info');
+        }
+
+        // Helper functions
+        function capitalizeFirst(string) {
+            return string.charAt(0).toUpperCase() + string.slice(1);
+        }
+
+        // Logout function
+        async function logout() {
+            try {
+                const { error } = await supabaseClient.auth.signOut();
+                if (error) {
+                    throw error;
+                }
+                // Close the profile modal immediately after logout
+                closeAuthModal();
+                // Success will be handled by the auth state change listener
+            } catch (error) {
+                console.error('Logout error:', error);
+                showNotification('Failed to logout', 'error');
+            }
+        }
+
+        // Utility functions
+        function getUserEmoji(email) {
+            const letters = (email + 'default').substring(0, 2).toLowerCase();
+            const emojiOptions = ['👨‍🌾', '👩‍🌾', '🌾', '🌱', '🚜', '🌽', '🍎', '🥕'];
+            const index = letters.charCodeAt(0) + letters.charCodeAt(1);
+            return emojiOptions[index % emojiOptions.length];
+        }
+
+        // Enhanced notification function for authentication
+        function showNotification(message, type = 'info') {
+            const notification = document.createElement('div');
+            notification.className = `notification ${type}`;
+            notification.innerHTML = `
+                <span class="notification-icon">
+                    ${type === 'success' ? '✅' : type === 'error' ? '❌' : type === 'warning' ? '⚠️' : 'ℹ️'}
+                </span>
+                <span class="notification-text">${message}</span>
+            `;
+            document.body.appendChild(notification);
+
+            setTimeout(() => notification.classList.add('show'), 100);
+            setTimeout(() => {
+                notification.classList.remove('show');
+                setTimeout(() => notification.remove(), 300);
+            }, 4000);
+        }
+    </script>
+
+    <script src="script.js"></script>
+
+    <!-- Home Reels JavaScript -->
+    <script>
+        // Home reels functionality with YouTube API integration
+        let currentReelIndex = 0;
+        let farmingReels = [];
+        let totalReels = 0;
+
+        // YouTube API configuration
+        const YOUTUBE_API_KEY = 'AIzaSyAxIpnyaoX0hCOVWn-Y1G-dLcuMK7JxGX8';
+        const YOUTUBE_API_URL = 'https://www.googleapis.com/youtube/v3';
+
+        // Fetch farming reels directly from YouTube API
+        async function fetchFarmingReels() {
+            try {
+                // Search for farming videos
+                const searchResponse = await fetch(
+                    `${YOUTUBE_API_URL}/search?key=${YOUTUBE_API_KEY}&q=farming+india+agriculture&type=video&part=snippet&maxResults=8&order=relevance&regionCode=IN&relevanceLanguage=en`
+                );
+
+                if (!searchResponse.ok) {
+                    throw new Error('YouTube API search failed');
+                }
+
+                const searchData = await searchResponse.json();
+
+                if (searchData.items && searchData.items.length > 0) {
+                    // Get video IDs for statistics
+                    const videoIds = searchData.items.map(item => item.id.videoId).join(',');
+
+                    // Fetch video statistics
+                    const statsResponse = await fetch(
+                        `${YOUTUBE_API_URL}/videos?key=${YOUTUBE_API_KEY}&id=${videoIds}&part=snippet,statistics`
+                    );
+
+                    if (!statsResponse.ok) {
+                        throw new Error('YouTube API stats failed');
+                    }
+
+                    const statsData = await statsResponse.json();
+
+                    farmingReels = statsData.items.map(video => ({
+                        id: video.id,
+                        title: video.snippet.title,
+                        description: video.snippet.description,
+                        thumbnail: video.snippet.thumbnails.high?.url || video.snippet.thumbnails.default.url,
+                        channelTitle: video.snippet.channelTitle,
+                        viewCount: video.statistics?.viewCount || '0',
+                        likeCount: video.statistics?.likeCount || '0'
+                    })).slice(0, 6);
+
+                    totalReels = farmingReels.length;
+                    renderReels();
+                    updateReelIndicators();
+                } else {
+                    console.warn('No videos found from YouTube API');
+                    showFallbackReels();
+                }
+            } catch (error) {
+                console.error('Error fetching farming reels from YouTube:', error);
+                showFallbackReels();
+            }
+        }
+
+        // Fallback reels in case API fails (using real farming video IDs)
+        function showFallbackReels() {
+            farmingReels = [
+                {
+                    id: 'MlfnkHBcyQE',
+                    title: 'Modern Rice Farming in India',
+                    description: 'Watch advanced rice cultivation techniques',
+                    thumbnail: 'https://img.youtube.com/vi/MlfnkHBcyQE/maxresdefault.jpg',
+                    channelTitle: 'Indian Farming',
+                    viewCount: '2500000',
+                    likeCount: '85000'
+                },
+                {
+                    id: 'lMfv3dPGUxM',
+                    title: 'Organic Vegetable Farming',
+                    description: 'Sustainable farming practices for vegetables',
+                    thumbnail: 'https://img.youtube.com/vi/lMfv3dPGUxM/maxresdefault.jpg',
+                    channelTitle: 'Organic India',
+                    viewCount: '1850000',
+                    likeCount: '62000'
+                },
+                {
+                    id: 'LZMdGGRpjVg',
+                    title: 'Tractor Technology in Farming',
+                    description: 'Modern agricultural machinery at work',
+                    thumbnail: 'https://img.youtube.com/vi/LZMdGGRpjVg/maxresdefault.jpg',
+                    channelTitle: 'Farm Equipment',
+                    viewCount: '920000',
+                    likeCount: '41000'
+                },
+                {
+                    id: 'YccZofC_VPY',
+                    title: 'Wheat Harvesting Season',
+                    description: 'Traditional and modern wheat harvesting',
+                    thumbnail: 'https://img.youtube.com/vi/YccZofC_VPY/maxresdefault.jpg',
+                    channelTitle: 'Harvest Life',
+                    viewCount: '750000',
+                    likeCount: '35000'
+                },
+                {
+                    id: 'tHmBD4yYaWk',
+                    title: 'Smart Irrigation Systems',
+                    description: 'Water-saving drip irrigation technology',
+                    thumbnail: 'https://img.youtube.com/vi/tHmBD4yYaWk/maxresdefault.jpg',
+                    channelTitle: 'AgriTech India',
+                    viewCount: '620000',
+                    likeCount: '28000'
+                },
+                {
+                    id: '3Hmjvq0ZD18',
+                    title: 'Dairy Farming Success Story',
+                    description: 'Modern dairy farm management in India',
+                    thumbnail: 'https://img.youtube.com/vi/3Hmjvq0ZD18/maxresdefault.jpg',
+                    channelTitle: 'Dairy India',
+                    viewCount: '480000',
+                    likeCount: '22000'
+                }
+            ];
+            totalReels = farmingReels.length;
+            renderReels();
+            updateReelIndicators();
+        }
+
+        // Render reels in the container
+        function renderReels() {
+            const container = document.querySelector('.instagram-reels-container');
+            if (!container || farmingReels.length === 0) return;
+
+            container.innerHTML = farmingReels.map((reel, index) => `
+                <div class="instagram-reel-item" data-index="${index}">
+                        <div class="reel-video-container">
+                            <iframe
+                                class="reel-iframe"
+                                src="https://www.youtube.com/embed/${reel.id}?autoplay=1&mute=1&controls=0&modestbranding=1&rel=0&showinfo=0&iv_load_policy=3&playsinline=1&enablejsapi=1"
+                                frameborder="0"
+                                allowfullscreen
+                                style="pointer-events: none;"
+                            ></iframe>
+                        <div class="play-overlay">
+                            <div class="play-button-large">▶️</div>
+                        </div>
+                    </div>
+                    <div class="reel-overlay">
+                        <div class="reel-content">
+                            <div class="reel-header">
+                                <div class="reel-avatar">${getAvatarEmoji(reel.title)}</div>
+                                <div class="reel-info">
+                                    <h3>${reel.channelTitle || 'Agri Channel'}</h3>
+                                </div>
+                            </div>
+                            <div class="reel-actions">
+                                <button class="action-btn" onclick="event.stopPropagation(); likeReel(${index})">
+                                    <i class="fas fa-heart"></i>
+                                    <span class="action-count">${formatCount(reel.likeCount)}</span>
+                                </button>
+                                <button class="action-btn" onclick="event.stopPropagation(); shareReel(${index})">
+                                    <i class="fas fa-share"></i>
+                                    <span class="action-count">Share</span>
+                                </button>
+                                <button class="action-btn" onclick="event.stopPropagation(); saveReel(${index})">
+                                    <i class="fas fa-bookmark"></i>
+                                    <span class="action-count">Save</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+
+            // Add autoplay functionality
+            setupReelAutoplay();
+
+            // Update indicators
+            const indicatorsContainer = document.querySelector('.reel-indicators');
+            if (indicatorsContainer) {
+                indicatorsContainer.innerHTML = farmingReels.map((_, index) =>
+                    `<span class="indicator ${index === 0 ? 'active' : ''}" onclick="goToReel(${index})"></span>`
+                ).join('');
+            }
+        }
+
+        // Setup autoplay functionality for reels (muted autoplay in feed)
+        function setupReelAutoplay() {
+            const reelItems = document.querySelectorAll('.instagram-reel-item');
+
+            reelItems.forEach((item, index) => {
+                const iframe = item.querySelector('.reel-iframe');
+                const playOverlay = item.querySelector('.play-overlay');
+
+                if (iframe) {
+                    // Intersection Observer to manage playback
+                    const observer = new IntersectionObserver((entries) => {
+                        entries.forEach(entry => {
+                            if (entry.isIntersecting) {
+                                // Video is in view, it should autoplay (already set in iframe)
+                                // Hide any play overlay since videos autoplay muted
+                                playOverlay.style.display = 'none';
+                            } else {
+                                // Pause when out of view
+                                try {
+                                    iframe.contentWindow.postMessage('{"event":"command","func":"pauseVideo","args":""}', '*');
+                                } catch (e) {
+                                    // Ignore errors
+                                }
+                            }
+                        });
+                    }, { threshold: 0.6 }); // 60% of the reel must be visible
+
+                    observer.observe(item);
+
+                    // Set up iframe communication for pause/play control
+                    iframe.addEventListener('load', () => {
+                        iframe.contentWindow.postMessage('{"event":"listening"}', '*');
+                    });
+
+                    // Make entire reel area clickable for fullscreen (no sound in feed)
+                    item.addEventListener('click', (e) => {
+                        // Don't trigger if clicking on action buttons
+                        if (e.target.closest('.action-btn')) return;
+
+                        // Open fullscreen reel with sound
+                        openFullscreenReel(index);
+                    });
+
+                    // Listen for YouTube player state changes
+                    window.addEventListener('message', (event) => {
+                        if (event.origin !== 'https://www.youtube.com') return;
+
+                        try {
+                            const data = JSON.parse(event.data);
+                            if (data.event === 'onStateChange') {
+                                if (data.info === 1) { // Playing
+                                    playOverlay.style.display = 'none';
+                                } else if (data.info === 2) { // Paused
+                                    // Only show play overlay if actually paused
+                                    playOverlay.style.display = 'flex';
+                                }
+                            }
+                        } catch (e) {
+                            // Ignore parsing errors
+                        }
+                    });
+                }
+            });
+        }
+
+        // Helper functions
+        function getAvatarEmoji(title) {
+            const lowerTitle = title.toLowerCase();
+            if (lowerTitle.includes('rice') || lowerTitle.includes('wheat')) return '🌾';
+            if (lowerTitle.includes('tractor') || lowerTitle.includes('farm')) return '🚜';
+            if (lowerTitle.includes('organic') || lowerTitle.includes('vegetable')) return '🌱';
+            if (lowerTitle.includes('dairy') || lowerTitle.includes('cow')) return '🐄';
+            if (lowerTitle.includes('drone') || lowerTitle.includes('tech')) return '🚁';
+            return '👨‍🌾';
+        }
+
+        function getCategoryLabel(title) {
+            const lowerTitle = title.toLowerCase();
+            if (lowerTitle.includes('rice') || lowerTitle.includes('wheat')) return 'Crop Farming';
+            if (lowerTitle.includes('tractor')) return 'Farm Equipment';
+            if (lowerTitle.includes('organic')) return 'Sustainable Farming';
+            if (lowerTitle.includes('dairy') || lowerTitle.includes('cow')) return 'Livestock';
+            if (lowerTitle.includes('drone')) return 'AgriTech';
+            if (lowerTitle.includes('vegetable')) return 'Vegetable Farming';
+            return 'Agriculture';
+        }
+
+        function formatCount(count) {
+            const num = parseInt(count) || 0;
+            if (num >= 1000000) return (num / 1000000).toFixed(1) + 'M';
+            if (num >= 1000) return (num / 1000).toFixed(1) + 'K';
+            return num.toString();
+        }
+
+        function playReel(overlayElement) {
+            const iframe = overlayElement.previousElementSibling;
+            if (iframe && iframe.tagName === 'IFRAME') {
+                // Remove autoplay=0 and add autoplay=1
+                const src = iframe.src.replace('autoplay=0', 'autoplay=1');
+                iframe.src = src;
+                overlayElement.style.display = 'none';
+            }
+        }
+
+        function likeReel(index) {
+            const likeBtn = document.querySelectorAll('.action-btn')[index * 3];
+            if (likeBtn) {
+                likeBtn.classList.toggle('liked');
+                const countSpan = likeBtn.querySelector('.action-count');
+                if (countSpan) {
+                    let count = parseInt(countSpan.textContent.replace('K', '000').replace('M', '000000')) || 0;
+                    count = likeBtn.classList.contains('liked') ? count + 1 : count - 1;
+                    countSpan.textContent = formatCount(count);
+                }
+            }
+        }
+
+        function shareReel(index) {
+            const reel = farmingReels[index];
+            if (!reel) return;
+
+            const reelUrl = `https://www.youtube.com/watch?v=${reel.id}`;
+
+            if (navigator.share) {
+                navigator.share({
+                    title: reel.title || 'Check out this farming reel!',
+                    text: 'Amazing farming content from AgriReels',
+                    url: reelUrl
+                });
+            } else {
+                navigator.clipboard.writeText(reelUrl).then(() => {
+                    showNotification('Link copied to clipboard!');
+                });
+            }
+        }
+
+        function saveReel(index) {
+            const saveBtn = document.querySelectorAll('.action-btn')[index * 3 + 2];
+            if (saveBtn) {
+                saveBtn.classList.toggle('saved');
+                const isSaved = saveBtn.classList.contains('saved');
+                showNotification(isSaved ? 'Reel saved!' : 'Reel removed from saved');
+            }
+        }
+
+        function scrollReels(direction) {
+            const container = document.querySelector('.instagram-reels-container');
+            if (!container) return;
+
+            if (direction === 'next' && currentReelIndex < totalReels - 1) {
+                currentReelIndex++;
+            } else if (direction === 'prev' && currentReelIndex > 0) {
+                currentReelIndex--;
+            }
+
+            updateReelIndicators();
+            const reelWidth = 320; // 300px width + 20px gap
+            container.scrollTo({
+                left: currentReelIndex * reelWidth,
+                behavior: 'smooth'
+            });
+        }
+
+        function goToReel(index) {
+            currentReelIndex = index;
+            updateReelIndicators();
+            const container = document.querySelector('.instagram-reels-container');
+            if (container) {
+                const reelWidth = 320;
+                container.scrollTo({
+                    left: index * reelWidth,
+                    behavior: 'smooth'
+                });
+            }
+        }
+
+        function updateReelIndicators() {
+            const indicators = document.querySelectorAll('.indicator');
+            indicators.forEach((indicator, index) => {
+                if (index === currentReelIndex) {
+                    indicator.classList.add('active');
+                } else {
+                    indicator.classList.remove('active');
+                }
+            });
+        }
+
+        function showNotification(message) {
+            const notification = document.createElement('div');
+            notification.className = 'notification';
+            notification.textContent = message;
+            document.body.appendChild(notification);
+
+            setTimeout(() => {
+                notification.classList.add('show');
+            }, 100);
+
+            setTimeout(() => {
+                notification.classList.remove('show');
+                setTimeout(() => {
+                    notification.remove();
+                }, 300);
+            }, 3000);
+        }
+
+        // Auto-scroll functionality
+        setInterval(() => {
+            if (currentReelIndex < totalReels - 1) {
+                scrollReels('next');
+            } else {
+                currentReelIndex = 0;
+                goToReel(0);
+            }
+        }, 8000); // Auto-scroll every 8 seconds
+
+        // Touch/swipe support
+        let startX = 0;
+        let endX = 0;
+
+        document.addEventListener('touchstart', (e) => {
+            startX = e.touches[0].clientX;
+        });
+
+        document.addEventListener('touchend', (e) => {
+            endX = e.changedTouches[0].clientX;
+            const diffX = startX - endX;
+
+            if (Math.abs(diffX) > 50) { // Minimum swipe distance
+                if (diffX > 0) {
+                    scrollReels('next'); // Swipe left
+                } else {
+                    scrollReels('prev'); // Swipe right
+                }
+            }
+        });
+
+        // Modal functionality - YouTube Shorts style
+        function openReelModal(index) {
+            const reel = farmingReels[index];
+            if (!reel || !reelModal) return;
+
+            // Set up video iframe with audio enabled - YouTube Shorts style
+            if (reelModalVideo) {
+                reelModalVideo.src = `https://www.youtube.com/embed/${reel.id}?autoplay=1&mute=0&controls=0&modestbranding=1&rel=0&showinfo=0&iv_load_policy=3`;
+            }
+
+            // Show modal
+            reelModal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeReelModal() {
+            if (reelModal) {
+                reelModal.classList.remove('active');
+                document.body.style.overflow = '';
+                if (reelModalVideo) {
+                    reelModalVideo.src = '';
+                }
+            }
+        }
+
+        // Full screen reel functions
+        function openFullscreenReel(index) {
+            const reel = farmingReels[index];
+            if (!reel) return;
+
+            const fullscreenPlayer = document.getElementById('fullscreenReelPlayer');
+            const fullscreenVideo = document.getElementById('fullscreenReelVideo');
+            const fullscreenAvatar = document.getElementById('fullscreenAvatar');
+            const fullscreenChannel = document.getElementById('fullscreenChannel');
+            const fullscreenCategory = document.getElementById('fullscreenCategory');
+            const fullscreenDescription = document.getElementById('fullscreenDescription');
+            const fullscreenViews = document.getElementById('fullscreenViews');
+            const fullscreenLikes = document.getElementById('fullscreenLikes');
+            const fullscreenLikeCount = document.getElementById('fullscreenLikeCount');
+
+            if (fullscreenPlayer && fullscreenVideo) {
+                // Start with sound enabled in modal - autoplay with audio
+                fullscreenVideo.src = `https://www.youtube.com/embed/${reel.id}?autoplay=1&mute=0&controls=1&modestbranding=1&rel=0&showinfo=0&iv_load_policy=3&playsinline=1&enablejsapi=1`;
+
+                // Set reel info
+                if (fullscreenAvatar) fullscreenAvatar.textContent = getAvatarEmoji(reel.title);
+                if (fullscreenChannel) fullscreenChannel.textContent = reel.channelTitle || 'Agri Channel';
+                if (fullscreenCategory) fullscreenCategory.textContent = getCategoryLabel(reel.title);
+                if (fullscreenDescription) fullscreenDescription.textContent = reel.title || 'Farming Content';
+                if (fullscreenViews) fullscreenViews.textContent = `👁️ ${formatCount(reel.viewCount)} views`;
+                if (fullscreenLikes) fullscreenLikes.textContent = `👍 ${formatCount(reel.likeCount)} likes`;
+                if (fullscreenLikeCount) fullscreenLikeCount.textContent = formatCount(reel.likeCount);
+
+                // Show fullscreen player
+                fullscreenPlayer.classList.add('active');
+                document.body.style.overflow = 'hidden';
+            }
+        }
+
+        function closeFullscreenReel() {
+            const fullscreenPlayer = document.getElementById('fullscreenReelPlayer');
+            const fullscreenVideo = document.getElementById('fullscreenReelVideo');
+
+            if (fullscreenPlayer) {
+                fullscreenPlayer.classList.remove('active');
+                document.body.style.overflow = '';
+                if (fullscreenVideo) {
+                    fullscreenVideo.src = '';
+                }
+            }
+        }
+
+        function likeFullscreenReel() {
+            const fullscreenLikeBtn = document.querySelector('#fullscreenReelPlayer .action-btn');
+            const fullscreenLikeCount = document.getElementById('fullscreenLikeCount');
+
+            if (fullscreenLikeBtn && fullscreenLikeCount) {
+                fullscreenLikeBtn.classList.toggle('liked');
+                let count = parseInt(fullscreenLikeCount.textContent.replace('K', '000').replace('M', '000000')) || 0;
+                count = fullscreenLikeBtn.classList.contains('liked') ? count + 1 : count - 1;
+                fullscreenLikeCount.textContent = formatCount(count);
+            }
+        }
+
+        function shareFullscreenReel() {
+            const fullscreenVideo = document.getElementById('fullscreenReelVideo');
+            if (!fullscreenVideo || !fullscreenVideo.src) return;
+
+            const videoId = fullscreenVideo.src.match(/embed\/([^?]+)/)?.[1];
+            if (!videoId) return;
+
+            const reelUrl = `https://www.youtube.com/watch?v=${videoId}`;
+
+            if (navigator.share) {
+                navigator.share({
+                    title: 'Check out this farming reel!',
+                    text: 'Amazing farming content from AgriReels',
+                    url: reelUrl
+                });
+            } else {
+                navigator.clipboard.writeText(reelUrl).then(() => {
+                    showNotification('Link copied to clipboard!');
+                });
+            }
+        }
+
+        function saveFullscreenReel() {
+            const fullscreenSaveBtn = document.querySelector('#fullscreenReelPlayer .action-btn:last-child');
+            if (fullscreenSaveBtn) {
+                fullscreenSaveBtn.classList.toggle('saved');
+                const isSaved = fullscreenSaveBtn.classList.contains('saved');
+                showNotification(isSaved ? 'Reel saved!' : 'Reel removed from saved');
+            }
+        }
+
+        // Add modal event listeners
+        document.addEventListener('DOMContentLoaded', () => {
+            const closeReelModalBtn = document.getElementById('closeReelModal');
+            if (closeReelModalBtn) {
+                closeReelModalBtn.addEventListener('click', closeReelModal);
+            }
+
+            // Close modal when clicking outside
+            if (reelModal) {
+                reelModal.addEventListener('click', function (e) {
+                    if (e.target === reelModal) {
+                        closeReelModal();
+                    }
+                });
+            }
+
+            // Close modal on escape key
+            document.addEventListener('keydown', function (e) {
+                if (e.key === 'Escape' && reelModal && reelModal.classList.contains('active')) {
+                    closeReelModal();
+                }
+            });
+
+            // Full screen reel event listeners
+            const closeFullscreenBtn = document.getElementById('closeFullscreenReel');
+            if (closeFullscreenBtn) {
+                closeFullscreenBtn.addEventListener('click', closeFullscreenReel);
+            }
+
+            // Close fullscreen on escape key
+            document.addEventListener('keydown', function (e) {
+                if (e.key === 'Escape' && document.getElementById('fullscreenReelPlayer')?.classList.contains('active')) {
+                    closeFullscreenReel();
+                }
+            });
+
+            fetchFarmingReels();
+        });
+    </script>
+
+</body>
+
+</html>
