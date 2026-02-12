@@ -135,7 +135,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (contactForm) {
         contactForm.addEventListener('submit', async (e) => {
             e.preventDefault();
-            
+
             // Get form data
             const formData = new FormData(contactForm);
             const formDataObject = {};
@@ -152,7 +152,7 @@ document.addEventListener('DOMContentLoaded', () => {
             try {
                 // Simulate sending data to server
                 await new Promise(resolve => setTimeout(resolve, 2000));
-                
+
                 // Show success message
                 alert('Thank you for your message! We will get back to you soon.');
                 contactForm.reset();
@@ -171,11 +171,11 @@ document.addEventListener('DOMContentLoaded', () => {
     if (newsletterForm) {
         newsletterForm.addEventListener('submit', async (e) => {
             e.preventDefault();
-            
+
             const emailInput = newsletterForm.querySelector('input[type="email"]');
             const submitBtn = newsletterForm.querySelector('button');
             const originalBtnText = submitBtn.innerHTML;
-            
+
             if (!emailInput.value) {
                 alert('Please enter your email address.');
                 return;
@@ -187,7 +187,7 @@ document.addEventListener('DOMContentLoaded', () => {
             try {
                 // Simulate API call
                 await new Promise(resolve => setTimeout(resolve, 1500));
-                
+
                 alert('Thank you for subscribing to our newsletter!');
                 newsletterForm.reset();
             } catch (error) {
@@ -309,10 +309,10 @@ document.addEventListener('DOMContentLoaded', () => {
             const productName = productCard.querySelector('h4').textContent;
             btn.textContent = 'Scheduling...';
             btn.disabled = true;
-            
+
             // Simulate booking process
             await new Promise(resolve => setTimeout(resolve, 1500));
-            
+
             showNotification(`Demo scheduled successfully for ${productName}!`);
             btn.textContent = 'Book Demo';
             btn.disabled = false;
@@ -327,10 +327,10 @@ document.addEventListener('DOMContentLoaded', () => {
             const productName = productCard.querySelector('h4').textContent;
             btn.textContent = 'Processing...';
             btn.disabled = true;
-            
+
             // Simulate rental processing
             await new Promise(resolve => setTimeout(resolve, 1500));
-            
+
             showNotification(`Rental request submitted for ${productName}! Our team will contact you shortly.`);
             btn.textContent = 'Book Now';
             btn.disabled = false;
@@ -345,10 +345,10 @@ document.addEventListener('DOMContentLoaded', () => {
             const serviceName = serviceCard.querySelector('h4').textContent;
             btn.textContent = 'Booking...';
             btn.disabled = true;
-            
+
             // Simulate booking process
             await new Promise(resolve => setTimeout(resolve, 1500));
-            
+
             showNotification(`Service booked successfully: ${serviceName}`);
             btn.textContent = 'Book Service';
             btn.disabled = false;
@@ -363,10 +363,10 @@ document.addEventListener('DOMContentLoaded', () => {
             const expertName = expertCard.querySelector('h4').textContent;
             btn.textContent = 'Connecting...';
             btn.disabled = true;
-            
+
             // Simulate connection process
             await new Promise(resolve => setTimeout(resolve, 1500));
-            
+
             showNotification(`Connection request sent to ${expertName}`);
             btn.textContent = 'Connect & Learn';
             btn.disabled = false;
@@ -381,10 +381,10 @@ document.addEventListener('DOMContentLoaded', () => {
             const programName = programCard.querySelector('h4').textContent;
             btn.textContent = 'Processing...';
             btn.disabled = true;
-            
+
             // Simulate enrollment process
             await new Promise(resolve => setTimeout(resolve, 1500));
-            
+
             showNotification(`Successfully enrolled in ${programName}`);
             btn.textContent = 'Enrolled ✓';
             btn.classList.add('enrolled');
@@ -400,10 +400,10 @@ document.addEventListener('DOMContentLoaded', () => {
             const submitBtn = soilAnalysisForm.querySelector('.analyze-btn');
             submitBtn.textContent = 'Analyzing...';
             submitBtn.disabled = true;
-            
+
             // Simulate analysis process
             await new Promise(resolve => setTimeout(resolve, 2000));
-            
+
             showNotification('Soil analysis report will be sent to your email');
             submitBtn.textContent = 'Get Recommendations';
             submitBtn.disabled = false;
@@ -416,15 +416,15 @@ document.addEventListener('DOMContentLoaded', () => {
         const notification = document.createElement('div');
         notification.className = `notification ${type}`;
         notification.textContent = message;
-        
+
         document.body.appendChild(notification);
-        
+
         // Animate in
         setTimeout(() => {
             notification.style.transform = 'translateX(0)';
             notification.style.opacity = '1';
         }, 100);
-        
+
         // Remove after 3 seconds
         setTimeout(() => {
             notification.style.transform = 'translateX(100%)';
@@ -452,7 +452,7 @@ document.addEventListener('DOMContentLoaded', () => {
             card.style.transform = 'translateY(-10px)';
             card.style.borderColor = '#4CAF50';
         });
-        
+
         card.addEventListener('mouseleave', () => {
             card.style.transform = 'translateY(0)';
             card.style.borderColor = 'rgba(76, 175, 80, 0.2)';
@@ -481,38 +481,375 @@ document.addEventListener('DOMContentLoaded', () => {
         categoryBtns[0].click();
     }
 
-    // Chatbot Functionality
+    // ============================================
+    // HARDINI AI CHATBOT CONTROLLER
+    // ============================================
+    const CHAT_API_URL = (window.location.protocol === 'file:' || window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+        ? 'http://localhost:3001/api/chat'
+        : 'https://backend-iota-livid-46.vercel.app/api/chat';
+
     const chatbotToggle = document.getElementById('chatbotToggle');
     const chatbotBox = document.getElementById('chatbotBox');
     const botIcon = document.querySelector('.bot-icon');
     const closeChat = document.querySelector('.close-chat');
+    const chatMessages = document.getElementById('chatMessages');
+    const chatInput = document.getElementById('chatInput');
+    const chatSendBtn = document.getElementById('chatSendBtn');
+    const voiceInputBtn = document.getElementById('voiceInputBtn');
+    const voiceIcon = document.getElementById('voiceIcon');
+    const imageUploadBtn = document.getElementById('imageUploadBtn');
+    const imageUploadInput = document.getElementById('imageUploadInput');
+    const chatImagePreview = document.getElementById('chatImagePreview');
+    const previewImg = document.getElementById('previewImg');
+    const removeImageBtn = document.getElementById('removeImageBtn');
+    const chatLanguageSelect = document.getElementById('chatLanguageSelect');
+    const chatClearBtn = document.getElementById('chatClearBtn');
+    const chatQuickActions = document.getElementById('chatQuickActions');
+    const chatStatus = document.getElementById('chatStatus');
 
+    let chatHistory = [];
+    let selectedImageBase64 = null;
+    let isRecording = false;
+    let recognition = null;
+
+    // Firebase Auth State — handled by hardini-auth.js
+    // Bridge to shared module so chatbot code can still use currentUser / authToken
+    let currentUser = null;
+    let authToken = null;
+
+    document.addEventListener('hardiniAuthReady', async (e) => {
+        currentUser = e.detail.user;
+        authToken = await currentUser.getIdToken();
+    });
+
+    // Language mapping for speech recognition
+    const LANG_CODES = {
+        'English': 'en-US', 'Hindi': 'hi-IN', 'Marathi': 'mr-IN', 'Telugu': 'te-IN',
+        'Tamil': 'ta-IN', 'Bengali': 'bn-IN', 'Kannada': 'kn-IN', 'Gujarati': 'gu-IN',
+        'Punjabi': 'pa-IN', 'Malayalam': 'ml-IN', 'Odia': 'or-IN', 'Urdu': 'ur-IN',
+        'Spanish': 'es-ES', 'French': 'fr-FR', 'Arabic': 'ar-SA'
+    };
+
+    // Toggle chatbot open/close
     if (chatbotToggle && chatbotBox) {
         chatbotToggle.addEventListener('click', () => {
             const isOpen = chatbotBox.classList.contains('active');
-
             if (isOpen) {
-                // Close chatbot
                 chatbotBox.classList.remove('active');
-                setTimeout(() => {
-                    chatbotBox.style.display = 'none';
-                }, 300); // Match animation duration
+                setTimeout(() => { chatbotBox.style.display = 'none'; }, 300);
                 botIcon.style.display = 'block';
                 closeChat.style.display = 'none';
             } else {
-                // Open chatbot
                 chatbotBox.style.display = 'flex';
-                setTimeout(() => {
-                    chatbotBox.classList.add('active');
-                }, 10); // Small delay to trigger animation
+                setTimeout(() => { chatbotBox.classList.add('active'); }, 10);
                 botIcon.style.display = 'none';
                 closeChat.style.display = 'block';
+                chatInput.focus();
             }
         });
     }
 
+    // Send message on button click
+    chatSendBtn?.addEventListener('click', () => sendChatMessage());
+
+    // Send message on Enter key
+    chatInput?.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            sendChatMessage();
+        }
+    });
+
+    // Quick action chips
+    document.querySelectorAll('.quick-chip').forEach(chip => {
+        chip.addEventListener('click', () => {
+            const msg = chip.dataset.msg;
+            chatInput.value = msg;
+            sendChatMessage();
+            chatQuickActions.style.display = 'none';
+        });
+    });
+
+    // Clear chat
+    chatClearBtn?.addEventListener('click', () => {
+        chatHistory = [];
+        chatMessages.innerHTML = `
+            <div class="chat-message bot-message">
+                <span class="msg-avatar">🌾</span>
+                <div class="msg-bubble">
+                    <p>Namaste! 🙏 I'm <strong>Hardini AI</strong>, your agricultural expert.</p>
+                    <p>Ask me anything about farming!</p>
+                </div>
+            </div>`;
+        chatQuickActions.style.display = 'flex';
+        clearImagePreview();
+    });
+
+    // Image upload
+    imageUploadBtn?.addEventListener('click', () => imageUploadInput.click());
+    imageUploadInput?.addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        if (file.size > 5 * 1024 * 1024) {
+            alert('Image must be under 5MB');
+            return;
+        }
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+            selectedImageBase64 = ev.target.result;
+            previewImg.src = selectedImageBase64;
+            chatImagePreview.style.display = 'flex';
+        };
+        reader.readAsDataURL(file);
+    });
+
+    removeImageBtn?.addEventListener('click', clearImagePreview);
+
+    function clearImagePreview() {
+        selectedImageBase64 = null;
+        previewImg.src = '';
+        chatImagePreview.style.display = 'none';
+        imageUploadInput.value = '';
+    }
+
+    // Voice input
+    voiceInputBtn?.addEventListener('click', toggleVoiceInput);
+
+    function toggleVoiceInput() {
+        if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+            alert('Voice input is not supported in this browser. Please use Chrome or Edge.');
+            return;
+        }
+
+        if (isRecording) {
+            recognition?.stop();
+            return;
+        }
+
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        recognition = new SpeechRecognition();
+        recognition.continuous = false;
+        recognition.interimResults = true;
+
+        const selectedLang = chatLanguageSelect.value;
+        recognition.lang = LANG_CODES[selectedLang] || 'en-US';
+
+        recognition.onstart = () => {
+            isRecording = true;
+            voiceIcon.textContent = '🔴';
+            voiceInputBtn.classList.add('recording');
+            chatStatus.textContent = 'Listening...';
+        };
+
+        recognition.onresult = (event) => {
+            let transcript = '';
+            for (let i = event.resultIndex; i < event.results.length; i++) {
+                transcript += event.results[i][0].transcript;
+            }
+            chatInput.value = transcript;
+        };
+
+        recognition.onerror = (event) => {
+            console.error('Speech recognition error:', event.error);
+            stopRecording();
+        };
+
+        recognition.onend = () => {
+            stopRecording();
+            if (chatInput.value.trim()) {
+                sendChatMessage();
+            }
+        };
+
+        recognition.start();
+    }
+
+    function stopRecording() {
+        isRecording = false;
+        voiceIcon.textContent = '🎤';
+        voiceInputBtn.classList.remove('recording');
+        chatStatus.textContent = 'Agricultural Expert';
+    }
+
+    // Speak bot response via Edge TTS
+    let currentAudio = null;
+
+    async function speakResponse(text) {
+        // Stop any currently playing audio
+        if (currentAudio) {
+            currentAudio.pause();
+            currentAudio = null;
+        }
+
+        const TTS_URL = (window.location.protocol === 'file:' || window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+            ? 'http://localhost:3001/api/tts'
+            : 'https://backend-iota-livid-46.vercel.app/api/tts';
+
+        try {
+            chatStatus.textContent = 'Speaking...';
+
+            const response = await fetch(TTS_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    text: text,
+                    language: chatLanguageSelect.value || 'English'
+                })
+            });
+
+            if (!response.ok) {
+                throw new Error('TTS request failed');
+            }
+
+            const audioBlob = await response.blob();
+            const audioUrl = URL.createObjectURL(audioBlob);
+
+            currentAudio = new Audio(audioUrl);
+            currentAudio.onended = () => {
+                chatStatus.textContent = 'Agricultural Expert';
+                URL.revokeObjectURL(audioUrl);
+                currentAudio = null;
+            };
+            currentAudio.onerror = () => {
+                chatStatus.textContent = 'Agricultural Expert';
+                URL.revokeObjectURL(audioUrl);
+                currentAudio = null;
+            };
+            currentAudio.play();
+
+        } catch (error) {
+            console.error('Edge TTS error:', error);
+            chatStatus.textContent = 'Agricultural Expert';
+        }
+    }
+
+    // Send chat message
+    async function sendChatMessage() {
+        const message = chatInput.value.trim();
+        if (!message && !selectedImageBase64) return;
+
+        // Hide quick actions after first message
+        chatQuickActions.style.display = 'none';
+
+        // Add user message to UI
+        addMessageToUI('user', message, selectedImageBase64);
+
+        // Store in history
+        chatHistory.push({ role: 'user', content: message || '[Image uploaded]' });
+
+        // Clear input
+        chatInput.value = '';
+        const imageToSend = selectedImageBase64;
+        clearImagePreview();
+
+        // Show typing indicator
+        const typingEl = showTypingIndicator();
+
+        // Update status
+        chatStatus.textContent = 'Thinking...';
+
+        try {
+            const response = await fetch(CHAT_API_URL, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${authToken}`
+                },
+                body: JSON.stringify({
+                    message: message,
+                    language: chatLanguageSelect.value || null,
+                    image: imageToSend || null,
+                    history: chatHistory.slice(-10)
+                })
+            });
+
+            const data = await response.json();
+            typingEl.remove();
+
+            if (data.success) {
+                addMessageToUI('bot', data.reply);
+                chatHistory.push({ role: 'assistant', content: data.reply });
+            } else {
+                addMessageToUI('bot', `⚠️ ${data.error || 'Something went wrong. Please try again.'}`);
+            }
+        } catch (error) {
+            console.error('Chat error:', error);
+            typingEl.remove();
+            addMessageToUI('bot', '⚠️ Could not connect to the server. Make sure the backend is running.');
+        }
+
+        chatStatus.textContent = 'Agricultural Expert';
+    }
+
+    // Add message to UI
+    function addMessageToUI(role, text, imageBase64) {
+        const msgDiv = document.createElement('div');
+        msgDiv.className = `chat-message ${role === 'user' ? 'user-message' : 'bot-message'}`;
+
+        let content = '';
+        if (role === 'bot') {
+            content += '<span class="msg-avatar">🌾</span>';
+        }
+
+        content += '<div class="msg-bubble">';
+
+        if (imageBase64) {
+            content += `<img src="${imageBase64}" class="msg-image" alt="Uploaded image">`;
+        }
+
+        if (text) {
+            // Simple markdown-like rendering
+            const formatted = text
+                .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                .replace(/\*(.*?)\*/g, '<em>$1</em>')
+                .replace(/^- (.+)/gm, '• $1')
+                .replace(/^(\d+)\. (.+)/gm, '$1. $2')
+                .replace(/\n/g, '<br>');
+            content += `<p>${formatted}</p>`;
+        }
+
+        if (role === 'bot') {
+            content += `<button class="speak-btn" title="Listen">🔊</button>`;
+        }
+
+        content += '</div>';
+
+        if (role === 'user') {
+            content += '<span class="msg-avatar user-avatar">👤</span>';
+        }
+
+        msgDiv.innerHTML = content;
+
+        // Attach speak handler
+        if (role === 'bot') {
+            const speakBtn = msgDiv.querySelector('.speak-btn');
+            speakBtn?.addEventListener('click', () => speakResponse(text));
+        }
+
+        chatMessages.appendChild(msgDiv);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+
+    // Typing indicator
+    function showTypingIndicator() {
+        const typingDiv = document.createElement('div');
+        typingDiv.className = 'chat-message bot-message typing-msg';
+        typingDiv.innerHTML = `
+            <span class="msg-avatar">🌾</span>
+            <div class="msg-bubble">
+                <div class="typing-indicator">
+                    <span></span><span></span><span></span>
+                </div>
+            </div>`;
+        chatMessages.appendChild(typingDiv);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+        return typingDiv;
+    }
+
+
+
     // Reels Modal Functionality
-    window.openReelsModal = function() {
+    window.openReelsModal = function () {
         // Create reels modal if it doesn't exist
         let reelsModal = document.getElementById('reelsModal');
         if (!reelsModal) {
@@ -599,7 +936,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Function to play reel in modal (opens in new tab for now)
-    window.playReelInModal = function(index) {
+    window.playReelInModal = function (index) {
         const reelCards = document.querySelectorAll('.modal-reel-card');
         if (reelCards[index]) {
             // For now, just open the reels page
@@ -619,32 +956,32 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // Outlet Section Booking Functions
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
     // Handle all booking buttons
     const bookingButtons = document.querySelectorAll('.rent-btn, .order-btn, .demo-btn');
-    
+
     bookingButtons.forEach(button => {
-        button.addEventListener('click', async function(e) {
+        button.addEventListener('click', async function (e) {
             const productCard = this.closest('.product-card');
             const productName = productCard.querySelector('h4').textContent;
             const originalText = this.textContent;
-            
+
             // Show loading state
             this.textContent = '⏳ Processing...';
             this.disabled = true;
-            
+
             try {
                 // Simulate API call
                 await new Promise(resolve => setTimeout(resolve, 1500));
-                
+
                 // Generate booking reference
                 const bookingRef = generateBookingReference();
-                
+
                 // Get current date and estimated delivery/service date
                 const currentDate = new Date();
                 const estimatedDate = new Date(currentDate);
                 estimatedDate.setDate(currentDate.getDate() + 2); // Add 2 days
-                
+
                 // Format dates
                 const bookingDate = currentDate.toLocaleDateString('en-IN', {
                     day: 'numeric',
@@ -656,7 +993,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     month: 'short',
                     year: 'numeric'
                 });
-                
+
                 // Show success message with booking details
                 const message = `
                     ✅ Booking Confirmed!
@@ -669,9 +1006,9 @@ document.addEventListener('DOMContentLoaded', function() {
                     Our team will contact you shortly with further details.
                     For support, call: +91 1234567890
                 `;
-                
+
                 showNotification(message, 'success', 8000); // Show for 8 seconds
-                
+
                 // Add to recent bookings (could be used to show booking history)
                 addToRecentBookings({
                     ref: bookingRef,
@@ -679,7 +1016,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     date: bookingDate,
                     status: 'Confirmed'
                 });
-                
+
             } catch (error) {
                 showNotification('❌ Booking failed. Please try again.', 'error');
             } finally {
@@ -703,26 +1040,26 @@ function generateBookingReference() {
 function showNotification(message, type = 'success', duration = 5000) {
     const notification = document.createElement('div');
     notification.className = `notification ${type}`;
-    
+
     // Convert message to HTML with line breaks
     const messageHTML = message.split('\n').map(line => `<div>${line.trim()}</div>`).join('');
     notification.innerHTML = messageHTML;
-    
+
     // Style based on type
     if (type === 'success') {
         notification.style.backgroundColor = '#4CAF50';
     } else if (type === 'error') {
         notification.style.backgroundColor = '#f44336';
     }
-    
+
     // Add to document
     document.body.appendChild(notification);
-    
+
     // Show animation
     setTimeout(() => {
         notification.classList.add('show');
     }, 100);
-    
+
     // Remove after duration
     setTimeout(() => {
         notification.classList.remove('show');
@@ -777,7 +1114,7 @@ style.textContent = `
 document.head.appendChild(style);
 
 // Booking Modal Functionality
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
     // Add click handlers to all order/rent/book buttons
     document.querySelectorAll('.order-btn, .rent-btn, .demo-btn').forEach(btn => {
         btn.addEventListener('click', (e) => {
@@ -785,7 +1122,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const category = card.closest('.category-content').id.split('-')[0];
             const modalId = category + 'BookingModal';
             const modal = document.getElementById(modalId);
-            
+
             // Pre-fill product selection if available
             const productSelect = modal.querySelector('select[name="product"], select[name="equipment"], select[name="service"]');
             if (productSelect && card.querySelector('h4')) {
@@ -797,7 +1134,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     }
                 });
             }
-            
+
             modal.style.display = 'flex';
         });
     });
@@ -825,7 +1162,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const modal = e.target.closest('.booking-modal');
             const formData = new FormData(form);
             const bookingData = Object.fromEntries(formData.entries());
-            
+
             // Show success message
             const successMessage = document.createElement('div');
             successMessage.className = 'success-message';
@@ -834,11 +1171,11 @@ document.addEventListener('DOMContentLoaded', function() {
                 <p>Your booking reference: #${generateBookingReference()}</p>
                 <p>We'll send you a confirmation email shortly.</p>
             `;
-            
+
             const modalContent = modal.querySelector('.modal-content');
             modalContent.innerHTML = '';
             modalContent.appendChild(successMessage);
-            
+
             // Close modal after 3 seconds
             setTimeout(() => {
                 modal.style.display = 'none';
@@ -865,7 +1202,7 @@ function updatePricing(modal) {
     const modalId = modal.id;
     let total = 0;
 
-    switch(modalId) {
+    switch (modalId) {
         case 'seedBookingModal':
             const seedQuantity = parseInt(form.querySelector('input[name="quantity"]')?.value || 0);
             const seedPrice = 200; // Price per kg
@@ -888,18 +1225,18 @@ function updatePricing(modal) {
             const period = form.querySelector('input[name="period"]:checked')?.value;
             const startDate = new Date(form.querySelector('input[name="start-date"]')?.value || '');
             const endDate = new Date(form.querySelector('input[name="end-date"]')?.value || '');
-            
+
             if (equipment && period && startDate && endDate) {
                 const days = Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24));
                 let dailyRate = 0;
-                
-                switch(equipment) {
+
+                switch (equipment) {
                     case 'tractor': dailyRate = 5000; break;
                     case 'harvester': dailyRate = 8000; break;
                     case 'rotavator': dailyRate = 2000; break;
                 }
 
-                switch(period) {
+                switch (period) {
                     case 'daily': total = dailyRate * days; break;
                     case 'weekly': total = (dailyRate * 6) * Math.ceil(days / 7); break;
                     case 'monthly': total = (dailyRate * 20) * Math.ceil(days / 30); break;
@@ -927,9 +1264,9 @@ function updatePricing(modal) {
         case 'droneBookingModal':
             const service = form.querySelector('select[name="service"]')?.value;
             const fieldSize = parseInt(form.querySelector('input[name="field-size"]')?.value || 0);
-            
+
             if (service && fieldSize) {
-                switch(service) {
+                switch (service) {
                     case 'spray': total = fieldSize * 1000; break;
                     case 'mapping': total = fieldSize * 800; break;
                     case 'monitoring': total = fieldSize * 500; break;

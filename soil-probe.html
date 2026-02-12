@@ -8,20 +8,760 @@
     <link rel="icon"
         href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌱</text></svg>">
     <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="hardini-auth.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
         rel="stylesheet">
 
-    <!-- Supabase CDN (for authentication) -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
-    <!-- Firebase CDN (for database) -->
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+    <!-- Firebase SDK (auth + realtime database for IoT) -->
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
+    <script src="firebase-config.js"></script>
 
     <!-- Chart.js for data visualization -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
+    <style>
+        /* ============================================ */
+        /* MY DEVICES SECTION                           */
+        /* ============================================ */
+        .my-devices-section {
+            padding: 40px 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .my-devices-section .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .devices-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .devices-header h2 {
+            font-family: 'Poppins', sans-serif;
+            font-size: 24px;
+            font-weight: 700;
+            color: #e0f2e9;
+        }
+
+        .register-device-btn {
+            background: linear-gradient(135deg, #2e7d32, #43a047);
+            color: #fff;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 12px;
+            font-family: 'Poppins', sans-serif;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(46, 125, 50, 0.3);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .register-device-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 24px rgba(46, 125, 50, 0.5);
+        }
+
+        .register-device-btn.small {
+            padding: 10px 20px;
+            font-size: 13px;
+        }
+
+        .devices-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+        }
+
+        /* Placeholder state */
+        .device-placeholder {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 60px 20px;
+            background: rgba(255, 255, 255, 0.04);
+            border: 2px dashed rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            grid-column: 1 / -1;
+        }
+
+        .device-placeholder .placeholder-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+            opacity: 0.6;
+        }
+
+        .device-placeholder h3 {
+            color: #a5d6a7;
+            font-family: 'Poppins', sans-serif;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .device-placeholder p {
+            color: rgba(255, 255, 255, 0.5);
+            font-family: 'Poppins', sans-serif;
+            font-size: 14px;
+            margin-bottom: 20px;
+        }
+
+        /* Device cards */
+        .device-card {
+            background: rgba(255, 255, 255, 0.06);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .device-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, #4caf50, #81c784);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .device-card:hover {
+            transform: translateY(-3px);
+            border-color: rgba(76, 175, 80, 0.3);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+
+        .device-card:hover::before {
+            opacity: 1;
+        }
+
+        .device-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .device-status {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-family: 'Poppins', sans-serif;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+
+        .device-status.online {
+            color: #4caf50;
+        }
+
+        .device-status.online .status-dot {
+            background: #4caf50;
+            box-shadow: 0 0 8px #4caf50;
+            animation: pulse-dot 2s infinite;
+        }
+
+        .device-status.offline {
+            color: #ff9800;
+        }
+
+        .device-status.offline .status-dot {
+            background: #ff9800;
+        }
+
+        @keyframes pulse-dot {
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.4;
+            }
+        }
+
+        .device-remove-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+            opacity: 0.4;
+            transition: opacity 0.2s;
+            padding: 4px;
+        }
+
+        .device-remove-btn:hover {
+            opacity: 1;
+        }
+
+        .device-card-body {
+            text-align: center;
+            margin-bottom: 16px;
+        }
+
+        .device-icon {
+            font-size: 36px;
+            margin-bottom: 8px;
+        }
+
+        .device-card-body h3 {
+            color: #e0f2e9;
+            font-family: 'Poppins', sans-serif;
+            font-weight: 600;
+            font-size: 16px;
+            margin-bottom: 4px;
+        }
+
+        .device-field {
+            color: rgba(255, 255, 255, 0.5);
+            font-family: 'Poppins', sans-serif;
+            font-size: 13px;
+        }
+
+        .device-card-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-top: 12px;
+            border-top: 1px solid rgba(255, 255, 255, 0.06);
+        }
+
+        .device-meta {
+            display: flex;
+            gap: 12px;
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.5);
+            font-family: 'Poppins', sans-serif;
+        }
+
+        .device-last-seen {
+            font-size: 11px;
+            color: rgba(255, 255, 255, 0.4);
+            font-family: 'Poppins', sans-serif;
+        }
+
+        /* ============================================ */
+        /* REGISTRATION WIZARD MODAL                    */
+        /* ============================================ */
+        .wizard-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(8px);
+            z-index: 9000;
+        }
+
+        .wizard-overlay.active {
+            display: block;
+        }
+
+        .wizard-modal {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0.95);
+            width: 90%;
+            max-width: 560px;
+            max-height: 90vh;
+            background: linear-gradient(180deg, #1a3c25, #0d1f16);
+            border: 1px solid rgba(76, 175, 80, 0.2);
+            border-radius: 24px;
+            z-index: 9001;
+            overflow-y: auto;
+            box-shadow: 0 24px 80px rgba(0, 0, 0, 0.6);
+            opacity: 0;
+            transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .wizard-modal.active {
+            display: block;
+            opacity: 1;
+            transform: translate(-50%, -50%) scale(1);
+        }
+
+        .wizard-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 24px 28px 16px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+        }
+
+        .wizard-header h2 {
+            font-family: 'Poppins', sans-serif;
+            font-size: 20px;
+            font-weight: 700;
+            color: #e0f2e9;
+        }
+
+        .wizard-close {
+            background: rgba(255, 255, 255, 0.08);
+            border: none;
+            color: #a5d6a7;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .wizard-close:hover {
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        /* Step indicator */
+        .wizard-steps {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px 28px;
+            gap: 0;
+        }
+
+        .wizard-step {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+            min-width: 70px;
+        }
+
+        .step-circle {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Poppins', sans-serif;
+            font-weight: 700;
+            font-size: 14px;
+            background: rgba(255, 255, 255, 0.08);
+            color: rgba(255, 255, 255, 0.4);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s;
+        }
+
+        .wizard-step.active .step-circle {
+            background: linear-gradient(135deg, #2e7d32, #43a047);
+            color: #fff;
+            border-color: #4caf50;
+            box-shadow: 0 0 16px rgba(76, 175, 80, 0.4);
+        }
+
+        .wizard-step.completed .step-circle {
+            background: #4caf50;
+            color: #fff;
+            border-color: #4caf50;
+        }
+
+        .wizard-step span {
+            font-family: 'Poppins', sans-serif;
+            font-size: 11px;
+            color: rgba(255, 255, 255, 0.4);
+            font-weight: 500;
+        }
+
+        .wizard-step.active span,
+        .wizard-step.completed span {
+            color: #a5d6a7;
+        }
+
+        .wizard-step-line {
+            flex: 1;
+            height: 2px;
+            background: rgba(255, 255, 255, 0.08);
+            margin: 0 8px;
+            margin-bottom: 22px;
+        }
+
+        /* Wizard content */
+        .wizard-content {
+            padding: 8px 28px 28px;
+        }
+
+        .wizard-content h3 {
+            font-family: 'Poppins', sans-serif;
+            font-size: 18px;
+            font-weight: 600;
+            color: #e0f2e9;
+            margin-bottom: 8px;
+        }
+
+        .wizard-content>p {
+            font-family: 'Poppins', sans-serif;
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.5);
+            margin-bottom: 24px;
+            line-height: 1.5;
+        }
+
+        /* Discover options */
+        .discover-options {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .discover-btn {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+            padding: 24px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            cursor: pointer;
+            transition: all 0.3s;
+            color: #e0f2e9;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        .discover-btn:hover {
+            border-color: rgba(76, 175, 80, 0.4);
+            background: rgba(76, 175, 80, 0.08);
+        }
+
+        .discover-icon {
+            font-size: 32px;
+        }
+
+        .discover-btn span {
+            font-size: 15px;
+            font-weight: 600;
+        }
+
+        .discover-btn small {
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.4);
+        }
+
+        .discover-divider {
+            text-align: center;
+            color: rgba(255, 255, 255, 0.3);
+            font-family: 'Poppins', sans-serif;
+            font-size: 13px;
+            position: relative;
+        }
+
+        .discover-divider::before,
+        .discover-divider::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            width: 40%;
+            height: 1px;
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .discover-divider::before {
+            left: 0;
+        }
+
+        .discover-divider::after {
+            right: 0;
+        }
+
+        .manual-entry {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .manual-entry label,
+        .config-field label {
+            font-family: 'Poppins', sans-serif;
+            font-size: 13px;
+            font-weight: 600;
+            color: #a5d6a7;
+        }
+
+        .manual-entry input,
+        .config-field input,
+        .config-field select {
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 10px;
+            padding: 12px 16px;
+            color: #e0f2e9;
+            font-family: 'Poppins', sans-serif;
+            font-size: 14px;
+            outline: none;
+            transition: border-color 0.2s;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .manual-entry input:focus,
+        .config-field input:focus,
+        .config-field select:focus {
+            border-color: rgba(76, 175, 80, 0.5);
+        }
+
+        .manual-entry small {
+            color: rgba(255, 255, 255, 0.35);
+            font-size: 12px;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        .config-field select option {
+            background: #1a3c25;
+            color: #e0f2e9;
+        }
+
+        /* BLE scan results */
+        .ble-results {
+            margin-top: 20px;
+        }
+
+        .ble-results h4 {
+            color: #a5d6a7;
+            font-family: 'Poppins', sans-serif;
+            font-size: 14px;
+            margin-bottom: 8px;
+        }
+
+        .ble-device-item {
+            background: rgba(76, 175, 80, 0.1);
+            border: 1px solid rgba(76, 175, 80, 0.3);
+            border-radius: 12px;
+            padding: 14px 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .ble-device-name {
+            color: #e0f2e9;
+            font-family: 'Poppins', sans-serif;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .ble-device-id {
+            color: rgba(255, 255, 255, 0.4);
+            font-family: 'Poppins', sans-serif;
+            font-size: 12px;
+        }
+
+        @keyframes ble-scan {
+
+            0%,
+            100% {
+                opacity: 1;
+                transform: scale(1);
+            }
+
+            50% {
+                opacity: 0.5;
+                transform: scale(1.15);
+            }
+        }
+
+        .ble-scanning {
+            animation: ble-scan 1.2s ease-in-out infinite;
+        }
+
+        /* Connectivity tabs */
+        .connectivity-tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 20px;
+        }
+
+        .conn-tab {
+            flex: 1;
+            padding: 12px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            color: rgba(255, 255, 255, 0.6);
+            font-family: 'Poppins', sans-serif;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .conn-tab.active {
+            border-color: #4caf50;
+            background: rgba(76, 175, 80, 0.1);
+            color: #a5d6a7;
+        }
+
+        .conn-config {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .config-field {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .config-note {
+            display: flex;
+            align-items: flex-start;
+            gap: 8px;
+            padding: 12px 16px;
+            background: rgba(255, 152, 0, 0.08);
+            border: 1px solid rgba(255, 152, 0, 0.15);
+            border-radius: 10px;
+            font-family: 'Poppins', sans-serif;
+            font-size: 13px;
+            color: rgba(255, 255, 255, 0.6);
+            line-height: 1.5;
+        }
+
+        /* Registration summary */
+        .register-form {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .registration-summary {
+            background: rgba(76, 175, 80, 0.06);
+            border: 1px solid rgba(76, 175, 80, 0.15);
+            border-radius: 12px;
+            padding: 16px;
+            margin-top: 8px;
+        }
+
+        .registration-summary h4 {
+            color: #a5d6a7;
+            font-family: 'Poppins', sans-serif;
+            font-size: 14px;
+            margin-bottom: 12px;
+        }
+
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 6px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+            font-family: 'Poppins', sans-serif;
+            font-size: 13px;
+        }
+
+        .summary-row span {
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .summary-row strong {
+            color: #e0f2e9;
+        }
+
+        /* Wizard actions */
+        .wizard-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+            margin-top: 28px;
+            padding-top: 16px;
+            border-top: 1px solid rgba(255, 255, 255, 0.06);
+        }
+
+        .wizard-btn {
+            padding: 12px 24px;
+            border-radius: 12px;
+            font-family: 'Poppins', sans-serif;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: none;
+        }
+
+        .wizard-btn.secondary {
+            background: rgba(255, 255, 255, 0.06);
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .wizard-btn.secondary:hover {
+            background: rgba(255, 255, 255, 0.12);
+        }
+
+        .wizard-btn.primary {
+            background: linear-gradient(135deg, #2e7d32, #43a047);
+            color: #fff;
+            box-shadow: 0 4px 15px rgba(46, 125, 50, 0.3);
+        }
+
+        .wizard-btn.primary:hover {
+            box-shadow: 0 6px 24px rgba(46, 125, 50, 0.5);
+            transform: translateY(-1px);
+        }
+
+        .wizard-btn.primary:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .wizard-btn.success {
+            background: linear-gradient(135deg, #2e7d32, #388e3c);
+        }
+
+        /* Responsive */
+        @media (max-width: 600px) {
+            .wizard-modal {
+                width: 95%;
+                border-radius: 16px;
+            }
+
+            .wizard-content {
+                padding: 8px 20px 20px;
+            }
+
+            .wizard-header {
+                padding: 20px 20px 12px;
+            }
+
+            .devices-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+        }
+    </style>
 </head>
+
 
 <body>
     <header>
@@ -33,18 +773,8 @@
                 <a href="connect.html">🤝 CONNECT</a>
                 <a href="reels.html">🎥 REELS</a>
                 <a href="soil-probe.html" class="active">🌱 SOILPROBE</a>
-                <button class="auth-toggle-btn" id="authToggleBtn" onclick="toggleAuth()">🔐 LOGIN</button>
-                <div class="user-menu" id="userMenu" style="display: none;">
-                    <div class="user-info clickable" onclick="openProfile()" style="cursor: pointer;"
-                        title="Click to open profile">
-                        <span id="userAvatar">👨‍🌾</span>
-                        <span id="userName">User</span>
-                    </div>
-                    <div class="user-dropdown">
-                        <button onclick="openProfile()">👤 Profile</button>
-                        <button onclick="logout()">🚪 Logout</button>
-                    </div>
-                </div>
+                <button class="auth-toggle-btn" id="authToggleBtn" style="display:none;">🔐 LOGIN</button>
+                <!-- User menu injected by hardini-auth.js -->
             </div>
         </nav>
     </header>
@@ -72,6 +802,156 @@
             </div>
         </section>
 
+        <!-- My Devices Section -->
+        <section class="my-devices-section">
+            <div class="container">
+                <div class="devices-header">
+                    <h2>?? My Devices</h2>
+                    <button class="register-device-btn" onclick="openRegistrationWizard()">
+                        <span class="btn-icon">?</span> Register New Device
+                    </button>
+                </div>
+                <div class="devices-grid" id="devicesGrid">
+                    <div class="device-placeholder" id="devicePlaceholder">
+                        <div class="placeholder-icon">??</div>
+                        <h3>No Devices Registered</h3>
+                        <p>Register your first SoilProbe IoT device to start monitoring your fields</p>
+                        <button class="register-device-btn small" onclick="openRegistrationWizard()">
+                            ? Register Device
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Device Registration Wizard Modal -->
+        <div class="wizard-overlay" id="wizardOverlay" onclick="closeRegistrationWizard()"></div>
+        <div class="wizard-modal" id="wizardModal">
+            <div class="wizard-header">
+                <h2>?? Register New Device</h2>
+                <button class="wizard-close" onclick="closeRegistrationWizard()">?</button>
+            </div>
+            <div class="wizard-steps">
+                <div class="wizard-step active" data-step="1">
+                    <div class="step-circle">1</div>
+                    <span>Discover</span>
+                </div>
+                <div class="wizard-step-line"></div>
+                <div class="wizard-step" data-step="2">
+                    <div class="step-circle">2</div>
+                    <span>Configure</span>
+                </div>
+                <div class="wizard-step-line"></div>
+                <div class="wizard-step" data-step="3">
+                    <div class="step-circle">3</div>
+                    <span>Register</span>
+                </div>
+            </div>
+            <!-- Step 1: Discover -->
+            <div class="wizard-content" id="wizardStep1">
+                <h3>?? Discover Your Device</h3>
+                <p>Scan for nearby SoilProbe devices via Bluetooth, or enter the device ID manually.</p>
+                <div class="discover-options">
+                    <button class="discover-btn bluetooth-btn" id="bleScanBtn" onclick="startBleScan()">
+                        <div class="discover-icon">??</div>
+                        <span>Scan via Bluetooth</span>
+                        <small>Recommended � Chrome/Edge only</small>
+                    </button>
+                    <div class="discover-divider"><span>or</span></div>
+                    <div class="manual-entry">
+                        <label for="manualDeviceId">Enter Device ID</label>
+                        <input type="text" id="manualDeviceId" placeholder="e.g. soilprobe-abc123"
+                            oninput="onManualIdInput()" />
+                        <small>Find the ID on your device label or packaging</small>
+                    </div>
+                </div>
+                <div class="ble-results" id="bleResults" style="display:none;">
+                    <h4>?? Found Devices</h4>
+                    <div class="ble-device-list" id="bleDeviceList"></div>
+                </div>
+                <div class="wizard-actions">
+                    <button class="wizard-btn secondary" onclick="closeRegistrationWizard()">Cancel</button>
+                    <button class="wizard-btn primary" id="step1Next" onclick="goToStep(2)" disabled>Next ?</button>
+                </div>
+            </div>
+            <!-- Step 2: Configure Connectivity -->
+            <div class="wizard-content" id="wizardStep2" style="display:none;">
+                <h3>?? Configure Connectivity</h3>
+                <p>Choose how your device connects to the internet.</p>
+                <div class="connectivity-tabs">
+                    <button class="conn-tab active" onclick="selectConnectivity('wifi')">?? WiFi</button>
+                    <button class="conn-tab" onclick="selectConnectivity('sim')">?? SIM Card</button>
+                </div>
+                <div class="conn-config" id="wifiConfig">
+                    <div class="config-field">
+                        <label for="wifiSsid">WiFi Network (SSID)</label>
+                        <input type="text" id="wifiSsid" placeholder="Enter your WiFi network name" />
+                    </div>
+                    <div class="config-field">
+                        <label for="wifiPassword">WiFi Password</label>
+                        <input type="password" id="wifiPassword" placeholder="Enter WiFi password" />
+                    </div>
+                    <div class="config-note">
+                        <span>??</span> Credentials will be sent to the device over Bluetooth. Ensure device is nearby.
+                    </div>
+                </div>
+                <div class="conn-config" id="simConfig" style="display:none;">
+                    <div class="config-field">
+                        <label for="simApn">APN (Access Point Name)</label>
+                        <input type="text" id="simApn" placeholder="e.g. internet" value="internet" />
+                    </div>
+                    <div class="config-note">
+                        <span>??</span> Ensure a SIM card with data plan is inserted in the device.
+                    </div>
+                </div>
+                <div class="wizard-actions">
+                    <button class="wizard-btn secondary" onclick="goToStep(1)">? Back</button>
+                    <button class="wizard-btn primary" onclick="goToStep(3)">Next ?</button>
+                </div>
+            </div>
+            <!-- Step 3: Register -->
+            <div class="wizard-content" id="wizardStep3" style="display:none;">
+                <h3>?? Name & Register</h3>
+                <p>Give your device a name and assign it to a field.</p>
+                <div class="register-form">
+                    <div class="config-field">
+                        <label for="deviceName">Device Name</label>
+                        <input type="text" id="deviceName" placeholder="e.g. Field 1 - North Sensor" />
+                    </div>
+                    <div class="config-field">
+                        <label for="fieldNameInput">Field / Location</label>
+                        <input type="text" id="fieldNameInput" placeholder="e.g. Field 1" />
+                    </div>
+                    <div class="config-field">
+                        <label for="cropType">Crop Type</label>
+                        <select id="cropType">
+                            <option value="">Select Crop</option>
+                            <option value="wheat">?? Wheat</option>
+                            <option value="rice">?? Rice</option>
+                            <option value="cotton">?? Cotton</option>
+                            <option value="corn">?? Corn / Maize</option>
+                            <option value="sugarcane">?? Sugarcane</option>
+                            <option value="soybean">?? Soybean</option>
+                            <option value="vegetables">?? Vegetables</option>
+                            <option value="fruits">?? Fruits</option>
+                            <option value="other">?? Other</option>
+                        </select>
+                    </div>
+                    <div class="registration-summary">
+                        <h4>?? Registration Summary</h4>
+                        <div class="summary-row"><span>Device ID:</span> <strong id="summaryDeviceId">--</strong></div>
+                        <div class="summary-row"><span>Connectivity:</span> <strong id="summaryConn">WiFi</strong></div>
+                    </div>
+                </div>
+                <div class="wizard-actions">
+                    <button class="wizard-btn secondary" onclick="goToStep(2)">? Back</button>
+                    <button class="wizard-btn primary success" id="registerBtn" onclick="registerDevice()">
+                        ? Register Device
+                    </button>
+                </div>
+            </div>
+        </div>
+
         <section class="monitoring-dashboard">
             <div class="dashboard-container">
                 <div class="dashboard-header">
@@ -94,12 +974,12 @@
                             <div class="metric-icon">🌡️</div>
                             <div class="metric-info">
                                 <h3>Soil Temperature</h3>
-                                <span class="metric-unit">°C</span>
+                                <span class="metric-unit">�C</span>
                             </div>
                         </div>
                         <div class="metric-value">
                             <span id="soilTempValue">--</span>
-                            <span class="metric-trend" id="soilTempTrend">↗️ +0.5°C</span>
+                            <span class="metric-trend" id="soilTempTrend">↗️ +0.5�C</span>
                         </div>
                         <div class="metric-status">
                             <span class="status-indicator" id="soilTempStatus">Optimal</span>
@@ -128,12 +1008,12 @@
                             <div class="metric-icon">🌤️</div>
                             <div class="metric-info">
                                 <h3>Ambient Temperature</h3>
-                                <span class="metric-unit">°C</span>
+                                <span class="metric-unit">�C</span>
                             </div>
                         </div>
                         <div class="metric-value">
                             <span id="ambientTempValue">--</span>
-                            <span class="metric-trend" id="ambientTempTrend">↗️ +1.2°C</span>
+                            <span class="metric-trend" id="ambientTempTrend">↗️ +1.2�C</span>
                         </div>
                         <div class="metric-status">
                             <span class="status-indicator" id="ambientTempStatus">Normal</span>
@@ -279,482 +1159,41 @@
         </div>
     </footer>
 
-    <!-- Authentication Modal -->
-    <div id="authModal" class="auth-modal">
-        <div class="auth-modal-content">
-            <span class="close-modal" onclick="document.getElementById('authModal').style.display='none'">&times;</span>
 
-            <!-- Login Tab -->
-            <div id="loginTab" class="auth-tab active">
-                <h2>🔐 Login to Hardini</h2>
-                <form id="loginForm" class="auth-form">
-                    <div class="form-group">
-                        <label for="loginEmail">Email Address</label>
-                        <input type="email" id="loginEmail" placeholder="Enter your email" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="loginPassword">Password</label>
-                        <input type="password" id="loginPassword" placeholder="Enter your password" required>
-                    </div>
-                    <div class="form-options">
-                        <label class="remember-me">
-                            <input type="checkbox" id="rememberMe"> Remember me
-                        </label>
-                        <a href="#" class="forgot-password" onclick="showForgotPassword()">Forgot password?</a>
-                    </div>
-                    <button type="submit" class="auth-btn">Login</button>
-                </form>
-                <div class="auth-divider">
-                    <span>or</span>
-                </div>
-                <div class="social-login">
-                    <button class="social-btn google-btn" onclick="loginWithGoogle()">
-                        <span class="social-icon">🌐</span>
-                        Continue with Google
-                    </button>
-                </div>
-                <div class="auth-switch">
-                    Don't have an account? <a href="#" onclick="switchToSignup()">Sign up</a>
-                </div>
-            </div>
+    <!-- Shared Auth Module -->
+    <script src="hardini-auth.js"></script>
 
-            <!-- Signup Tab -->
-            <div id="signupTab" class="auth-tab">
-                <h2>🌱 Join Hardini</h2>
-                <form id="signupForm" class="auth-form">
-                    <div class="form-group">
-                        <label for="signupName">Full Name</label>
-                        <input type="text" id="signupName" placeholder="Enter your full name" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="signupEmail">Email Address</label>
-                        <input type="email" id="signupEmail" placeholder="Enter your email" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="signupPassword">Password</label>
-                        <input type="password" id="signupPassword" placeholder="Create a password" required>
-                        <span class="password-hint">Must be at least 8 characters</span>
-                    </div>
-                    <div class="form-group">
-                        <label for="signupConfirmPassword">Confirm Password</label>
-                        <input type="password" id="signupConfirmPassword" placeholder="Confirm your password" required>
-                    </div>
-                    <div class="terms-agreement">
-                        <label class="terms-checkbox">
-                            <input type="checkbox" id="agreeTerms" required>
-                            I agree to the <a href="#" onclick="showTerms()">Terms of Service</a> and <a href="#"
-                                onclick="showPrivacy()">Privacy Policy</a>
-                        </label>
-                    </div>
-                    <button type="submit" class="auth-btn">Create Account</button>
-                </form>
-                <div class="auth-divider">
-                    <span>or</span>
-                </div>
-                <div class="social-login">
-                    <button class="social-btn google-btn" onclick="signupWithGoogle()">
-                        <span class="social-icon">🌐</span>
-                        Continue with Google
-                    </button>
-                </div>
-                <div class="auth-switch">
-                    Already have an account? <a href="#" onclick="switchToLogin()">Login</a>
-                </div>
-            </div>
-
-            <!-- Profile Tab -->
-            <div id="profileTab" class="auth-tab">
-                <div class="profile-info">
-                    <div class="profile-avatar" id="modalUserAvatar">👨‍🌾</div>
-                    <div class="profile-details">
-                        <h3 id="modalUserName">User Name</h3>
-                        <p id="modalUserEmail">user@example.com</p>
-                    </div>
-                </div>
-                <div class="profile-actions">
-                    <button class="profile-btn" onclick="editProfile()">
-                        <span class="action-icon">✏️</span>
-                        Edit Profile
-                    </button>
-                    <button class="profile-btn" onclick="viewOrders()">
-                        <span class="action-icon">📦</span>
-                        My Orders
-                    </button>
-                </div>
-                <div class="profile-actions">
-                    <button class="profile-btn" onclick="openSettings()">
-                        <span class="action-icon">⚙️</span>
-                        Settings
-                    </button>
-                    <button class="profile-btn" onclick="logout()">
-                        <span class="action-icon">🚪</span>
-                        Logout
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Supabase Authentication Script -->
+    <!-- Firebase Realtime DB for SoilProbe IoT -->
     <script>
-        // ============================================
-        // ESSENTIAL UI FUNCTIONS (Must be defined first)
-        // ============================================
+        // Use the existing Firebase app (already initialized by hardini-auth.js via firebase-config.js)
+        const firebaseDb = firebase.database();
 
-        function toggleAuth() {
-            const authModal = document.getElementById('authModal');
-            if (authModal) {
-                authModal.style.display = 'flex';
-                switchToLogin();
-            }
-        }
-
-        function openProfile() {
-            const authModal = document.getElementById('authModal');
-            if (authModal) {
-                authModal.style.display = 'flex';
-                showProfileTab();
-            }
-        }
-
-        async function logout() {
-            try {
-                if (supabaseClient) {
-                    await supabaseClient.auth.signOut();
-                }
-            } catch (error) {
-                console.error('Logout error:', error);
-            }
-        }
-
-        function showNotification(message, type = 'info') {
-            const notification = document.createElement('div');
-            notification.className = `notification ${type}`;
-            notification.innerHTML = `
-                <span class="notification-icon">${type === 'success' ? '✅' : type === 'error' ? '❌' : 'ℹ️'}</span>
-                <span class="notification-text">${message}</span>
-            `;
-            document.body.appendChild(notification);
-            setTimeout(() => notification.classList.add('show'), 100);
-            setTimeout(() => {
-                notification.classList.remove('show');
-                setTimeout(() => notification.remove(), 300);
-            }, 4000);
-        }
-
-        // ============================================
-        // SUPABASE CONFIGURATION
-        // ============================================
-        const SUPABASE_URL = 'https://aahedprzvceldzcmmvpp.supabase.co';
-        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFhaGVkcHJ6dmNlbGR6Y21tdnBwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjE2NTg5NzAsImV4cCI6MjA3NzIzNDk3MH0.z98v917ye2PU76gfk4cqfTGUGNMfPKqTJdBgkFkyVDo';
-
-        let supabaseClient = null;
-        try {
-            if (window.supabase && window.supabase.createClient) {
-                supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-                    realtime: { params: { eventsPerSecond: 5 } }
-                });
-            }
-        } catch (error) {
-            console.error('Failed to initialize Supabase:', error);
-        }
-
+        // Auth bridge � get currentUser from shared auth module
         let currentUser = null;
-
-        document.addEventListener('DOMContentLoaded', async () => {
-            if (supabaseClient) {
-                const { data: { user }, error } = await supabaseClient.auth.getUser();
-                if (user && !error) {
-                    currentUser = user;
-                    updateUIForLoggedInUser(user);
-                }
-                supabaseClient.auth.onAuthStateChange(async (event, session) => {
-                    if (event === 'SIGNED_IN' && session?.user) {
-                        currentUser = session.user;
-                        updateUIForLoggedInUser(session.user);
-                    } else if (event === 'SIGNED_OUT') {
-                        currentUser = null;
-                        updateUIForLoggedOutUser();
-                    }
-                });
-            }
+        document.addEventListener('hardiniAuthReady', (e) => {
+            currentUser = e.detail.user;
             initializeSoilProbe();
         });
 
-        // Update UI for logged in user
-        function updateUIForLoggedInUser(user) {
-            const authToggleBtn = document.getElementById('authToggleBtn');
-            const userMenu = document.getElementById('userMenu');
-
-            if (authToggleBtn) authToggleBtn.style.display = 'none';
-            if (userMenu) userMenu.style.display = 'flex';
-
-            // Update user info
-            const userAvatar = document.getElementById('userAvatar');
-            const userName = document.getElementById('userName');
-
-            if (userAvatar) userAvatar.textContent = getUserEmoji(user.email);
-            if (userName) userName.textContent = user.user_metadata?.full_name || user.email.split('@')[0];
-        }
-
-        // Update UI for logged out user
-        function updateUIForLoggedOutUser() {
-            const authToggleBtn = document.getElementById('authToggleBtn');
-            const userMenu = document.getElementById('userMenu');
-
-            if (authToggleBtn) authToggleBtn.style.display = 'inline-block';
-            if (userMenu) userMenu.style.display = 'none';
-        }
-
-        // Authentication functions
-        function toggleAuth() {
-            const authModal = document.getElementById('authModal');
-            if (authModal) {
-                authModal.style.display = 'flex';
-            }
-        }
-
-        function openProfile() {
-            const authModal = document.getElementById('authModal');
-            if (authModal) {
-                authModal.style.display = 'flex';
-                showProfileTab();
-            }
-        }
-
-        async function logout() {
-            try {
-                const { error } = await supabaseClient.auth.signOut();
-                if (error) throw error;
-            } catch (error) {
-                console.error('Logout error:', error);
-            }
-        }
-
-        // Utility functions
-        function getUserEmoji(email) {
-            const letters = (email + 'default').substring(0, 2).toLowerCase();
-            const emojiOptions = ['👨‍🌾', '👩‍🌾', '🌾', '🌱', '🚜', '🌽', '🍎', '🥕'];
-            const index = letters.charCodeAt(0) + letters.charCodeAt(1);
-            return emojiOptions[index % emojiOptions.length];
-        }
-
-        // Enhanced notification function
+        // Notification utility
         function showNotification(message, type = 'info') {
             const notification = document.createElement('div');
-            notification.className = `notification ${type}`;
-            notification.innerHTML = `
-                <span class="notification-icon">
-                    ${type === 'success' ? '✅' : type === 'error' ? '❌' : type === 'warning' ? '⚠️' : 'ℹ️'}
-                </span>
-                <span class="notification-text">${message}</span>
+            notification.style.cssText = `
+                position: fixed; top: 20px; right: 20px; z-index: 10000;
+                padding: 14px 24px; border-radius: 12px; font-family: 'Poppins', sans-serif;
+                font-size: 14px; color: #fff; backdrop-filter: blur(20px);
+                box-shadow: 0 8px 32px rgba(0,0,0,0.3); transition: all 0.4s ease;
+                opacity: 0; transform: translateX(40px);
+                background: ${type === 'success' ? 'rgba(76,175,80,0.9)' : type === 'error' ? 'rgba(244,67,54,0.9)' : type === 'warning' ? 'rgba(255,152,0,0.9)' : 'rgba(33,150,243,0.9)'};
             `;
+            notification.textContent = message;
             document.body.appendChild(notification);
-
-            setTimeout(() => notification.classList.add('show'), 100);
+            requestAnimationFrame(() => { notification.style.opacity = '1'; notification.style.transform = 'translateX(0)'; });
             setTimeout(() => {
-                notification.classList.remove('show');
-                setTimeout(() => notification.remove(), 300);
-            }, 4000);
+                notification.style.opacity = '0'; notification.style.transform = 'translateX(40px)';
+                setTimeout(() => notification.remove(), 400);
+            }, 3500);
         }
-
-        // Modal tab switching functions
-        function switchToLogin() {
-            showAuthTab('loginTab');
-        }
-
-        function switchToSignup() {
-            showAuthTab('signupTab');
-        }
-
-        function showProfileTab() {
-            showAuthTab('profileTab');
-            // Update profile info if user is logged in
-            if (currentUser) {
-                document.getElementById('modalUserName').textContent = currentUser.user_metadata?.full_name || currentUser.email.split('@')[0];
-                document.getElementById('modalUserEmail').textContent = currentUser.email;
-                document.getElementById('modalUserAvatar').textContent = getUserEmoji(currentUser.email);
-            }
-        }
-
-        function showAuthTab(tabId) {
-            // Hide all tabs
-            const tabs = document.querySelectorAll('.auth-tab');
-            tabs.forEach(tab => tab.classList.remove('active'));
-
-            // Show selected tab
-            const selectedTab = document.getElementById(tabId);
-            if (selectedTab) {
-                selectedTab.classList.add('active');
-            }
-        }
-
-        // Form handling functions
-        document.addEventListener('DOMContentLoaded', () => {
-            // Login form submission
-            const loginForm = document.getElementById('loginForm');
-            if (loginForm) {
-                loginForm.addEventListener('submit', async (e) => {
-                    e.preventDefault();
-                    await handleLogin();
-                });
-            }
-
-            // Signup form submission
-            const signupForm = document.getElementById('signupForm');
-            if (signupForm) {
-                signupForm.addEventListener('submit', async (e) => {
-                    e.preventDefault();
-                    await handleSignup();
-                });
-            }
-
-            // Close modal when clicking outside
-            const authModal = document.getElementById('authModal');
-            if (authModal) {
-                authModal.addEventListener('click', (e) => {
-                    if (e.target === authModal) {
-                        authModal.style.display = 'none';
-                    }
-                });
-            }
-        });
-
-        // Login handler
-        async function handleLogin() {
-            const email = document.getElementById('loginEmail').value;
-            const password = document.getElementById('loginPassword').value;
-            const rememberMe = document.getElementById('rememberMe').checked;
-
-            try {
-                const { data, error } = await supabaseClient.auth.signInWithPassword({
-                    email: email,
-                    password: password
-                });
-
-                if (error) throw error;
-
-                showNotification('Login successful! Welcome back.', 'success');
-                document.getElementById('authModal').style.display = 'none';
-
-                // Reset form
-                document.getElementById('loginForm').reset();
-
-            } catch (error) {
-                console.error('Login error:', error);
-                showNotification(error.message || 'Login failed. Please try again.', 'error');
-            }
-        }
-
-        // Signup handler
-        async function handleSignup() {
-            const name = document.getElementById('signupName').value;
-            const email = document.getElementById('signupEmail').value;
-            const password = document.getElementById('signupPassword').value;
-            const confirmPassword = document.getElementById('signupConfirmPassword').value;
-            const agreeTerms = document.getElementById('agreeTerms').checked;
-
-            // Validation
-            if (password !== confirmPassword) {
-                showNotification('Passwords do not match.', 'error');
-                return;
-            }
-
-            if (password.length < 8) {
-                showNotification('Password must be at least 8 characters long.', 'error');
-                return;
-            }
-
-            if (!agreeTerms) {
-                showNotification('Please agree to the Terms of Service and Privacy Policy.', 'error');
-                return;
-            }
-
-            try {
-                const { data, error } = await supabaseClient.auth.signUp({
-                    email: email,
-                    password: password,
-                    options: {
-                        data: {
-                            full_name: name
-                        }
-                    }
-                });
-
-                if (error) throw error;
-
-                showNotification('Account created successfully! Please check your email to verify your account.', 'success');
-                document.getElementById('authModal').style.display = 'none';
-
-                // Reset form
-                document.getElementById('signupForm').reset();
-
-            } catch (error) {
-                console.error('Signup error:', error);
-                showNotification(error.message || 'Signup failed. Please try again.', 'error');
-            }
-        }
-
-        // Social login functions (placeholders)
-        async function loginWithGoogle() {
-            try {
-                const { data, error } = await supabaseClient.auth.signInWithOAuth({
-                    provider: 'google',
-                    options: {
-                        redirectTo: window.location.origin
-                    }
-                });
-
-                if (error) throw error;
-
-            } catch (error) {
-                console.error('Google login error:', error);
-                showNotification('Google login failed. Please try again.', 'error');
-            }
-        }
-
-        async function signupWithGoogle() {
-            // Same as login with Google
-            await loginWithGoogle();
-        }
-
-        // Profile functions (placeholders)
-        function editProfile() {
-            showNotification('Profile editing feature coming soon!', 'info');
-        }
-
-        function viewOrders() {
-            showNotification('Orders feature coming soon!', 'info');
-        }
-
-        function openSettings() {
-            showNotification('Settings feature coming soon!', 'info');
-        }
-
-        // Utility functions
-        function showForgotPassword() {
-            showNotification('Password reset feature coming soon! Please contact support.', 'info');
-        }
-
-        function showTerms() {
-            showNotification('Terms of Service will be displayed here.', 'info');
-        }
-
-        function showPrivacy() {
-            showNotification('Privacy Policy will be displayed here.', 'info');
-        }
-    </script>
-
-    <!-- Firebase Configuration and SoilProbe IoT Functionality -->
-    <script>
-        // Firebase Configuration
-        const firebaseConfig = {
-            databaseURL: 'https://hardini-d2114-default-rtdb.asia-southeast1.firebasedatabase.app/'
-        };
-
-        // Initialize Firebase
-        firebase.initializeApp(firebaseConfig);
-        const firebaseDb = firebase.database();
 
         // SoilProbe IoT Monitoring System
         let currentField = '';
@@ -791,7 +1230,7 @@
                 data: {
                     labels: [],
                     datasets: [{
-                        label: 'Soil Temperature (°C)',
+                        label: 'Soil Temperature (�C)',
                         data: [],
                         borderColor: '#ff6b35',
                         backgroundColor: 'rgba(255, 107, 53, 0.1)',
@@ -852,7 +1291,7 @@
                 }
 
                 // Fetch latest soil readings from backend API (for device 'soilprobe1')
-                const response = await fetch(`https://backend-iota-livid-46.vercel.app/api/soil-readings/soilprobe1?limit=1&user_uid=${currentUser.id}`);
+                const response = await fetch(`https://backend-iota-livid-46.vercel.app/api/soil-readings/soilprobe1?limit=1&user_uid=${currentUser.uid}`);
                 const data = await response.json();
 
                 if (data.success && data.data && data.data.length > 0) {
@@ -892,7 +1331,7 @@
                 try {
                     if (!currentUser) return; // Don't poll if user not logged in
 
-                    const response = await fetch(`https://backend-iota-livid-46.vercel.app/api/soil-readings/soilprobe1?limit=1&user_uid=${currentUser.id}`);
+                    const response = await fetch(`https://backend-iota-livid-46.vercel.app/api/soil-readings/soilprobe1?limit=1&user_uid=${currentUser.uid}`);
                     const data = await response.json();
 
                     if (data.success && data.data && data.data.length > 0) {
@@ -934,7 +1373,7 @@
                 if (!currentUser) return; // Don't load if user not logged in
 
                 // Fetch historical data from backend API
-                const response = await fetch(`https://backend-iota-livid-46.vercel.app/api/soil-readings/soilprobe1?limit=24&user_uid=${currentUser.id}`);
+                const response = await fetch(`https://backend-iota-livid-46.vercel.app/api/soil-readings/soilprobe1?limit=24&user_uid=${currentUser.uid}`);
                 const data = await response.json();
 
                 if (data.success && data.data && data.data.length > 0) {
@@ -974,7 +1413,7 @@
                 }
 
                 // Fetch latest data for the selected field/device from backend API
-                const response = await fetch(`https://backend-iota-livid-46.vercel.app/api/soil-readings/${fieldId}?limit=1&user_uid=${currentUser.id}`);
+                const response = await fetch(`https://backend-iota-livid-46.vercel.app/api/soil-readings/${fieldId}?limit=1&user_uid=${currentUser.uid}`);
                 const data = await response.json();
 
                 if (data.success && data.data && data.data.length > 0) {
@@ -1036,13 +1475,13 @@
 
             // Update each trend indicator
             document.getElementById('soilTempTrend').textContent =
-                calculateTrend(currentData.soil_temp_c, previousSensorData.soil_temp_c, '°C');
+                calculateTrend(currentData.soil_temp_c, previousSensorData.soil_temp_c, '�C');
 
             document.getElementById('soilMoistureTrend').textContent =
                 calculateTrend(currentData.soil_moist_pct, previousSensorData.soil_moist_pct, '%');
 
             document.getElementById('ambientTempTrend').textContent =
-                calculateTrend(currentData.ambient_temp_c, previousSensorData.ambient_temp_c, '°C');
+                calculateTrend(currentData.ambient_temp_c, previousSensorData.ambient_temp_c, '�C');
 
             document.getElementById('ambientHumidityTrend').textContent =
                 calculateTrend(currentData.ambient_humidity_pct, previousSensorData.ambient_humidity_pct, '%');
@@ -1170,7 +1609,7 @@
 
         // Calculate temperature health score (0-100)
         function calculateTemperatureScore(temp) {
-            // Optimal soil temperature range: 15-25°C for most crops
+            // Optimal soil temperature range: 15-25�C for most crops
             if (temp >= 18 && temp <= 25) return 100; // Optimal
             if (temp >= 15 && temp <= 30) return 80; // Good
             if (temp >= 10 && temp <= 35) return 60; // Acceptable
@@ -1279,10 +1718,318 @@
             showNotification('Data refreshed successfully', 'success');
         }
 
+        // ============================================
+        // DEVICE MANAGEMENT
+        // ============================================
+        const API_BASE = 'https://backend-iota-livid-46.vercel.app';
+        let selectedDeviceId = '';
+        let selectedConnectivity = 'wifi';
+        let registeredDevices = [];
+
+        // Load registered devices from backend
+        async function loadDevices() {
+            try {
+                if (!currentUser) return;
+                const token = await currentUser.getIdToken();
+                const response = await fetch(`${API_BASE}/api/devices`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const data = await response.json();
+                if (data.success) {
+                    registeredDevices = data.data || [];
+                    renderDeviceCards();
+                    populateFieldSelect();
+                }
+            } catch (error) {
+                console.error('Error loading devices:', error);
+            }
+        }
+
+        // Render device cards
+        function renderDeviceCards() {
+            const grid = document.getElementById('devicesGrid');
+            const placeholder = document.getElementById('devicePlaceholder');
+
+            if (registeredDevices.length === 0) {
+                if (placeholder) placeholder.style.display = 'flex';
+                // Remove any existing device cards
+                grid.querySelectorAll('.device-card').forEach(c => c.remove());
+                return;
+            }
+
+            if (placeholder) placeholder.style.display = 'none';
+            // Remove old cards
+            grid.querySelectorAll('.device-card').forEach(c => c.remove());
+
+            registeredDevices.forEach(device => {
+                const isOnline = device.last_reading && (Date.now() - new Date(device.last_reading).getTime()) < 120000;
+                const signalBars = getSignalBars(device.rssi);
+                const lastSeen = device.last_reading
+                    ? timeAgo(new Date(device.last_reading))
+                    : 'Never';
+
+                const card = document.createElement('div');
+                card.className = 'device-card';
+                card.innerHTML = `
+                    <div class="device-card-header">
+                        <div class="device-status ${isOnline ? 'online' : 'offline'}">
+                            <span class="status-dot"></span>
+                            ${isOnline ? 'Online' : 'Offline'}
+                        </div>
+                        <button class="device-remove-btn" onclick="removeDevice('${device.device_id}')" title="Remove device">???</button>
+                    </div>
+                    <div class="device-card-body">
+                        <div class="device-icon">??</div>
+                        <h3>${device.device_name || device.device_id}</h3>
+                        <p class="device-field">${device.field_name || 'No field'}${device.crop_type ? ' � ' + device.crop_type : ''}</p>
+                    </div>
+                    <div class="device-card-footer">
+                        <div class="device-meta">
+                            <span title="Signal strength">${signalBars}</span>
+                            <span title="Connectivity">${device.connectivity === 'sim' ? '?? SIM' : '?? WiFi'}</span>
+                        </div>
+                        <div class="device-last-seen">Last: ${lastSeen}</div>
+                    </div>
+                `;
+                card.onclick = () => selectDeviceForMonitoring(device.device_id);
+                grid.appendChild(card);
+            });
+        }
+
+        // Populate field select from registered devices
+        function populateFieldSelect() {
+            const fieldSelect = document.getElementById('fieldSelect');
+            if (!fieldSelect) return;
+            // Keep the first "Select Field" option
+            const defaultOption = fieldSelect.options[0];
+            fieldSelect.innerHTML = '';
+            fieldSelect.appendChild(defaultOption);
+            registeredDevices.forEach(device => {
+                const opt = document.createElement('option');
+                opt.value = device.device_id;
+                opt.textContent = `${device.device_name || device.device_id}${device.crop_type ? ' - ' + device.crop_type : ''}`;
+                fieldSelect.appendChild(opt);
+            });
+        }
+
+        // Select device for monitoring dashboard
+        function selectDeviceForMonitoring(deviceId) {
+            const fieldSelect = document.getElementById('fieldSelect');
+            if (fieldSelect) {
+                fieldSelect.value = deviceId;
+                currentField = deviceId;
+                loadFieldData(deviceId);
+            }
+        }
+
+        // Signal strength bars from RSSI
+        function getSignalBars(rssi) {
+            if (!rssi) return '?? --';
+            if (rssi > -50) return '?? ����';
+            if (rssi > -60) return '?? ����';
+            if (rssi > -70) return '?? ����';
+            if (rssi > -80) return '?? ����';
+            return '?? ����';
+        }
+
+        // Time ago helper
+        function timeAgo(date) {
+            const seconds = Math.floor((Date.now() - date.getTime()) / 1000);
+            if (seconds < 60) return 'Just now';
+            if (seconds < 3600) return `${Math.floor(seconds / 60)}m ago`;
+            if (seconds < 86400) return `${Math.floor(seconds / 3600)}h ago`;
+            return `${Math.floor(seconds / 86400)}d ago`;
+        }
+
+        // ============================================
+        // REGISTRATION WIZARD
+        // ============================================
+        function openRegistrationWizard() {
+            selectedDeviceId = '';
+            selectedConnectivity = 'wifi';
+            document.getElementById('wizardOverlay').classList.add('active');
+            document.getElementById('wizardModal').classList.add('active');
+            goToStep(1);
+            // Reset all fields
+            document.getElementById('manualDeviceId').value = '';
+            document.getElementById('wifiSsid').value = '';
+            document.getElementById('wifiPassword').value = '';
+            document.getElementById('deviceName').value = '';
+            document.getElementById('fieldNameInput').value = '';
+            document.getElementById('cropType').value = '';
+            document.getElementById('step1Next').disabled = true;
+        }
+
+        function closeRegistrationWizard() {
+            document.getElementById('wizardOverlay').classList.remove('active');
+            document.getElementById('wizardModal').classList.remove('active');
+        }
+
+        function goToStep(step) {
+            // Hide all steps
+            document.querySelectorAll('.wizard-content').forEach(el => el.style.display = 'none');
+            // Show target step
+            document.getElementById(`wizardStep${step}`).style.display = 'block';
+            // Update step indicators
+            document.querySelectorAll('.wizard-step').forEach(el => {
+                const s = parseInt(el.dataset.step);
+                el.classList.remove('active', 'completed');
+                if (s === step) el.classList.add('active');
+                else if (s < step) el.classList.add('completed');
+            });
+            // Update summary on step 3
+            if (step === 3) {
+                document.getElementById('summaryDeviceId').textContent = selectedDeviceId || '--';
+                document.getElementById('summaryConn').textContent = selectedConnectivity === 'sim' ? 'SIM Card' : 'WiFi';
+            }
+        }
+
+        // Manual device ID input
+        function onManualIdInput() {
+            const val = document.getElementById('manualDeviceId').value.trim();
+            selectedDeviceId = val;
+            document.getElementById('step1Next').disabled = val.length < 3;
+        }
+
+        // Web Bluetooth scan
+        async function startBleScan() {
+            if (!navigator.bluetooth) {
+                showNotification('Bluetooth not supported in this browser. Use Chrome or Edge, or enter ID manually.', 'warning');
+                return;
+            }
+            try {
+                const btn = document.getElementById('bleScanBtn');
+                btn.innerHTML = '<div class="discover-icon ble-scanning">??</div><span>Scanning...</span><small>Select your device from the browser popup</small>';
+                btn.disabled = true;
+
+                // Web Bluetooth API � request device with SoilProbe service UUID
+                // Using a common BLE UART service as fallback for generic ESP32 devices
+                const device = await navigator.bluetooth.requestDevice({
+                    filters: [{ namePrefix: 'SoilProbe' }],
+                    optionalServices: ['6e400001-b5a3-f393-e0a9-e50e24dcca9e'] // Nordic UART
+                });
+
+                if (device) {
+                    selectedDeviceId = device.name || device.id;
+                    document.getElementById('manualDeviceId').value = selectedDeviceId;
+                    document.getElementById('step1Next').disabled = false;
+                    showNotification(`Found device: ${selectedDeviceId}`, 'success');
+
+                    // Show in results
+                    document.getElementById('bleResults').style.display = 'block';
+                    document.getElementById('bleDeviceList').innerHTML = `
+                        <div class="ble-device-item selected">
+                            <div class="ble-device-name">?? ${device.name || 'SoilProbe Device'}</div>
+                            <div class="ble-device-id">${device.id || selectedDeviceId}</div>
+                        </div>
+                    `;
+                }
+
+                btn.innerHTML = '<div class="discover-icon">??</div><span>Scan via Bluetooth</span><small>Recommended � Chrome/Edge only</small>';
+                btn.disabled = false;
+
+            } catch (error) {
+                console.log('BLE scan cancelled or error:', error);
+                const btn = document.getElementById('bleScanBtn');
+                btn.innerHTML = '<div class="discover-icon">??</div><span>Scan via Bluetooth</span><small>Recommended � Chrome/Edge only</small>';
+                btn.disabled = false;
+                if (error.name !== 'NotFoundError') {
+                    showNotification('Bluetooth scan failed. Try entering the device ID manually.', 'warning');
+                }
+            }
+        }
+
+        // Connectivity selection
+        function selectConnectivity(type) {
+            selectedConnectivity = type;
+            document.querySelectorAll('.conn-tab').forEach(t => t.classList.remove('active'));
+            event.target.classList.add('active');
+            document.getElementById('wifiConfig').style.display = type === 'wifi' ? 'block' : 'none';
+            document.getElementById('simConfig').style.display = type === 'sim' ? 'block' : 'none';
+        }
+
+        // Register device via API
+        async function registerDevice() {
+            const deviceName = document.getElementById('deviceName').value.trim();
+            const fieldName = document.getElementById('fieldNameInput').value.trim();
+            const cropType = document.getElementById('cropType').value;
+
+            if (!selectedDeviceId) {
+                showNotification('Please enter or scan a device ID', 'error');
+                goToStep(1);
+                return;
+            }
+            if (!deviceName) {
+                showNotification('Please enter a device name', 'error');
+                return;
+            }
+
+            const regBtn = document.getElementById('registerBtn');
+            regBtn.disabled = true;
+            regBtn.textContent = '? Registering...';
+
+            try {
+                const token = await currentUser.getIdToken();
+                const response = await fetch(`${API_BASE}/api/devices`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({
+                        device_id: selectedDeviceId,
+                        device_name: deviceName,
+                        field_name: fieldName,
+                        crop_type: cropType,
+                        connectivity: selectedConnectivity
+                    })
+                });
+
+                const data = await response.json();
+                if (data.success) {
+                    showNotification(`?? Device "${deviceName}" registered successfully!`, 'success');
+                    closeRegistrationWizard();
+                    await loadDevices();
+                } else {
+                    showNotification(data.error || 'Registration failed', 'error');
+                }
+            } catch (error) {
+                console.error('Registration error:', error);
+                showNotification('Failed to register device. Check your connection.', 'error');
+            }
+
+            regBtn.disabled = false;
+            regBtn.textContent = '? Register Device';
+        }
+
+        // Remove a device
+        async function removeDevice(deviceId) {
+            if (!confirm(`Remove device "${deviceId}"? Historical data will be preserved.`)) return;
+
+            try {
+                const token = await currentUser.getIdToken();
+                const response = await fetch(`${API_BASE}/api/devices/${deviceId}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const data = await response.json();
+                if (data.success) {
+                    showNotification('Device removed', 'success');
+                    await loadDevices();
+                }
+            } catch (error) {
+                console.error('Error removing device:', error);
+                showNotification('Failed to remove device', 'error');
+            }
+        }
+
+        // Load devices when auth is ready (alongside initializeSoilProbe)
+        document.addEventListener('hardiniAuthReady', () => {
+            loadDevices();
+        });
+
 
     </script>
-
-    <script src="script.js"></script>
 </body>
 
 </html>
