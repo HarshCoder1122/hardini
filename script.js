@@ -275,7 +275,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 // Call the actual orders API
                 const API_BASE = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
                     ? 'http://localhost:3001'
-                    : 'https://hardini-backend.onrender.com';
+                    : 'https://hardini.onrender.com';
 
                 const response = await fetch(`${API_BASE}/api/orders`, {
                     method: 'POST',
@@ -490,7 +490,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // ============================================
     const CHAT_API_URL = (window.location.protocol === 'file:' || window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
         ? 'http://localhost:3001/api/chat'
-        : 'https://hardini-backend.onrender.com/api/chat';
+        : 'https://hardini.onrender.com/api/chat';
 
     const chatbotToggle = document.getElementById('chatbotToggle');
     const chatbotBox = document.getElementById('chatbotBox');
@@ -687,7 +687,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const TTS_URL = (window.location.protocol === 'file:' || window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
             ? 'http://localhost:3001/api/tts'
-            : 'https://hardini-backend.onrender.com/api/tts';
+            : 'https://hardini.onrender.com/api/tts';
 
         try {
             chatStatus.textContent = 'Speaking...';

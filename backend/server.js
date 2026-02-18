@@ -21,11 +21,14 @@ app.use(express.json({ limit: '10mb' }));
 const serviceAccountPath = './serviceAccountKey.json';
 let serviceAccount;
 
+const fs = require('fs'); // Added fs requirement
+
 try {
-    // 1. Try Environment Variable (Best for Vercel)
+    // 1. Try Environment Variable (Best for Render/Vercel)
     if (process.env.FIREBASE_SERVICE_ACCOUNT) {
+        console.log('🔹 Using FIREBASE_SERVICE_ACCOUNT env var');
         // If it's a base64 string (common for easier copy-pasting), decode it
-        if (!process.env.FIREBASE_SERVICE_ACCOUNT.startsWith('{')) {
+        if (!process.env.FIREBASE_SERVICE_ACCOUNT.trim().startsWith('{')) {
             const buff = Buffer.from(process.env.FIREBASE_SERVICE_ACCOUNT, 'base64');
             serviceAccount = JSON.parse(buff.toString('utf-8'));
         } else {
@@ -33,8 +36,11 @@ try {
         }
     }
     // 2. Try Local File
-    else {
+    else if (fs.existsSync(serviceAccountPath)) {
+        console.log('🔹 Using local serviceAccountKey.json');
         serviceAccount = require(serviceAccountPath);
+    } else {
+        throw new Error('No Firebase credentials found (Env Var or File)');
     }
 
     admin.initializeApp({
@@ -53,15 +59,20 @@ const db = admin.database();
 app.use(express.json({ limit: '10mb' }));
 
 // Auth Middleware to verify Firebase ID Token
+// Auth Middleware to verify Firebase ID Token
 const verifyAuth = async (req, res, next) => {
+    // Skip auth for preflight requests
+    if (req.method === 'OPTIONS') return next();
+
     try {
         const authHeader = req.headers.authorization;
         if (!authHeader || !authHeader.startsWith('Bearer ')) {
             // Check if it's the soil reading endpoint (ESP32 might not have token)
-            // or health check
+            // or health check or public APIs
             if (req.path === '/api/soil-readings' || req.path === '/api/health' || req.path === '/api/reels' || req.path === '/api/tts') {
                 return next();
             }
+            console.warn(`⚠️ Unauthorized access attempt to ${req.path}`);
             return res.status(401).json({ success: false, error: 'Unauthorized: No token provided' });
         }
 
@@ -71,6 +82,9 @@ const verifyAuth = async (req, res, next) => {
         next();
     } catch (error) {
         console.error('Auth verification failed:', error.message);
+        if (error.code === 'auth/id-token-expired') {
+            return res.status(401).json({ success: false, error: 'Unauthorized: Token expired' });
+        }
         return res.status(403).json({ success: false, error: 'Unauthorized: Invalid token' });
     }
 };

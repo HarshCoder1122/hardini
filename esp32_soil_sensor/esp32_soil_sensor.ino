@@ -41,7 +41,7 @@ bool deviceConnected = false;
 bool wifiConfigured = false;
 
 // API
-const char* API_BASE_URL = "https://hardini-backend.onrender.com"; // UPDATE THIS WITH YOUR RENDER URL
+const char* API_BASE_URL = "https://hardini.onrender.com";
 
 // ==========================================
 // 💾 EEPROM HELPERS
