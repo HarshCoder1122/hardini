@@ -11,7 +11,7 @@ const PORT = process.env.PORT || 3001;
 
 // Allow all origins (CORS Fix for Vercel)
 app.use(cors({
-    origin: ['https://hardiniwebsite.vercel.app', 'http://localhost:3000', 'http://127.0.0.1:5500'],
+    origin: true, // Allow all origins for debugging
     methods: ['GET', 'POST', 'OPTIONS', 'DELETE', 'PUT'],
     allowedHeaders: ['Content-Type', 'Authorization'],
     credentials: true
@@ -45,7 +45,7 @@ try {
 
     admin.initializeApp({
         credential: admin.credential.cert(serviceAccount),
-        databaseURL: "https://hardini-3e576-default-rtdb.firebaseio.com"
+        databaseURL: "https://hardini-3e576-default-rtdb.asia-southeast1.firebasedatabase.app"
     });
     console.log('✅ Firebase Admin SDK initialized');
 } catch (error) {

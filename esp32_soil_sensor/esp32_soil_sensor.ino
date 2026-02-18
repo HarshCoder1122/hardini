@@ -232,6 +232,9 @@ void setup() {
       Serial.println("\n✅ WiFi Connected!");
       Serial.print("IP: ");
       Serial.println(WiFi.localIP());
+      
+      // Send first reading immediately!
+      sendSensorData();
     } else {
       Serial.println("\n⚠️ WiFi Failed (BLE remains active)");
     }

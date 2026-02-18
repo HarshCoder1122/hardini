@@ -467,20 +467,29 @@ async function loadDevices() {
             grid.innerHTML = '<div class="empty-state"><span class="empty-icon">📡</span><h3>No devices yet</h3><p>Scan for BLE devices or add one manually.</p></div>';
             return;
         }
-        grid.innerHTML = devices.map(d => `
-            <div class="device-card" onclick="loadSensorData('${d.deviceId || d.id}')">
-                <div class="device-status ${d.online ? 'online' : 'offline'}"><span class="status-dot"></span>${d.online ? 'Online' : 'Offline'}</div>
+        grid.innerHTML = devices.map(d => {
+            // Calculate if online (seen in last 5 minutes)
+            let isOnline = false;
+            if (d.last_reading) {
+                const diff = (new Date() - new Date(d.last_reading)) / 1000 / 60; // minutes
+                isOnline = diff < 5;
+            }
+            // Use local sensor values if available from Last Reading
+            const readings = d.readings || {}; // If backend sends nested, or just use d.lastReading structure if unified
+
+            return `
+            <div class="device-card" onclick="loadSensorData('${d.device_id || d.id}')">
+                <div class="device-status ${isOnline ? 'online' : 'offline'}"><span class="status-dot"></span>${isOnline ? 'Online' : 'Offline'}</div>
                 <div class="device-name">${d.name || d.deviceId}</div>
                 <div class="device-field">📍 ${d.field || d.location || 'Unknown'}</div>
-                ${d.lastReading ? `
                 <div class="sensor-grid">
-                    <div class="sensor-val"><div class="val">${d.lastReading.moisture || '--'}%</div><div class="lbl">Moisture</div></div>
-                    <div class="sensor-val"><div class="val">${d.lastReading.temperature || '--'}°C</div><div class="lbl">Temp</div></div>
-                    <div class="sensor-val"><div class="val">${d.lastReading.ph || '--'}</div><div class="lbl">pH</div></div>
-                    <div class="sensor-val"><div class="val">${d.lastReading.nitrogen || '--'}</div><div class="lbl">NPK</div></div>
-                </div>` : ''}
+                    <div class="sensor-val"><div class="val">${(d.lastReading && d.lastReading.moisture) || '--'}%</div><div class="lbl">Moisture</div></div>
+                    <div class="sensor-val"><div class="val">${(d.lastReading && d.lastReading.temperature) || '--'}°C</div><div class="lbl">Temp</div></div>
+                    <div class="sensor-val"><div class="val">${(d.lastReading && d.lastReading.ph) || '--'}</div><div class="lbl">pH</div></div>
+                    <div class="sensor-val"><div class="val">${(d.lastReading && d.lastReading.nitrogen) || '--'}</div><div class="lbl">NPK</div></div>
+                </div>
             </div>
-        `).join('');
+        }).join('');
     } catch (err) {
         grid.innerHTML = '<div class="empty-state"><span class="empty-icon">⚠️</span><h3>Failed to load devices</h3><p>Check your connection.</p></div>';
     }
@@ -496,7 +505,7 @@ async function loadSensorData(deviceId) {
             showNotification('Please login to view sensor data', 'warning');
             return;
         }
-        const res = await fetch(`${API_BASE}/api/soil-readings/${deviceId}`, { headers: { 'Authorization': `Bearer ${token}` } });
+        const res = await fetch(`${ API_BASE } /api/soil - readings / ${ deviceId } `, { headers: { 'Authorization': `Bearer ${ token } ` } });
         const data = await res.json();
         const readings = data.readings || [];
         if (readings.length === 0) return;
@@ -550,7 +559,7 @@ async function scanBLEDevices_OLD() {
             optionalServices: [SERVICE_UUID]
         });
 
-        showNotification(`Connecting to ${device.name}...`, 'info');
+        showNotification(`Connecting to ${ device.name }...`, 'info');
         const server = await device.gatt.connect();
         const service = await server.getPrimaryService(SERVICE_UUID);
 
@@ -584,9 +593,9 @@ async function scanBLEDevices_OLD() {
 
         // Register Device in Backend
         const token = await getAuthToken();
-        await fetch(`${API_BASE}/api/devices`, {
+        await fetch(`${ API_BASE } / api / devices`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${ token }` },
             body: JSON.stringify({
                 deviceId: device.id || 'esp32_new',
                 name: 'Soil Probe (BLE)',
@@ -614,9 +623,9 @@ document.getElementById('addDeviceForm').addEventListener('submit', async e => {
         field: document.getElementById('deviceField').value
     };
     try {
-        const res = await fetch(`${API_BASE}/api/devices`, {
+        const res = await fetch(`${ API_BASE } / api / devices`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${ token }` },
             body: JSON.stringify(body)
         });
         if (res.ok) {
@@ -639,7 +648,7 @@ function openChainDetail(stage) {
     };
     const d = details[stage];
     if (!d) return;
-    showNotification(`${d.title}: ${d.desc}`, 'info');
+    showNotification(`${ d.title }: ${ d.desc }`, 'info');
 }
 
 // ===== EDIT PROFILE =====
@@ -799,8 +808,8 @@ function openConnectModal(type) {
 function renderFarmers() {
     const list = document.getElementById('farmersList');
     list.innerHTML = CONNECT_DATA.farmers.map(f => `
-        <div class="glass-card" style="padding:16px;text-align:center">
-            <img src="${f.img}" style="width:64px;height:64px;border-radius:50%;margin-bottom:12px;border:2px solid var(--accent)">
+        < div class= "glass-card" style = "padding:16px;text-align:center" >
+        <img src="${f.img}" style="width:64px;height:64px;border-radius:50%;margin-bottom:12px;border:2px solid var(--accent)">
             <h4 style="margin-bottom:4px;font-size:16px">${f.name}</h4>
             <div style="color:var(--text-secondary);font-size:12px;margin-bottom:8px">📍 ${f.location}</div>
             <div style="font-size:13px;margin-bottom:4px">🌾 ${f.specialized}</div>
@@ -813,7 +822,7 @@ function renderFarmers() {
 function renderSuppliers() {
     const list = document.getElementById('suppliersList');
     list.innerHTML = CONNECT_DATA.suppliers.map(s => `
-        <div class="glass-card" style="padding:16px">
+            < div class= "glass-card" style = "padding:16px" >
             <div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:12px">
                 <div>
                     <h4 style="font-size:16px;margin-bottom:4px">${s.name}</h4>
@@ -824,56 +833,56 @@ function renderSuppliers() {
             <div style="margin-bottom:8px;font-size:13px"><span style="color:var(--accent-light)">Type:</span> ${s.type}</div>
             <div style="margin-bottom:16px;font-size:13px">⭐ ${s.rating}/5.0</div>
             <button class="btn btn-primary btn-sm btn-block" onclick="showNotification('Contact details for ${s.name} sent to your phone', 'success')">Contact 📞</button>
-        </div>
-    `).join('');
+        </div >
+            `).join('');
 }
 
 function renderMarket() {
     // Render Prices
     const tbody = document.getElementById('marketPricesBody');
     tbody.innerHTML = CONNECT_DATA.market.map(m => `
-        <tr style="border-bottom:1px solid var(--border-color)">
+            < tr style = "border-bottom:1px solid var(--border-color)" >
             <td style="padding:12px">${m.crop}</td>
             <td style="padding:12px;font-weight:600;color:var(--text-primary)">${m.price}</td>
             <td style="padding:12px;color:${m.trend === 'up' ? 'var(--accent)' : m.trend === 'down' ? 'var(--danger)' : 'var(--warning)'}">
                 ${m.trend === 'up' ? '↗' : m.trend === 'down' ? '↘' : '➡'} ${m.change}
             </td>
-        </tr>
-    `).join('');
+        </tr >
+            `).join('');
 
     // Render Buyers
     const list = document.getElementById('buyersList');
     list.innerHTML = CONNECT_DATA.buyers.map(b => `
-        <div class="glass-card" style="padding:16px">
+            < div class= "glass-card" style = "padding:16px" >
             <h4 style="margin-bottom:8px;font-size:16px">${b.name}</h4>
             <div style="font-size:13px;margin-bottom:4px">Looking for: <span style="color:var(--accent-light)">${b.need}</span></div>
             <div style="font-size:13px;margin-bottom:4px">Qty: ${b.qty}</div>
             <div style="font-size:13px;margin-bottom:16px">Price: ${b.price}</div>
             <button class="btn btn-secondary btn-sm btn-block" onclick="showNotification('Bid placed successfully!', 'success')">Place Bid 🔨</button>
-        </div>
-    `).join('');
+        </div >
+            `).join('');
 }
 
 function renderExperts() {
     const list = document.getElementById('expertsList');
     list.innerHTML = CONNECT_DATA.experts.map(e => `
-        <div class="glass-card" style="padding:16px;display:flex;gap:16px;align-items:center">
+            < div class= "glass-card" style = "padding:16px;display:flex;gap:16px;align-items:center" >
             <img src="${e.img}" style="width:60px;height:60px;border-radius:50%;object-fit:cover">
-            <div style="flex:1">
-                <h4 style="font-size:16px;margin-bottom:4px">${e.name}</h4>
-                <div style="font-size:13px;color:var(--text-secondary);margin-bottom:4px">${e.role}</div>
-                <div style="font-size:12px;margin-bottom:4px">Exp: ${e.exp}</div>
-                <div style="font-size:14px;color:var(--accent-light);font-weight:600">${e.rate}</div>
+                <div style="flex:1">
+                    <h4 style="font-size:16px;margin-bottom:4px">${e.name}</h4>
+                    <div style="font-size:13px;color:var(--text-secondary);margin-bottom:4px">${e.role}</div>
+                    <div style="font-size:12px;margin-bottom:4px">Exp: ${e.exp}</div>
+                    <div style="font-size:14px;color:var(--accent-light);font-weight:600">${e.rate}</div>
+                </div>
+                <button class="btn btn-primary btn-sm" onclick="showNotification('Consultation request sent!', 'success')">Book</button>
             </div>
-            <button class="btn btn-primary btn-sm" onclick="showNotification('Consultation request sent!', 'success')">Book</button>
-        </div>
     `).join('');
 }
 
 function renderTraining() {
     const list = document.getElementById('coursesList');
     list.innerHTML = CONNECT_DATA.training.map(t => `
-        <div class="glass-card" style="padding:0;overflow:hidden">
+            < div class= "glass-card" style = "padding:0;overflow:hidden" >
             <div style="height:100px;background:linear-gradient(135deg, rgba(76,175,80,0.1), rgba(46,125,50,0.2));display:flex;align-items:center;justify-content:center;font-size:40px">${t.img}</div>
             <div style="padding:16px">
                 <h4 style="font-size:16px;margin-bottom:8px;height:40px;overflow:hidden">${t.title}</h4>
@@ -884,14 +893,14 @@ function renderTraining() {
                 <div style="font-size:12px;margin-bottom:16px">👥 ${t.students} students</div>
                 <button class="btn btn-primary btn-sm btn-block" onclick="showNotification('Enrolled in ${t.title}!', 'success')">Enroll Now</button>
             </div>
-        </div>
-    `).join('');
+        </div >
+            `).join('');
 }
 
 function renderForum() {
     const list = document.getElementById('forumList');
     list.innerHTML = CONNECT_DATA.forum.map(f => `
-        <div class="glass-card" style="padding:16px;cursor:pointer" onclick="showNotification('Opening discussion thread...', 'info')">
+            < div class= "glass-card" style = "padding:16px;cursor:pointer" onclick = "showNotification('Opening discussion thread...', 'info')" >
             <div style="display:flex;justify-content:space-between;margin-bottom:8px">
                 <span style="font-size:10px;background:var(--bg-card-hover);padding:2px 8px;border-radius:12px;color:var(--accent-light)">${f.tag}</span>
                 <span style="font-size:12px;color:var(--text-muted)">Views: ${f.views}</span>
@@ -901,8 +910,8 @@ function renderForum() {
                 <span>👤 ${f.author}</span>
                 <span>💬 ${f.replies} replies</span>
             </div>
-        </div>
-    `).join('');
+        </div >
+            `).join('');
 }
 
 console.log('🌱 Hardini WebApp loaded successfully');
@@ -957,7 +966,7 @@ function closeRegistrationWizard() {
 
 function goToStep(step) {
     document.querySelectorAll('.wizard-content').forEach(el => el.style.display = 'none');
-    const target = document.getElementById(`wizardStep${step}`);
+    const target = document.getElementById(`wizardStep${ step }`);
     if (target) target.style.display = 'block';
 
     document.querySelectorAll('.wizard-step').forEach(el => {
@@ -1010,18 +1019,18 @@ async function startSoilProbeBLEScan() {
         });
 
         console.log('✅ Device selected:', bleDevice.name);
-        showNotification(`Found ${bleDevice.name}`, 'success');
+        showNotification(`Found ${ bleDevice.name }`, 'success');
 
         if (resultsContainer) {
             resultsContainer.innerHTML = `
-                <h4>Found Device:</h4>
-                <div class="ble-device-item">
-                    <div>
-                        <div class="ble-device-name">${bleDevice.name}</div>
-                        <div class="ble-device-id">ID: ${bleDevice.id.slice(0, 8)}...</div>
-                    </div>
-                    <button class="register-device-btn small" onclick="connectToBLEDevice()">Connect</button>
-                </div>
+        < h4 > Found Device:</h4 >
+        <div class="ble-device-item">
+            <div>
+                <div class="ble-device-name">${bleDevice.name}</div>
+                <div class="ble-device-id">ID: ${bleDevice.id.slice(0, 8)}...</div>
+            </div>
+            <button class="register-device-btn small" onclick="connectToBLEDevice()">Connect</button>
+        </div>
             `;
         }
 
@@ -1055,18 +1064,18 @@ function connectToBLEDevice() {
     const resultsContainer = document.getElementById('bleResults');
     if (resultsContainer) {
         resultsContainer.innerHTML = `
-            <div class="ble-device-item" style="border-color: #4caf50; background: rgba(76, 175, 80, 0.2);">
-                <div>
-                    <div class="ble-device-name">✅ ${bleDevice.name}</div>
-                    <div class="ble-device-id">Ready to Configure</div>
-                </div>
+            < div class= "ble-device-item" style = "border-color: #4caf50; background: rgba(76, 175, 80, 0.2);" >
+            <div>
+                <div class="ble-device-name">✅ ${bleDevice.name}</div>
+                <div class="ble-device-id">Ready to Configure</div>
             </div>
+            </div >
             <div style="text-align: center; margin-top: 10px;">
                 <small style="color: #4caf50;">Device selected! Click "Next"</small>
             </div>
         `;
     }
-    showNotification(`Selected ${bleDevice.name}. Click Next.`, 'success');
+    showNotification(`Selected ${ bleDevice.name }.Click Next.`, 'success');
 }
 
 function selectConnectivity(type) {
@@ -1116,11 +1125,11 @@ async function registerDevice() {
         if (!user) throw new Error("User not logged in");
         const token = await user.getIdToken();
 
-        const response = await fetch(`${API_BASE}/api/devices`, {
+        const response = await fetch(`${ API_BASE } / api / devices`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`
+                'Authorization': `Bearer ${ token }`
             },
             body: JSON.stringify({
                 device_id: selectedDeviceId,

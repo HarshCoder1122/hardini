@@ -4,7 +4,7 @@
 const firebaseConfig = {
     apiKey: "AIzaSyAG8KcL0Ul8Hrrz31WSHxR1fxd2PkSY1QY",
     authDomain: "hardini-3e576.firebaseapp.com",
-    databaseURL: "https://hardini-d2114-default-rtdb.asia-southeast1.firebasedatabase.app/",
+    databaseURL: "https://hardini-3e576-default-rtdb.asia-southeast1.firebasedatabase.app",
     projectId: "hardini-3e576",
     storageBucket: "hardini-3e576.firebasestorage.app",
     messagingSenderId: "971878226528",
