@@ -78,10 +78,17 @@ firebase.auth().onAuthStateChanged(user => {
     }
 });
 
-async function getAuthToken() {
-    const user = firebase.auth().currentUser;
-    if (user) return user.getIdToken();
-    return null;
+function getAuthToken() {
+    return new Promise((resolve) => {
+        const unsubscribe = firebase.auth().onAuthStateChanged(user => {
+            unsubscribe();
+            if (user) {
+                user.getIdToken().then(resolve).catch(() => resolve(null));
+            } else {
+                resolve(null);
+            }
+        });
+    });
 }
 
 function logout() {
@@ -170,6 +177,11 @@ async function loadOrders() {
     loading.style.display = 'block'; list.innerHTML = ''; none.style.display = 'none';
     try {
         const token = await getAuthToken();
+        if (!token) {
+            none.style.display = 'block';
+            loading.style.display = 'none';
+            return;
+        }
         const res = await fetch(`${API_BASE}/api/orders`, { headers: { 'Authorization': `Bearer ${token}` } });
         const data = await res.json();
         loading.style.display = 'none';
@@ -361,10 +373,13 @@ function toggleTTS() {
 async function speakText(text) {
     try {
         const token = await getAuthToken();
+        const headers = { 'Content-Type': 'application/json' };
+        if (token) headers['Authorization'] = `Bearer ${token}`;
+
         const lang = document.getElementById('chatLang').value;
         const res = await fetch(`${API_BASE}/api/tts`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+            headers: headers,
             body: JSON.stringify({ text, language: lang })
         });
         if (res.ok) {
@@ -440,6 +455,10 @@ async function loadDevices() {
     grid.innerHTML = '<div class="loading-spinner"></div>';
     try {
         const token = await getAuthToken();
+        if (!token) {
+            console.warn("No auth token available, skipping device load");
+            return;
+        }
         const res = await fetch(`${API_BASE}/api/devices`, { headers: { 'Authorization': `Bearer ${token}` } });
         const data = await res.json();
         window._devicesLoaded = true;
@@ -473,6 +492,10 @@ async function loadSensorData(deviceId) {
     container.scrollIntoView({ behavior: 'smooth' });
     try {
         const token = await getAuthToken();
+        if (!token) {
+            showNotification('Please login to view sensor data', 'warning');
+            return;
+        }
         const res = await fetch(`${API_BASE}/api/soil-readings/${deviceId}`, { headers: { 'Authorization': `Bearer ${token}` } });
         const data = await res.json();
         const readings = data.readings || [];
