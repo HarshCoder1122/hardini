@@ -1125,7 +1125,7 @@ async function registerDevice() {
         if (!user) throw new Error("User not logged in");
         const token = await user.getIdToken();
 
-        const response = await fetch(`${API_BASE} / api / devices`, {
+        const response = await fetch(`${API_BASE}/api/devices`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
