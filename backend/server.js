@@ -69,7 +69,7 @@ const verifyAuth = async (req, res, next) => {
         if (!authHeader || !authHeader.startsWith('Bearer ')) {
             // Check if it's the soil reading endpoint (ESP32 might not have token)
             // or health check or public APIs
-            if (req.path === '/api/soil-readings' || req.path === '/api/health' || req.path === '/api/reels' || req.path === '/api/tts') {
+            if (req.path === '/' || req.path === '/api/soil-readings' || req.path === '/api/health' || req.path === '/api/reels' || req.path === '/api/tts') {
                 return next();
             }
             console.warn(`⚠️ Unauthorized access attempt to ${req.path}`);
@@ -599,6 +599,15 @@ app.get('/api/health', (req, res) => {
         message: 'Hardini Backend API is running (Firebase Admin)',
         timestamp: new Date().toISOString(),
         groqConfigured: !!GROQ_API_KEY
+    });
+});
+
+// Root Endpoint
+app.get('/', (req, res) => {
+    res.json({
+        success: true,
+        message: 'Hardini Backend is Running! 🚀',
+        timestamp: new Date().toISOString()
     });
 });
 

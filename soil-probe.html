@@ -852,11 +852,11 @@
                 <h3>?? Discover Your Device</h3>
                 <p>Scan for nearby SoilProbe devices via Bluetooth, or enter the device ID manually.</p>
                 <div class="discover-options">
-                    <button class="discover-btn bluetooth-btn" id="bleScanBtn" onclick="startBleScan()">
-                        <div class="discover-icon">??</div>
+                    <div id="bleScanBtn" class="discover-btn" onclick="startSoilProbeBLEScan()">
+                        <div class="discover-icon">🔵</div>
                         <span>Scan via Bluetooth</span>
-                        <small>Recommended � Chrome/Edge only</small>
-                    </button>
+                        <small>Recommended for new devices</small>
+                    </div>
                     <div class="discover-divider"><span>or</span></div>
                     <div class="manual-entry">
                         <label for="manualDeviceId">Enter Device ID</label>
@@ -1908,58 +1908,101 @@
             document.getElementById('step1Next').disabled = val.length < 3;
         }
 
-        // Web Bluetooth scan
-        async function startBleScan() {
+        // Web Bluetooth scan - Renamed to avoid conflicts
+        async function startSoilProbeBLEScan() {
+            console.log('🔵 startSoilProbeBLEScan triggered');
+
+            // Visual feedback
+            const btn = document.getElementById('bleScanBtn');
+            if (btn) {
+                btn.innerHTML = '<div class="discover-icon ble-scanning">📡</div><span>Scanning...</span><small>Select "Hardini-Probe" from popup</small>';
+                // btn.style.opacity = '0.7'; // Optional
+            }
+
             if (!navigator.bluetooth) {
-                showNotification('Bluetooth not supported in this browser. Use Chrome or Edge.', 'warning');
+                console.error('❌ Bluetooth API not available');
+                showNotification('Bluetooth not supported in this browser. Use Chrome on Android/Desktop.', 'warning');
+                if (btn) btn.innerHTML = '<div class="discover-icon">🔵</div><span>Scan via Bluetooth</span><small>Bluetooth not supported</small>';
                 return;
             }
-            try {
-                const btn = document.getElementById('bleScanBtn');
-                btn.innerHTML = '<div class="discover-icon ble-scanning">📡</div><span>Scanning...</span><small>Select "Hardini-Probe" from popup</small>';
-                btn.disabled = true;
 
-                // Scan for Hardini-Probe
+            const resultsContainer = document.getElementById('bleResults');
+            if (resultsContainer) {
+                resultsContainer.style.display = 'block';
+                resultsContainer.innerHTML = '<h4>Scanning... <span class="ble-scanning">📡</span></h4>';
+            }
+
+            try {
+                console.log('📡 Requesting Bluetooth Device...');
+                // Request device with specific filters
                 bleDevice = await navigator.bluetooth.requestDevice({
                     filters: [{ name: 'Hardini-Probe' }],
                     optionalServices: [BLE_SERVICE_UUID]
                 });
 
-                if (bleDevice) {
-                    selectedDeviceId = bleDevice.name || bleDevice.id;
-                    // Use a more friendly ID if possible, or just the BLE name
-                    if (selectedDeviceId === 'Hardini-Probe') {
-                        // The device ID isn't directly the name, but for now we'll use the placeholder
-                        // Ideally we read it from a characteristic, but let's stick to the flow
-                        selectedDeviceId = 'esp32_' + bleDevice.id.slice(0, 4);
-                    }
+                console.log('✅ Device selected:', bleDevice.name);
+                showNotification(`Found ${bleDevice.name}`, 'success');
 
-                    document.getElementById('manualDeviceId').value = selectedDeviceId;
-                    document.getElementById('step1Next').disabled = false;
-                    showNotification(`Found device: ${bleDevice.name}`, 'success');
-
-                    // Show in results
-                    document.getElementById('bleResults').style.display = 'block';
-                    document.getElementById('bleDeviceList').innerHTML = `
-                        <div class="ble-device-item selected">
-                            <div class="ble-device-name">📡 ${bleDevice.name}</div>
-                            <div class="ble-device-id">ID: ${bleDevice.id}</div>
+                // Display found device
+                if (resultsContainer) {
+                    resultsContainer.innerHTML = `
+                        <h4>Found Device:</h4>
+                        <div class="ble-device-item">
+                            <div>
+                                <div class="ble-device-name">${bleDevice.name}</div>
+                                <div class="ble-device-id">ID: ${bleDevice.id.slice(0, 8)}...</div>
+                            </div>
+                            <button class="register-device-btn small" onclick="connectToBLEDevice()">Connect</button>
                         </div>
                     `;
                 }
 
-                btn.innerHTML = '<div class="discover-icon">📡</div><span>Scan via Bluetooth</span><small>Recommended — Chrome/Edge only</small>';
-                btn.disabled = false;
-
             } catch (error) {
-                console.log('BLE scan cancelled or error:', error);
+                console.error('❌ Bluetooth Error:', error);
                 const btn = document.getElementById('bleScanBtn');
                 btn.innerHTML = '<div class="discover-icon">📡</div><span>Scan via Bluetooth</span><small>Recommended — Chrome/Edge only</small>';
                 btn.disabled = false;
-                if (error.name !== 'NotFoundError' && error.name !== 'SecurityError') {
-                    showNotification('Scan failed: ' + error.message, 'error');
+                if (error.name === 'NotFoundError') {
+                    if (resultsContainer) resultsContainer.innerHTML = '<h4>No devices found or scan cancelled.</h4>';
+                } else {
+                    showNotification('BLE Error: ' + error.message, 'error');
+                    if (resultsContainer) resultsContainer.style.display = 'none';
                 }
             }
+        }
+
+        // Connect to selected BLE device (Called from Scan Results)
+        function connectToBLEDevice() {
+            if (!bleDevice) return;
+
+            console.log('🔗 Connecting to:', bleDevice.name);
+            selectedDeviceId = bleDevice.name || bleDevice.id;
+
+            // Use a specific ID format if available
+            if (selectedDeviceId === 'Hardini-Probe') {
+                selectedDeviceId = 'esp32_' + bleDevice.id.slice(0, 4);
+            }
+
+            // Update UI
+            document.getElementById('manualDeviceId').value = selectedDeviceId;
+            document.getElementById('step1Next').disabled = false;
+
+            const resultsContainer = document.getElementById('bleResults');
+            if (resultsContainer) {
+                resultsContainer.innerHTML = `
+                    <div class="ble-device-item" style="border-color: #4caf50; background: rgba(76, 175, 80, 0.2);">
+                        <div>
+                            <div class="ble-device-name">✅ ${bleDevice.name}</div>
+                            <div class="ble-device-id">Ready to Configure</div>
+                        </div>
+                    </div>
+                    <div style="text-align: center; margin-top: 10px;">
+                        <small style="color: #4caf50;">Device selected! Click "Continue"</small>
+                    </div>
+                `;
+            }
+
+            showNotification(`Selected ${bleDevice.name}. Click Continue.`, 'success');
         }
 
         // Connectivity selection
