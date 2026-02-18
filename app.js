@@ -462,7 +462,8 @@ async function loadDevices() {
         const res = await fetch(`${API_BASE}/api/devices`, { headers: { 'Authorization': `Bearer ${token}` } });
         const data = await res.json();
         window._devicesLoaded = true;
-        const devices = data.devices || [];
+        window._devicesLoaded = true;
+        const devices = data.data || [];
         if (devices.length === 0) {
             grid.innerHTML = '<div class="empty-state"><span class="empty-icon">📡</span><h3>No devices yet</h3><p>Scan for BLE devices or add one manually.</p></div>';
             return;
@@ -470,23 +471,23 @@ async function loadDevices() {
         grid.innerHTML = devices.map(d => {
             // Calculate if online (seen in last 5 minutes)
             let isOnline = false;
-            if (d.last_reading) {
-                const diff = (new Date() - new Date(d.last_reading)) / 1000 / 60; // minutes
+            // Support both snake_case (backend) and camelCase (frontend legacy)
+            const readingTime = d.last_reading || d.lastReading;
+            if (readingTime) {
+                const diff = (new Date() - new Date(readingTime)) / 1000 / 60; // minutes
                 isOnline = diff < 5;
             }
-            // Use local sensor values if available from Last Reading
-            const readings = d.readings || {}; // If backend sends nested, or just use d.lastReading structure if unified
 
             return `
             <div class="device-card" onclick="loadSensorData('${d.device_id || d.id}')">
                 <div class="device-status ${isOnline ? 'online' : 'offline'}"><span class="status-dot"></span>${isOnline ? 'Online' : 'Offline'}</div>
-                <div class="device-name">${d.name || d.deviceId}</div>
-                <div class="device-field">📍 ${d.field || d.location || 'Unknown'}</div>
+                <div class="device-name">${d.device_name || d.name || d.device_id}</div>
+                <div class="device-field">📍 ${d.field_name || d.field || 'Unknown'}</div>
                 <div class="sensor-grid">
-                    <div class="sensor-val"><div class="val">${(d.lastReading && d.lastReading.moisture) || '--'}%</div><div class="lbl">Moisture</div></div>
-                    <div class="sensor-val"><div class="val">${(d.lastReading && d.lastReading.temperature) || '--'}°C</div><div class="lbl">Temp</div></div>
-                    <div class="sensor-val"><div class="val">${(d.lastReading && d.lastReading.ph) || '--'}</div><div class="lbl">pH</div></div>
-                    <div class="sensor-val"><div class="val">${(d.lastReading && d.lastReading.nitrogen) || '--'}</div><div class="lbl">NPK</div></div>
+                    <div class="sensor-val"><div class="val">${(d.moisture !== undefined ? d.moisture : '--')}%</div><div class="lbl">Moisture</div></div>
+                    <div class="sensor-val"><div class="val">${(d.temperature !== undefined ? d.temperature : '--')}°C</div><div class="lbl">Temp</div></div>
+                    <div class="sensor-val"><div class="val">${(d.ph !== undefined ? d.ph : '--')}</div><div class="lbl">pH</div></div>
+                    <div class="sensor-val"><div class="val">${(d.nitrogen !== undefined ? d.nitrogen : '--')}</div><div class="lbl">NPK</div></div>
                 </div>
             </div>
         `}).join('');

@@ -1,0 +1,19 @@
+{
+    "rules": {
+        "users": {
+            "$uid": {
+                "devices": {
+                    "$deviceId": {
+                        "data": {
+                            ".indexOn": [
+                                "created_at"
+                            ]
+                        }
+                    }
+                },
+                ".read": "auth != null && auth.uid == $uid",
+                ".write": "auth != null && auth.uid == $uid"
+            }
+        }
+    }
+}

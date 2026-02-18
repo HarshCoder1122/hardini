@@ -271,16 +271,25 @@ app.get('/api/devices', async (req, res) => {
                 const latestData = dataSnapshot.val();
                 let lastReading = null;
                 let rssi = null;
+                let sensorValues = {};
+
                 if (latestData) {
                     const entry = Object.values(latestData)[0];
                     lastReading = entry.created_at;
                     rssi = entry.rssi;
+                    sensorValues = {
+                        moisture: entry.soil_moist_pct,
+                        temperature: entry.soil_temp_c,
+                        ph: entry.ph || 6.5, // Default/Mock for now if missing
+                        nitrogen: entry.nitrogen || 120 // Default/Mock
+                    };
                 }
                 devices.push({
                     ...config,
                     device_id: deviceId,
                     last_reading: lastReading,
-                    rssi: rssi
+                    rssi: rssi,
+                    ...sensorValues
                 });
             }
         }
