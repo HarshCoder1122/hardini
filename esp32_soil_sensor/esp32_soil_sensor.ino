@@ -160,13 +160,13 @@ void startBLE() {
   BLEService *pService = pServer->createService(SERVICE_UUID);
 
   BLECharacteristic *pCharSSID =
-    pService->createCharacteristic(CHAR_SSID_UUID, BLECharacteristic::PROPERTY_WRITE);
+    pService->createCharacteristic(CHAR_SSID_UUID, BLECharacteristic::PROPERTY_WRITE | BLECharacteristic::PROPERTY_WRITE_NR);
 
   BLECharacteristic *pCharPass =
-    pService->createCharacteristic(CHAR_PASS_UUID, BLECharacteristic::PROPERTY_WRITE);
+    pService->createCharacteristic(CHAR_PASS_UUID, BLECharacteristic::PROPERTY_WRITE | BLECharacteristic::PROPERTY_WRITE_NR);
 
   BLECharacteristic *pCharUID =
-    pService->createCharacteristic(CHAR_UID_UUID, BLECharacteristic::PROPERTY_WRITE);
+    pService->createCharacteristic(CHAR_UID_UUID, BLECharacteristic::PROPERTY_WRITE | BLECharacteristic::PROPERTY_WRITE_NR);
 
   BLECharacteristic *pCharStatus =
     pService->createCharacteristic(

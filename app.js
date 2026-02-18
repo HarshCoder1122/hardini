@@ -1146,11 +1146,13 @@ async function provisionDeviceBLE(ssid, password) {
         statusLabel.textContent = 'Writing SSID...';
         const ssidChar = await service.getCharacteristic(BLE_CHAR_SSID_UUID);
         await ssidChar.writeValue(enc.encode(ssid));
+        await new Promise(r => setTimeout(r, 500));
 
         // Write Password
         statusLabel.textContent = 'Writing Password...';
         const passChar = await service.getCharacteristic(BLE_CHAR_PASS_UUID);
         await passChar.writeValue(enc.encode(password));
+        await new Promise(r => setTimeout(r, 500));
 
         // Write UID (Triggers Restart)
         statusLabel.textContent = 'Finalizing...';
