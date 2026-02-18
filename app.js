@@ -508,18 +508,7 @@ async function loadSensorData(deviceId) {
 // Soil Probe / IoT Integration
 // ===================================
 
-async function scanBLEDevices() {
-    // Redirect to the Soil Probe section or show a helper message
-    // The actual scanning logic is now in soil-probe.html
-    showNotification('Please go to the "Soil Probe" section to connect your device.', 'info');
-
-    // Optional: If we want to automatically navigate
-    const soilProbeSection = document.getElementById('soil-probe-section');
-    if (soilProbeSection) {
-        // trigger navigation if needed
-        window.location.hash = '#soilprobe';
-    }
-}
+// scanBLEDevices replaced by new logic below
 /* 
 // LEGACY BLE LOGIC - DISABLED TO PREVENT CONFLICTS
 async function scanBLEDevices_OLD() {
@@ -894,3 +883,290 @@ function renderForum() {
 }
 
 console.log('🌱 Hardini WebApp loaded successfully');
+
+// ===================================
+// BLE WIZARD & PROVISIONING LOGIC
+// ===================================
+
+const BLE_SERVICE_UUID = "4fafc201-1fb5-459e-8fcc-c5c9c331914b";
+const BLE_CHAR_SSID_UUID = "beb5483e-36e1-4688-b7f5-ea07361b26a8";
+const BLE_CHAR_PASS_UUID = "823d06dc-255a-4720-953e-51c367ee2733";
+const BLE_CHAR_UID_UUID = "c730e61d-847e-4009-9768-45b73679469e";
+
+let bleDevice = null;
+let bleServer = null;
+let selectedDeviceId = '';
+let selectedConnectivity = 'wifi';
+
+// Main Entry Point from "Scan BLE Devices" button
+function scanBLEDevices() {
+    openRegistrationWizard();
+}
+
+function openRegistrationWizard() {
+    selectedDeviceId = '';
+    selectedConnectivity = 'wifi';
+    bleDevice = null;
+    document.getElementById('wizardOverlay').classList.add('active');
+    document.getElementById('wizardModal').classList.add('active');
+    goToStep(1);
+
+    // Reset fields
+    if (document.getElementById('manualDeviceId')) document.getElementById('manualDeviceId').value = '';
+    if (document.getElementById('wifiSsid')) document.getElementById('wifiSsid').value = '';
+    if (document.getElementById('wifiPassword')) document.getElementById('wifiPassword').value = '';
+    if (document.getElementById('deviceNameWizard')) document.getElementById('deviceNameWizard').value = '';
+    if (document.getElementById('fieldNameInput')) document.getElementById('fieldNameInput').value = '';
+    if (document.getElementById('cropType')) document.getElementById('cropType').value = '';
+    if (document.getElementById('step1Next')) document.getElementById('step1Next').disabled = true;
+
+    // Clear BLE results
+    if (document.getElementById('bleResults')) document.getElementById('bleResults').style.display = 'none';
+}
+
+function closeRegistrationWizard() {
+    if (bleDevice && bleDevice.gatt.connected) {
+        bleDevice.gatt.disconnect();
+    }
+    document.getElementById('wizardOverlay').classList.remove('active');
+    document.getElementById('wizardModal').classList.remove('active');
+}
+
+function goToStep(step) {
+    document.querySelectorAll('.wizard-content').forEach(el => el.style.display = 'none');
+    const target = document.getElementById(`wizardStep${step}`);
+    if (target) target.style.display = 'block';
+
+    document.querySelectorAll('.wizard-step').forEach(el => {
+        const s = parseInt(el.dataset.step);
+        el.classList.remove('active', 'completed');
+        if (s === step) el.classList.add('active');
+        else if (s < step) el.classList.add('completed');
+    });
+
+    if (step === 3) {
+        document.getElementById('summaryDeviceId').textContent = selectedDeviceId || '--';
+        document.getElementById('summaryConn').textContent = selectedConnectivity === 'sim' ? 'SIM Card' : 'WiFi';
+    }
+}
+
+function onManualIdInput() {
+    const val = document.getElementById('manualDeviceId').value.trim();
+    selectedDeviceId = val;
+    document.getElementById('step1Next').disabled = val.length < 3;
+}
+
+// Actual Scanning Logic called from inside Wizard
+async function startSoilProbeBLEScan() {
+    console.log('🔵 startSoilProbeBLEScan triggered');
+
+    // Visual feedback
+    const btn = document.getElementById('bleScanBtn');
+    if (btn) {
+        btn.innerHTML = '<div class="discover-icon ble-scanning">📡</div><span>Scanning...</span><small>Select "Hardini-Probe"</small>';
+    }
+
+    if (!navigator.bluetooth) {
+        console.error('❌ Bluetooth API not available');
+        showNotification('Bluetooth not supported. Use Chrome on Android/Desktop.', 'warning');
+        if (btn) btn.innerHTML = '<div class="discover-icon">🔵</div><span>Scan via Bluetooth</span><small>Not Supported</small>';
+        return;
+    }
+
+    const resultsContainer = document.getElementById('bleResults');
+    if (resultsContainer) {
+        resultsContainer.style.display = 'block';
+        resultsContainer.innerHTML = '<h4>Scanning... <span class="ble-scanning">📡</span></h4>';
+    }
+
+    try {
+        console.log('📡 Requesting Bluetooth Device...');
+        bleDevice = await navigator.bluetooth.requestDevice({
+            filters: [{ name: 'Hardini-Probe' }],
+            optionalServices: [BLE_SERVICE_UUID]
+        });
+
+        console.log('✅ Device selected:', bleDevice.name);
+        showNotification(`Found ${bleDevice.name}`, 'success');
+
+        if (resultsContainer) {
+            resultsContainer.innerHTML = `
+                <h4>Found Device:</h4>
+                <div class="ble-device-item">
+                    <div>
+                        <div class="ble-device-name">${bleDevice.name}</div>
+                        <div class="ble-device-id">ID: ${bleDevice.id.slice(0, 8)}...</div>
+                    </div>
+                    <button class="register-device-btn small" onclick="connectToBLEDevice()">Connect</button>
+                </div>
+            `;
+        }
+
+    } catch (error) {
+        console.error('❌ Bluetooth Error:', error);
+        if (btn) {
+            btn.innerHTML = '<div class="discover-icon">🔵</div><span>Scan via Bluetooth</span><small>Try Again/Manual</small>';
+        }
+
+        if (error.name === 'NotFoundError') {
+            if (resultsContainer) resultsContainer.innerHTML = '<h4>No devices found or scan cancelled.</h4>';
+        } else {
+            showNotification('BLE Error: ' + error.message, 'error');
+            if (resultsContainer) resultsContainer.style.display = 'none';
+        }
+    }
+}
+
+function connectToBLEDevice() {
+    if (!bleDevice) return;
+    console.log('🔗 Connecting to:', bleDevice.name);
+    selectedDeviceId = bleDevice.name || bleDevice.id;
+
+    if (selectedDeviceId === 'Hardini-Probe') {
+        selectedDeviceId = 'esp32_' + bleDevice.id.slice(0, 4);
+    }
+
+    document.getElementById('manualDeviceId').value = selectedDeviceId;
+    document.getElementById('step1Next').disabled = false;
+
+    const resultsContainer = document.getElementById('bleResults');
+    if (resultsContainer) {
+        resultsContainer.innerHTML = `
+            <div class="ble-device-item" style="border-color: #4caf50; background: rgba(76, 175, 80, 0.2);">
+                <div>
+                    <div class="ble-device-name">✅ ${bleDevice.name}</div>
+                    <div class="ble-device-id">Ready to Configure</div>
+                </div>
+            </div>
+            <div style="text-align: center; margin-top: 10px;">
+                <small style="color: #4caf50;">Device selected! Click "Next"</small>
+            </div>
+        `;
+    }
+    showNotification(`Selected ${bleDevice.name}. Click Next.`, 'success');
+}
+
+function selectConnectivity(type) {
+    selectedConnectivity = type;
+    document.querySelectorAll('.conn-tab').forEach(t => t.classList.remove('active'));
+    event.target.classList.add('active');
+    document.getElementById('wifiConfig').style.display = type === 'wifi' ? 'block' : 'none';
+    document.getElementById('simConfig').style.display = type === 'sim' ? 'block' : 'none';
+}
+
+async function registerDevice() {
+    const deviceName = document.getElementById('deviceNameWizard').value.trim();
+    const fieldName = document.getElementById('fieldNameInput').value.trim();
+    const cropType = document.getElementById('cropType').value;
+    const wifiSsid = document.getElementById('wifiSsid').value.trim();
+    const wifiPass = document.getElementById('wifiPassword').value.trim();
+
+    if (!selectedDeviceId) {
+        showNotification('Please enter or scan a device ID', 'error');
+        goToStep(1);
+        return;
+    }
+    if (!deviceName) {
+        showNotification('Please enter a device name', 'error');
+        return;
+    }
+
+    if (selectedConnectivity === 'wifi' && (!wifiSsid || !wifiPass)) {
+        showNotification('Please enter WiFi credentials in Step 2', 'warning');
+        goToStep(2);
+        return;
+    }
+
+    const regBtn = document.getElementById('registerBtn');
+    regBtn.disabled = true;
+    regBtn.textContent = '⏳ Processing...';
+
+    try {
+        // 1. Provision Device via BLE (if connected)
+        if (selectedConnectivity === 'wifi' && bleDevice) {
+            showNotification('Connecting to device...', 'info');
+            await provisionDeviceBLE(wifiSsid, wifiPass);
+        }
+
+        // 2. Register in Backend
+        const user = firebase.auth().currentUser;
+        if (!user) throw new Error("User not logged in");
+        const token = await user.getIdToken();
+
+        const response = await fetch(`${API_BASE}/api/devices`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({
+                device_id: selectedDeviceId,
+                device_name: deviceName,
+                field_name: fieldName,
+                crop_type: cropType,
+                connectivity: selectedConnectivity
+            })
+        });
+
+        const data = await response.json();
+        if (data.success) {
+            showNotification(`🎉 Device "${deviceName}" registered successfully!`, 'success');
+            closeRegistrationWizard();
+            // Refresh devices list - assuming loadDevices exists in app.js
+            if (typeof loadDevices === 'function') await loadDevices();
+        } else {
+            showNotification(data.error || 'Registration failed', 'error');
+        }
+    } catch (error) {
+        console.error('Registration/Provisioning error:', error);
+        showNotification('Process failed: ' + error.message, 'error');
+    }
+
+    regBtn.disabled = false;
+    regBtn.textContent = '✅ Register Device';
+}
+
+async function provisionDeviceBLE(ssid, password) {
+    if (!bleDevice) throw new Error("No Bluetooth device selected.");
+    const statusLabel = document.getElementById('registerBtn');
+    statusLabel.textContent = '🔗 Connecting BLE...';
+
+    try {
+        if (!bleDevice.gatt.connected) {
+            bleServer = await bleDevice.gatt.connect();
+        } else {
+            bleServer = bleDevice.gatt;
+        }
+
+        statusLabel.textContent = '📡 Finding Service...';
+        const service = await bleServer.getPrimaryService(BLE_SERVICE_UUID);
+        const enc = new TextEncoder();
+
+        // Write SSID
+        statusLabel.textContent = 'Writing SSID...';
+        const ssidChar = await service.getCharacteristic(BLE_CHAR_SSID_UUID);
+        await ssidChar.writeValue(enc.encode(ssid));
+
+        // Write Password
+        statusLabel.textContent = 'Writing Password...';
+        const passChar = await service.getCharacteristic(BLE_CHAR_PASS_UUID);
+        await passChar.writeValue(enc.encode(password));
+
+        // Write UID (Triggers Restart)
+        statusLabel.textContent = 'Finalizing...';
+        const uidChar = await service.getCharacteristic(BLE_CHAR_UID_UUID);
+        const user = firebase.auth().currentUser;
+        if (user) await uidChar.writeValue(enc.encode(user.uid));
+
+        showNotification('Device configured! It will now restart.', 'success');
+        await new Promise(r => setTimeout(r, 1000));
+
+    } catch (err) {
+        console.error("BLE Provisioning Failed", err);
+        if (err.message.includes('disconnected') || err.message.includes('Connection failed')) {
+            console.warn("Device disconnected, possibly restarted.");
+        } else {
+            throw new Error("BLE Config Failed: " + err.message);
+        }
+    }
+}

@@ -701,6 +701,134 @@
         </div>
     </div>
 
+    <!-- Device Registration Wizard Modal -->
+    <div class="wizard-overlay" id="wizardOverlay" onclick="closeRegistrationWizard()"></div>
+    <div class="wizard-modal" id="wizardModal">
+        <div class="wizard-header">
+            <h2>📡 Register New Device</h2>
+            <button class="wizard-close" onclick="closeRegistrationWizard()">×</button>
+        </div>
+        <div class="wizard-steps">
+            <div class="wizard-step active" data-step="1">
+                <div class="step-circle">1</div>
+                <span>Discover</span>
+            </div>
+            <div class="wizard-step-line"></div>
+            <div class="wizard-step" data-step="2">
+                <div class="step-circle">2</div>
+                <span>Configure</span>
+            </div>
+            <div class="wizard-step-line"></div>
+            <div class="wizard-step" data-step="3">
+                <div class="step-circle">3</div>
+                <span>Register</span>
+            </div>
+        </div>
+        <!-- Step 1: Discover -->
+        <div class="wizard-content" id="wizardStep1">
+            <h3>🔍 Discover Your Device</h3>
+            <p>Scan for nearby SoilProbe devices via Bluetooth, or enter the device ID manually.</p>
+            <div class="discover-options">
+                <div id="bleScanBtn" class="discover-btn" onclick="startSoilProbeBLEScan()">
+                    <div class="discover-icon">🔵</div>
+                    <span>Scan via Bluetooth</span>
+                    <small>Recommended for new devices</small>
+                </div>
+                <div class="discover-divider"><span>or</span></div>
+                <div class="manual-entry">
+                    <label for="manualDeviceId">Enter Device ID</label>
+                    <input type="text" id="manualDeviceId" placeholder="e.g. soilprobe-abc123"
+                        oninput="onManualIdInput()" />
+                    <small>Find the ID on your device label or packaging</small>
+                </div>
+            </div>
+            <div class="ble-results" id="bleResults" style="display:none;">
+                <h4>📡 Found Devices</h4>
+                <div class="ble-device-list" id="bleDeviceList"></div>
+            </div>
+            <div class="wizard-actions">
+                <button class="wizard-btn secondary" onclick="closeRegistrationWizard()">Cancel</button>
+                <button class="wizard-btn primary" id="step1Next" onclick="goToStep(2)" disabled>Next ➜</button>
+            </div>
+        </div>
+        <!-- Step 2: Configure Connectivity -->
+        <div class="wizard-content" id="wizardStep2" style="display:none;">
+            <h3>📶 Configure Connectivity</h3>
+            <p>Choose how your device connects to the internet.</p>
+            <div class="connectivity-tabs">
+                <button class="conn-tab active" onclick="selectConnectivity('wifi')">📡 WiFi</button>
+                <button class="conn-tab" onclick="selectConnectivity('sim')">📶 SIM Card</button>
+            </div>
+            <div class="conn-config" id="wifiConfig">
+                <div class="config-field">
+                    <label for="wifiSsid">WiFi Network (SSID)</label>
+                    <input type="text" id="wifiSsid" placeholder="Enter your WiFi network name" />
+                </div>
+                <div class="config-field">
+                    <label for="wifiPassword">WiFi Password</label>
+                    <input type="password" id="wifiPassword" placeholder="Enter WiFi password" />
+                </div>
+                <div class="config-note">
+                    <span>ℹ️</span> Credentials will be sent to the device over Bluetooth. Ensure device is nearby.
+                </div>
+            </div>
+            <div class="conn-config" id="simConfig" style="display:none;">
+                <div class="config-field">
+                    <label for="simApn">APN (Access Point Name)</label>
+                    <input type="text" id="simApn" placeholder="e.g. internet" value="internet" />
+                </div>
+                <div class="config-note">
+                    <span>ℹ️</span> Ensure a SIM card with data plan is inserted in the device.
+                </div>
+            </div>
+            <div class="wizard-actions">
+                <button class="wizard-btn secondary" onclick="goToStep(1)">⬅ Back</button>
+                <button class="wizard-btn primary" onclick="goToStep(3)">Next ➜</button>
+            </div>
+        </div>
+        <!-- Step 3: Register -->
+        <div class="wizard-content" id="wizardStep3" style="display:none;">
+            <h3>📝 Name & Register</h3>
+            <p>Give your device a name and assign it to a field.</p>
+            <div class="register-form">
+                <div class="config-field">
+                    <label for="deviceNameWizard">Device Name</label>
+                    <input type="text" id="deviceNameWizard" placeholder="e.g. Field 1 - North Sensor" />
+                </div>
+                <div class="config-field">
+                    <label for="fieldNameInput">Field / Location</label>
+                    <input type="text" id="fieldNameInput" placeholder="e.g. Field 1" />
+                </div>
+                <div class="config-field">
+                    <label for="cropType">Crop Type</label>
+                    <select id="cropType">
+                        <option value="">Select Crop</option>
+                        <option value="wheat">🌾 Wheat</option>
+                        <option value="rice">🍚 Rice</option>
+                        <option value="cotton">🧶 Cotton</option>
+                        <option value="corn">🌽 Corn / Maize</option>
+                        <option value="sugarcane">🎋 Sugarcane</option>
+                        <option value="soybean">🌱 Soybean</option>
+                        <option value="vegetables">🥦 Vegetables</option>
+                        <option value="fruits">🍎 Fruits</option>
+                        <option value="other">🌿 Other</option>
+                    </select>
+                </div>
+                <div class="registration-summary">
+                    <h4>📋 Registration Summary</h4>
+                    <div class="summary-row"><span>Device ID:</span> <strong id="summaryDeviceId">--</strong></div>
+                    <div class="summary-row"><span>Connectivity:</span> <strong id="summaryConn">WiFi</strong></div>
+                </div>
+            </div>
+            <div class="wizard-actions">
+                <button class="wizard-btn secondary" onclick="goToStep(2)">⬅ Back</button>
+                <button class="wizard-btn primary success" id="registerBtn" onclick="registerDevice()">
+                    ✅ Register Device
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- ===== CHATBOT FAB + PANEL ===== -->
     <button class="chatbot-fab" id="chatbotFab" onclick="toggleChatbot()">
         <span class="bot-icon">🤖</span>
