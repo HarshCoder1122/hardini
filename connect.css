@@ -3,7 +3,7 @@
     padding-top: 80px;
     min-height: 100vh;
     background: linear-gradient(rgba(0, 26, 18, 0.95), rgba(0, 26, 18, 0.95)),
-                url('path-to-your-background-image.jpg');
+        url('path-to-your-background-image.jpg');
 }
 
 /* Hero Section */
@@ -272,6 +272,7 @@
         opacity: 0;
         transform: translateY(20px);
     }
+
     to {
         opacity: 1;
         transform: translateY(0);
@@ -608,9 +609,16 @@
 }
 
 /* Common Button Styles */
-.connect-btn, .contact-btn, .bid-btn, .consult-btn,
-.upload-btn, .test-btn, .enroll-btn, .join-btn,
-.view-btn, .post-btn {
+.connect-btn,
+.contact-btn,
+.bid-btn,
+.consult-btn,
+.upload-btn,
+.test-btn,
+.enroll-btn,
+.join-btn,
+.view-btn,
+.post-btn {
     background: #4CAF50;
     color: white;
     border: none;
@@ -621,9 +629,15 @@
     font-size: 0.9rem;
 }
 
-.connect-btn:hover, .contact-btn:hover, .bid-btn:hover,
-.consult-btn:hover, .upload-btn:hover, .test-btn:hover,
-.enroll-btn:hover, .join-btn:hover, .view-btn:hover,
+.connect-btn:hover,
+.contact-btn:hover,
+.bid-btn:hover,
+.consult-btn:hover,
+.upload-btn:hover,
+.test-btn:hover,
+.enroll-btn:hover,
+.join-btn:hover,
+.view-btn:hover,
 .post-btn:hover {
     background: #45a049;
     transform: translateY(-2px);
@@ -635,6 +649,7 @@
         opacity: 0;
         transform: translateY(-20px);
     }
+
     to {
         opacity: 1;
         transform: translateY(0);
@@ -656,18 +671,49 @@
         grid-template-columns: 1fr;
     }
 
-    .farmer-card, .supplier-card, .expert-card, .course-card {
+    .farmer-card,
+    .supplier-card,
+    .expert-card,
+    .course-card {
         flex-direction: column;
         align-items: center;
         text-align: center;
     }
 
-    .farmer-info, .supplier-info, .expert-info, .course-info {
+    .farmer-info,
+    .supplier-info,
+    .expert-info,
+    .course-info {
         width: 100%;
     }
 }
 
-/* Using main styles.css for consistency - removed conflicting notification styles */
+/* Notification Styles */
+.notification {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background: #4CAF50;
+    color: white;
+    padding: 15px 25px;
+    border-radius: 5px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    z-index: 2000;
+    transform: translateX(100%);
+    opacity: 0;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.notification.error {
+    background: #ff4444;
+}
+
+.notification.success {
+    background: #4CAF50;
+}
 
 /* Loading States */
 .loading {
@@ -700,4 +746,20 @@ button:disabled {
     background: #45a049 !important;
     opacity: 0.7;
     cursor: not-allowed;
+}
+
+/* Trend Indicators */
+.trend-up {
+    color: #4CAF50;
+    font-weight: bold;
+}
+
+.trend-down {
+    color: #ff4444;
+    font-weight: bold;
+}
+
+.trend-neutral {
+    color: #ffd700;
+    font-weight: bold;
 }

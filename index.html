@@ -301,7 +301,7 @@
                         learn best practices.</div>
                     <div class="card-tags"><span class="card-tag">Peer Learning</span><span class="card-tag">Regional
                             Groups</span><span class="card-tag">Success Stories</span></div><button
-                        class="btn btn-primary btn-sm">Join Network →</button>
+                        class="btn btn-primary btn-sm" onclick="openConnectModal('farmers')">Join Network →</button>
                 </div>
                 <div class="glass-card">
                     <div class="card-icon-lg">🏢</div>
@@ -310,7 +310,7 @@
                         wholesale prices.</div>
                     <div class="card-tags"><span class="card-tag">Verified Sellers</span><span class="card-tag">Bulk
                             Pricing</span><span class="card-tag">Direct Contact</span></div><button
-                        class="btn btn-primary btn-sm">Find Suppliers →</button>
+                        class="btn btn-primary btn-sm" onclick="openConnectModal('suppliers')">Find Suppliers →</button>
                 </div>
                 <div class="glass-card">
                     <div class="card-icon-lg">📈</div>
@@ -319,7 +319,7 @@
                         the best rates.</div>
                     <div class="card-tags"><span class="card-tag">Live Prices</span><span class="card-tag">Buyer
                             Matching</span><span class="card-tag">Price Alerts</span></div><button
-                        class="btn btn-primary btn-sm">View Markets →</button>
+                        class="btn btn-primary btn-sm" onclick="openConnectModal('market')">View Markets →</button>
                 </div>
                 <div class="glass-card">
                     <div class="card-icon-lg">🎓</div>
@@ -328,7 +328,7 @@
                         technology experts.</div>
                     <div class="card-tags"><span class="card-tag">1-on-1 Sessions</span><span class="card-tag">Video
                             Calls</span><span class="card-tag">Free First Session</span></div><button
-                        class="btn btn-primary btn-sm">Book Expert →</button>
+                        class="btn btn-primary btn-sm" onclick="openConnectModal('experts')">Book Expert →</button>
                 </div>
                 <div class="glass-card">
                     <div class="card-icon-lg">📚</div>
@@ -337,7 +337,8 @@
                         development.</div>
                     <div class="card-tags"><span class="card-tag">Video Courses</span><span
                             class="card-tag">Certificates</span><span class="card-tag">Offline Access</span></div>
-                    <button class="btn btn-primary btn-sm">Start Learning →</button>
+                    <button class="btn btn-primary btn-sm" onclick="openConnectModal('training')">Start Learning
+                        →</button>
                 </div>
                 <div class="glass-card">
                     <div class="card-icon-lg">💬</div>
@@ -346,7 +347,7 @@
                         agriculture.</div>
                     <div class="card-tags"><span class="card-tag">Q&A</span><span
                             class="card-tag">Discussion</span><span class="card-tag">Expert Answers</span></div><button
-                        class="btn btn-primary btn-sm">Join Discussion →</button>
+                        class="btn btn-primary btn-sm" onclick="openConnectModal('forum')">Join Discussion →</button>
                 </div>
             </div>
         </div>
@@ -605,6 +606,98 @@
     <div class="reel-modal-bg" id="reelPlayerModal">
         <button class="reel-modal-close" onclick="closeReelPlayer()">×</button>
         <div class="reel-modal-frame"><iframe id="reelPlayerFrame" src="" allowfullscreen allow="autoplay"></iframe>
+        </div>
+    </div>
+
+    <!-- Connect: Farmers Modal -->
+    <div class="modal-overlay" id="farmersModal">
+        <div class="modal-panel">
+            <div class="modal-header">
+                <h2>👨‍🌾 Farmers Network</h2><button class="modal-close"
+                    onclick="closeModal('farmersModal')">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="card-grid" id="farmersList"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Connect: Suppliers Modal -->
+    <div class="modal-overlay" id="suppliersModal">
+        <div class="modal-panel">
+            <div class="modal-header">
+                <h2>🏢 Suppliers Hub</h2><button class="modal-close" onclick="closeModal('suppliersModal')">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="card-grid" id="suppliersList"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Connect: Market Modal -->
+    <div class="modal-overlay" id="marketModal">
+        <div class="modal-panel">
+            <div class="modal-header">
+                <h2>📈 Market Connect</h2><button class="modal-close" onclick="closeModal('marketModal')">×</button>
+            </div>
+            <div class="modal-body">
+                <h3 style="margin-bottom:16px">Live Market Prices</h3>
+                <div style="overflow-x:auto;margin-bottom:24px">
+                    <table style="width:100%;border-collapse:collapse;color:var(--text-secondary)">
+                        <thead>
+                            <tr style="border-bottom:1px solid var(--border-color);text-align:left">
+                                <th style="padding:12px">Crop</th>
+                                <th style="padding:12px">Price</th>
+                                <th style="padding:12px">Trend</th>
+                            </tr>
+                        </thead>
+                        <tbody id="marketPricesBody"></tbody>
+                    </table>
+                </div>
+                <h3 style="margin-bottom:16px">Active Buyers</h3>
+                <div class="card-grid" id="buyersList"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Connect: Experts Modal -->
+    <div class="modal-overlay" id="expertsModal">
+        <div class="modal-panel">
+            <div class="modal-header">
+                <h2>🎓 Expert Panel</h2><button class="modal-close" onclick="closeModal('expertsModal')">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="card-grid" id="expertsList"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Connect: Training Modal -->
+    <div class="modal-overlay" id="trainingModal">
+        <div class="modal-panel">
+            <div class="modal-header">
+                <h2>📚 Training Hub</h2><button class="modal-close" onclick="closeModal('trainingModal')">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="card-grid" id="coursesList"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Connect: Forum Modal -->
+    <div class="modal-overlay" id="forumModal">
+        <div class="modal-panel">
+            <div class="modal-header">
+                <h2>💬 Community Forum</h2><button class="modal-close" onclick="closeModal('forumModal')">×</button>
+            </div>
+            <div class="modal-body">
+                <div style="margin-bottom:24px">
+                    <button class="btn btn-primary btn-block"
+                        onclick="showNotification('New discussion feature coming soon!')">➕ Start New
+                        Discussion</button>
+                </div>
+                <div class="card-grid" id="forumList" style="display:flex;flex-direction:column;gap:12px"></div>
+            </div>
         </div>
     </div>
 

@@ -1,12 +1,238 @@
 document.addEventListener('DOMContentLoaded', () => {
-    // Modal functionality
-    const connectBtns = document.querySelectorAll('.connect-btn[data-type]');
-    const modals = document.querySelectorAll('.detail-modal');
-    const closeModals = document.querySelectorAll('.close-modal');
+    // --- Data Definitions ---
 
-    // Open modal based on type
+    const farmersData = [
+        { name: "Ramesh Kumar", role: "Organic Farming Expert", location: "Maharashtra", image: "https://i.pravatar.cc/150?img=11" },
+        { name: "Suresh Patel", role: "Traditional Farming", location: "Gujarat", image: "https://i.pravatar.cc/150?img=12" },
+        { name: "Anita Devi", role: "Hydroponics Specialist", location: "Punjab", image: "https://i.pravatar.cc/150?img=5" },
+        { name: "Vikram Singh", role: "Dairy Farming", location: "Haryana", image: "https://i.pravatar.cc/150?img=3" },
+        { name: "Meera Reddy", role: "Sustainable Agriculture", location: "Telangana", image: "https://i.pravatar.cc/150?img=9" }
+    ];
+
+    const marketData = [
+        { crop: "Wheat", price: "₹2,200/quintal", trend: "↗️ +5%", trendClass: "trend-up" },
+        { crop: "Rice", price: "₹3,100/quintal", trend: "↘️ -2%", trendClass: "trend-down" },
+        { crop: "Cotton", price: "₹6,300/quintal", trend: "↗️ +1.5%", trendClass: "trend-up" },
+        { crop: "Soybean", price: "₹3,800/quintal", trend: "➡️ 0%", trendClass: "trend-neutral" },
+        { crop: "Maize", price: "₹1,950/quintal", trend: "↘️ -1%", trendClass: "trend-down" }
+    ];
+
+    const buyersData = [
+        { name: "FreshMart", lookingFor: "Organic Vegetables", quantity: "500kg/week" },
+        { name: "AgriExport Co.", lookingFor: "Premium Rice", quantity: "2000kg/month" },
+        { name: "GreenGrocers", lookingFor: "Exotic Fruits", quantity: "100kg/day" },
+        { name: "MegaFoods Ltd.", lookingFor: "Potatoes", quantity: "5 tons/month" }
+    ];
+
+    const suppliersData = [
+        { name: "GreenSeeds Ltd", product: "Premium Quality Seeds", rating: "⭐⭐⭐⭐⭐" },
+        { name: "AgriTech Equipment", product: "Modern Farming Equipment", rating: "⭐⭐⭐⭐" },
+        { name: "BioLife Solutions", product: "Organic Fertilizers", rating: "⭐⭐⭐⭐⭐" },
+        { name: "FarmGear", product: "Protective Gear", rating: "⭐⭐⭐⭐" }
+    ];
+
+    const productsData = [
+        { name: "Organic Seeds Pack", price: "₹499/kg", image: "https://via.placeholder.com/150?text=Seeds" },
+        { name: "Bio Fertilizer", price: "₹999/pack", image: "https://via.placeholder.com/150?text=Fertilizer" },
+        { name: "Drip Irrigation Kit", price: "₹5,500/set", image: "https://via.placeholder.com/150?text=Irrigation" },
+        { name: "Solar Insect Trap", price: "₹1,200/unit", image: "https://via.placeholder.com/150?text=Trap" }
+    ];
+
+    const expertsData = [
+        { name: "Dr. Sharma", role: "Soil Expert", experience: "15 years", image: "https://i.pravatar.cc/150?img=4" },
+        { name: "Dr. Patel", role: "Crop Disease Specialist", experience: "12 years", image: "https://i.pravatar.cc/150?img=8" },
+        { name: "Prof. Gupta", role: "Agri-Business Consultant", experience: "20 years", image: "https://i.pravatar.cc/150?img=13" },
+        { name: "Dr. Emily Ray", role: "Entomologist", experience: "10 years", image: "https://i.pravatar.cc/150?img=10" }
+    ];
+
+    const coursesData = [
+        { title: "Modern Farming Techniques", duration: "4 weeks", icon: "🌾" },
+        { title: "Farm Equipment Training", duration: "2 weeks", icon: "🚜" },
+        { title: "Organic Certification Guide", duration: "3 weeks", icon: "📜" },
+        { title: "Agri-Marketing Mastery", duration: "5 weeks", icon: "📈" }
+    ];
+
+    const workshopsData = [
+        { title: "Organic Farming Workshop", date: "Next Sunday, 10:00 AM", instructor: "Dr. Reddy" },
+        { title: "Pest Control Seminar", date: "Next Tuesday, 2:00 PM", instructor: "Prof. Singh" },
+        { title: "Water Conservation Talk", date: "Friday, 11:00 AM", instructor: "Eng. Das" }
+    ];
+
+    const discussionsData = [
+        { title: "Best practices for organic farming", author: "Ramesh Kumar", stats: "Replies: 23 • Views: 156", tags: ["Organic", "Tips"] },
+        { title: "Water conservation methods", author: "Priya Singh", stats: "Replies: 15 • Views: 98", tags: ["Water", "Conservation"] },
+        { title: "Market trends for 2024", author: "Amit Verma", stats: "Replies: 45 • Views: 310", tags: ["Market", "Trends"] },
+        { title: "Dealing with locusts", author: "Kishan Lal", stats: "Replies: 12 • Views: 85", tags: ["Pest", "Emergency"] }
+    ];
+
+    // --- Helper Functions ---
+
+    function createFarmerCard(farmer) {
+        return `
+            <div class="farmer-card">
+                <img src="${farmer.image}" alt="${farmer.name}">
+                <div class="farmer-info">
+                    <h4>${farmer.name}</h4>
+                    <p>${farmer.role}</p>
+                    <span class="location">📍 ${farmer.location}</span>
+                    <button class="connect-btn" data-action="connect" data-name="${farmer.name}">Connect</button>
+                </div>
+            </div>
+        `;
+    }
+
+    function createMarketRow(item) {
+        return `
+            <tr>
+                <td>${item.crop}</td>
+                <td>${item.price}</td>
+                <td class="${item.trendClass}">${item.trend}</td>
+            </tr>
+        `;
+    }
+
+    function createBuyerCard(buyer) {
+        return `
+            <div class="buyer-card">
+                <div class="buyer-info">
+                    <h4>${buyer.name}</h4>
+                    <p>Looking for: ${buyer.lookingFor}</p>
+                    <p>Quantity: ${buyer.quantity}</p>
+                    <button class="bid-btn" data-action="bid" data-name="${buyer.name}">Place Bid</button>
+                </div>
+            </div>
+        `;
+    }
+
+    function createSupplierCard(supplier) {
+        return `
+            <div class="supplier-card">
+                <div class="supplier-logo">🌱</div>
+                <div class="supplier-info">
+                    <h4>${supplier.name}</h4>
+                    <p>${supplier.product}</p>
+                    <div class="rating">${supplier.rating}</div>
+                    <button class="contact-btn" data-action="contact-supplier" data-name="${supplier.name}">Contact Supplier</button>
+                </div>
+            </div>
+        `;
+    }
+
+    function createProductCard(product) {
+        return `
+            <div class="product-card">
+                <img src="${product.image}" alt="${product.name}">
+                <h4>${product.name}</h4>
+                <p>${product.price}</p>
+                <button class="order-btn" data-action="order" data-name="${product.name}">Order Now</button>
+            </div>
+        `;
+    }
+
+    function createExpertCard(expert) {
+        return `
+            <div class="expert-card">
+                <img src="${expert.image}" alt="${expert.name}">
+                <div class="expert-info">
+                    <h4>${expert.name}</h4>
+                    <p>${expert.role}</p>
+                    <p>Experience: ${expert.experience}</p>
+                    <button class="consult-btn" data-action="consult" data-name="${expert.name}">Book Consultation</button>
+                </div>
+            </div>
+        `;
+    }
+
+    function createCourseCard(course) {
+        return `
+            <div class="course-card">
+                <div class="course-preview">${course.icon}</div>
+                <div class="course-info">
+                    <h4>${course.title}</h4>
+                    <p>Duration: ${course.duration}</p>
+                    <div class="progress-bar">
+                        <div class="progress" style="width: 0%"></div>
+                    </div>
+                    <button class="enroll-btn" data-action="enroll" data-name="${course.title}">Enroll Now</button>
+                </div>
+            </div>
+        `;
+    }
+
+    function createWorkshopCard(workshop) {
+        return `
+            <div class="workshop-card">
+                <h4>${workshop.title}</h4>
+                <p>Date: ${workshop.date}</p>
+                <p>By: ${workshop.instructor}</p>
+                <button class="join-btn" data-action="join" data-name="${workshop.title}">Join Workshop</button>
+            </div>
+        `;
+    }
+
+    function createDiscussionCard(discussion) {
+        const tagsHtml = discussion.tags.map(tag => `<span class="tag">${tag}</span>`).join('');
+        return `
+            <div class="discussion-card">
+                <div class="discussion-header">
+                    <h4>${discussion.title}</h4>
+                    <span class="tags">${tagsHtml}</span>
+                </div>
+                <p>Started by: ${discussion.author}</p>
+                <p>${discussion.stats}</p>
+                <button class="view-btn" data-action="view-discussion" data-name="${discussion.title}">View Discussion</button>
+            </div>
+        `;
+    }
+
+    // --- Initialization ---
+
+    function populateData() {
+        // Farmers
+        const farmersList = document.querySelector('.farmers-list');
+        if (farmersList) farmersList.innerHTML = farmersData.map(createFarmerCard).join('');
+
+        // Market
+        const marketTableBody = document.querySelector('.price-table tbody');
+        if (marketTableBody) marketTableBody.innerHTML = marketData.map(createMarketRow).join('');
+
+        const buyersList = document.querySelector('.buyers-list');
+        if (buyersList) buyersList.innerHTML = buyersData.map(createBuyerCard).join('');
+
+        // Suppliers
+        const suppliersList = document.querySelector('.suppliers-list');
+        if (suppliersList) suppliersList.innerHTML = suppliersData.map(createSupplierCard).join('');
+
+        const productsGrid = document.querySelector('.products-grid');
+        if (productsGrid) productsGrid.innerHTML = productsData.map(createProductCard).join('');
+
+        // Experts
+        const expertsList = document.querySelector('.experts-list');
+        if (expertsList) expertsList.innerHTML = expertsData.map(createExpertCard).join('');
+
+        // Training
+        const coursesList = document.querySelector('.courses-list');
+        if (coursesList) coursesList.innerHTML = coursesData.map(createCourseCard).join('');
+
+        const workshopsList = document.querySelector('.workshops-list');
+        if (workshopsList) workshopsList.innerHTML = workshopsData.map(createWorkshopCard).join('');
+
+        // Forum
+        const discussionsList = document.querySelector('.discussions-list');
+        if (discussionsList) discussionsList.innerHTML = discussionsData.map(createDiscussionCard).join('');
+    }
+
+    populateData();
+
+    // --- Modal Logic ---
+
+    const connectBtns = document.querySelectorAll('.connect-btn[data-type]');
+    const closeModals = document.querySelectorAll('.close-modal');
+    const modals = document.querySelectorAll('.detail-modal');
+
+    // Open Modal
     connectBtns.forEach(btn => {
-        btn.addEventListener('click', () => {
+        btn.addEventListener('click', (e) => {
             const type = btn.dataset.type;
             const modal = document.getElementById(`${type}Modal`);
             if (modal) {
@@ -16,182 +242,192 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    // Close modal functionality
-    closeModals.forEach(closeBtn => {
-        closeBtn.addEventListener('click', () => {
-            const modal = closeBtn.closest('.detail-modal');
-            modal.style.display = 'none';
-            document.body.style.overflow = 'auto';
+    // Close Modal
+    function closeModal(modal) {
+        modal.style.display = 'none';
+        document.body.style.overflow = 'auto';
+    }
+
+    closeModals.forEach(btn => {
+        btn.addEventListener('click', () => {
+            const modal = btn.closest('.detail-modal');
+            closeModal(modal);
         });
     });
 
-    // Close modal when clicking outside
     window.addEventListener('click', (e) => {
         modals.forEach(modal => {
             if (e.target === modal) {
-                modal.style.display = 'none';
-                document.body.style.overflow = 'auto';
+                closeModal(modal);
             }
         });
     });
 
-    // Farmers Network Functionality
-    const farmerConnectBtns = document.querySelectorAll('.farmer-card .connect-btn');
-    farmerConnectBtns.forEach(btn => {
-        btn.addEventListener('click', async () => {
-            btn.textContent = 'Connecting...';
-            await new Promise(resolve => setTimeout(resolve, 1500));
-            btn.textContent = 'Connected';
-            btn.disabled = true;
-            showNotification('Successfully connected with farmer!');
-        });
+    // --- Interaction Logic (Event Delegation) ---
+
+    document.addEventListener('click', async (e) => {
+        const target = e.target;
+
+        if (target.tagName !== 'BUTTON') return;
+
+        const action = target.dataset.action;
+        const name = target.dataset.name;
+
+        if (!action) return;
+
+        // Prevent multiple clicks
+        if (target.disabled || target.classList.contains('loading')) return;
+
+        switch (action) {
+            case 'connect':
+                target.textContent = 'Connecting...';
+                target.classList.add('loading');
+                await simulateApiCall();
+                target.classList.remove('loading');
+                target.textContent = 'Connected';
+                target.disabled = true;
+                showNotification(`Successfully connected with ${name}!`);
+                break;
+
+            case 'bid':
+                target.textContent = 'Bidding...';
+                await simulateApiCall();
+                target.textContent = 'Bid Placed';
+                target.disabled = true;
+                showNotification(`Bid placed for ${name}`);
+                break;
+
+            case 'contact-supplier':
+                target.textContent = 'Sending...';
+                await simulateApiCall();
+                target.textContent = 'Request Sent';
+                target.disabled = true;
+                showNotification(`Contact request sent to ${name}`);
+                break;
+
+            case 'order':
+                target.textContent = 'Processing...';
+                await simulateApiCall();
+                target.textContent = 'Ordered';
+                target.disabled = true;
+                showNotification(`Order placed for ${name}`);
+                break;
+
+            case 'consult':
+                target.textContent = 'Booking...';
+                await simulateApiCall();
+                target.textContent = 'Booked';
+                target.disabled = true;
+                showNotification(`Consultation booked with ${name}`);
+                break;
+
+            case 'enroll':
+                target.textContent = 'Enrolling...';
+                await simulateApiCall();
+                target.textContent = 'Enrolled';
+                target.disabled = true;
+                showNotification(`Successfully enrolled in ${name}`);
+                // Animate progress bar if present
+                const progressBar = target.closest('.course-info').querySelector('.progress');
+                if (progressBar) {
+                    setTimeout(() => progressBar.style.width = '10%', 100);
+                }
+                break;
+
+            case 'join':
+                target.textContent = 'Joining...';
+                await simulateApiCall();
+                target.textContent = 'Registered';
+                target.disabled = true;
+                showNotification(`Registered for ${name}`);
+                break;
+
+            case 'view-discussion':
+                showNotification(`Opening discussion: ${name}...`);
+                // Simulate navigation or modal change
+                break;
+        }
     });
 
-    // Suppliers Hub Functionality
-    const contactBtns = document.querySelectorAll('.contact-btn');
-    contactBtns.forEach(btn => {
-        btn.addEventListener('click', () => {
-            const supplierName = btn.closest('.supplier-info').querySelector('h4').textContent;
-            showNotification(`Contact request sent to ${supplierName}`);
-        });
-    });
-
-    const orderBtns = document.querySelectorAll('.order-btn');
-    orderBtns.forEach(btn => {
-        btn.addEventListener('click', () => {
-            const productName = btn.closest('.product-card').querySelector('h4').textContent;
-            showNotification(`Order placed for ${productName}`);
-        });
-    });
-
-    // Market Connect Functionality
-    const bidBtns = document.querySelectorAll('.bid-btn');
-    bidBtns.forEach(btn => {
-        btn.addEventListener('click', () => {
-            const buyerInfo = btn.closest('.buyer-info');
-            const buyerName = buyerInfo.querySelector('h4').textContent;
-            showNotification(`Bid submitted to ${buyerName}`);
-        });
-    });
-
-    // Expert Connect Functionality
-    const consultBtns = document.querySelectorAll('.consult-btn');
-    consultBtns.forEach(btn => {
-        btn.addEventListener('click', () => {
-            const expertName = btn.closest('.expert-info').querySelector('h4').textContent;
-            showNotification(`Consultation request sent to ${expertName}`);
-        });
-    });
-
+    // Special Buttons (Upload, Post) - Static in HTML but managed here
     const uploadBtns = document.querySelectorAll('.upload-btn');
     uploadBtns.forEach(btn => {
         btn.addEventListener('click', () => {
-            // Simulate file upload
             btn.textContent = 'Uploading...';
             setTimeout(() => {
                 btn.textContent = 'Upload Photo';
                 showNotification('Photo analysis will be ready in 24 hours');
-            }, 2000);
+            }, 1500);
         });
     });
 
-    // Training Hub Functionality
-    const enrollBtns = document.querySelectorAll('.enroll-btn');
-    enrollBtns.forEach(btn => {
+    const testBtns = document.querySelectorAll('.test-btn');
+    testBtns.forEach(btn => {
         btn.addEventListener('click', () => {
-            const courseName = btn.closest('.course-info').querySelector('h4').textContent;
-            showNotification(`Successfully enrolled in ${courseName}`);
-            
-            // Start progress animation
-            const progressBar = btn.closest('.course-info').querySelector('.progress');
-            progressBar.style.width = '0%';
+            btn.textContent = 'Requesting...';
             setTimeout(() => {
-                progressBar.style.width = '5%';
-            }, 500);
+                btn.textContent = 'Request Test';
+                showNotification('Soil test kit will be delivered soon!');
+            }, 1500);
         });
     });
 
-    const joinBtns = document.querySelectorAll('.join-btn');
-    joinBtns.forEach(btn => {
-        btn.addEventListener('click', () => {
-            const workshopName = btn.closest('.workshop-card').querySelector('h4').textContent;
-            showNotification(`Successfully registered for ${workshopName}`);
-        });
-    });
-
-    // Community Forum Functionality
-    const viewBtns = document.querySelectorAll('.view-btn');
-    viewBtns.forEach(btn => {
-        btn.addEventListener('click', () => {
-            const discussionTitle = btn.closest('.discussion-card').querySelector('h4').textContent;
-            showNotification(`Loading discussion: ${discussionTitle}`);
-        });
-    });
-
+    // Community Post Button
     const postBtn = document.querySelector('.post-btn');
     if (postBtn) {
         postBtn.addEventListener('click', () => {
-            const topicInput = document.getElementById('topic');
-            const categorySelect = document.getElementById('category');
-            
-            if (topicInput.value && categorySelect.value) {
+            const topic = document.getElementById('topic').value;
+            const category = document.getElementById('category').value;
+
+            if (topic && category) {
                 showNotification('Discussion posted successfully!');
-                topicInput.value = '';
-                categorySelect.value = '';
+                // Reset form
+                document.getElementById('topic').value = '';
+                document.getElementById('category').value = '';
                 document.getElementById('description').value = '';
+                // Ideally, prepend the new post to the list
             } else {
-                showNotification('Please fill in all required fields', 'error');
+                showNotification('Please fill in required fields', 'error');
             }
         });
     }
 
-    // Connection form submission
+    // Connection Form
     const connectionForm = document.getElementById('connectionForm');
     if (connectionForm) {
         connectionForm.addEventListener('submit', async (e) => {
             e.preventDefault();
-            
             const submitBtn = connectionForm.querySelector('.submit-btn');
             submitBtn.classList.add('loading');
-            
-            // Get form data
-            const formData = new FormData(connectionForm);
-            const formDataObj = {};
-            formData.forEach((value, key) => {
-                if (formDataObj[key]) {
-                    if (!Array.isArray(formDataObj[key])) {
-                        formDataObj[key] = [formDataObj[key]];
-                    }
-                    formDataObj[key].push(value);
-                } else {
-                    formDataObj[key] = value;
-                }
-            });
-
-            // Simulate form submission
-            await new Promise(resolve => setTimeout(resolve, 2000));
-            
-            // Show success message
+            await simulateApiCall();
             submitBtn.classList.remove('loading');
-            showNotification('Your connection request has been submitted successfully!');
+            showNotification('Connection request submitted!');
             connectionForm.reset();
         });
     }
 
-    // Notification system
+    // --- Helpers ---
+
+    function simulateApiCall() {
+        return new Promise(resolve => setTimeout(resolve, 1000));
+    }
+
     function showNotification(message, type = 'success') {
         const notification = document.createElement('div');
         notification.className = `notification ${type}`;
         notification.textContent = message;
-        
+
         document.body.appendChild(notification);
-        
+
+        // Trigger reflow
+        notification.offsetHeight;
+
         // Animate in
-        setTimeout(() => {
+        requestAnimationFrame(() => {
             notification.style.transform = 'translateX(0)';
             notification.style.opacity = '1';
-        }, 100);
-        
+        });
+
         // Remove after 3 seconds
         setTimeout(() => {
             notification.style.transform = 'translateX(100%)';
@@ -202,22 +438,10 @@ document.addEventListener('DOMContentLoaded', () => {
         }, 3000);
     }
 
-    // Story cards hover effect
-    const storyCards = document.querySelectorAll('.story-card');
-    storyCards.forEach(card => {
-        card.addEventListener('mouseenter', () => {
-            card.style.transform = 'translateY(-10px)';
-            card.style.boxShadow = '0 10px 20px rgba(76, 175, 80, 0.2)';
-        });
-        
-        card.addEventListener('mouseleave', () => {
-            card.style.transform = 'translateY(0)';
-            card.style.boxShadow = 'none';
-        });
-    });
-
     // Mobile menu functionality
     const createMobileMenu = () => {
+        if (document.querySelector('.burger')) return; // Avoid duplicates
+
         const nav = document.querySelector('.nav-links');
         const burger = document.createElement('div');
         burger.className = 'burger';
@@ -230,81 +454,9 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     };
 
-    // Initialize mobile menu for smaller screens
-    if (window.innerWidth <= 768) {
-        createMobileMenu();
-    }
-
-    // Handle window resize
+    if (window.innerWidth <= 768) createMobileMenu();
     window.addEventListener('resize', () => {
-        if (window.innerWidth <= 768 && !document.querySelector('.burger')) {
-            createMobileMenu();
-        }
+        if (window.innerWidth <= 768) createMobileMenu();
     });
 
-    // Smooth scrolling for navigation links
-    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-        anchor.addEventListener('click', function (e) {
-            e.preventDefault();
-            const target = document.querySelector(this.getAttribute('href'));
-            if (target) {
-                target.scrollIntoView({
-                    behavior: 'smooth'
-                });
-            }
-        });
-    });
-
-    // Form validation and enhancement
-    const formInputs = document.querySelectorAll('.form-group input, .form-group select, .form-group textarea');
-    formInputs.forEach(input => {
-        // Add focus effects
-        input.addEventListener('focus', () => {
-            input.parentElement.classList.add('focused');
-        });
-        
-        input.addEventListener('blur', () => {
-            input.parentElement.classList.remove('focused');
-            
-            // Validate on blur
-            if (input.required && !input.value) {
-                input.classList.add('error');
-            } else {
-                input.classList.remove('error');
-            }
-        });
-        
-        // Real-time validation
-        input.addEventListener('input', () => {
-            if (input.required && !input.value) {
-                input.classList.add('error');
-            } else {
-                input.classList.remove('error');
-            }
-        });
-    });
-
-    // Add dynamic styles for form validation
-    const validationStyles = document.createElement('style');
-    validationStyles.textContent = `
-        .form-group.focused label {
-            color: #4CAF50;
-            transform: translateY(-5px);
-            transition: all 0.3s ease;
-        }
-        
-        .form-group input.error,
-        .form-group select.error,
-        .form-group textarea.error {
-            border-color: #ff4444;
-        }
-        
-        .form-group input.error:focus,
-        .form-group select.error:focus,
-        .form-group textarea.error:focus {
-            border-color: #ff4444;
-            box-shadow: 0 0 0 2px rgba(255, 68, 68, 0.2);
-        }
-    `;
-    document.head.appendChild(validationStyles);
-}); 
+});

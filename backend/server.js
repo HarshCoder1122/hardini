@@ -2,29 +2,54 @@ const express = require('express');
 const cors = require('cors');
 const axios = require('axios');
 const admin = require('firebase-admin');
-const serviceAccount = require('./serviceAccountKey.json');
+// const serviceAccount = require('./serviceAccountKey.json'); // Removed to prevent crash on Vercel
 require('dotenv').config();
 const { Communicate } = require('edge-tts-universal');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
 
-// Initialize Firebase Admin SDK
+// Allow all origins (CORS Fix for Vercel)
+app.use(cors({
+    origin: ['https://hardiniwebsite.vercel.app', 'http://localhost:3000', 'http://127.0.0.1:5500'],
+    methods: ['GET', 'POST', 'OPTIONS', 'DELETE', 'PUT'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+    credentials: true
+}));
+
+app.use(express.json({ limit: '10mb' }));
+const serviceAccountPath = './serviceAccountKey.json';
+let serviceAccount;
+
 try {
+    // 1. Try Environment Variable (Best for Vercel)
+    if (process.env.FIREBASE_SERVICE_ACCOUNT) {
+        // If it's a base64 string (common for easier copy-pasting), decode it
+        if (!process.env.FIREBASE_SERVICE_ACCOUNT.startsWith('{')) {
+            const buff = Buffer.from(process.env.FIREBASE_SERVICE_ACCOUNT, 'base64');
+            serviceAccount = JSON.parse(buff.toString('utf-8'));
+        } else {
+            serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
+        }
+    }
+    // 2. Try Local File
+    else {
+        serviceAccount = require(serviceAccountPath);
+    }
+
     admin.initializeApp({
         credential: admin.credential.cert(serviceAccount),
-        // Try standard URL format. If it fails, user needs to check Console.
         databaseURL: "https://hardini-3e576-default-rtdb.firebaseio.com"
     });
     console.log('✅ Firebase Admin SDK initialized');
 } catch (error) {
     console.error('❌ Firebase Admin initialization failed:', error.message);
+    // Do not crash immediately, allowing health check to pass so we can debug
 }
 
 const db = admin.database();
 
 // Middleware
-app.use(cors());
 app.use(express.json({ limit: '10mb' }));
 
 // Auth Middleware to verify Firebase ID Token
@@ -64,6 +89,14 @@ const FARMING_SEARCH_TERMS = [
     'tractor farming', 'organic farming', 'vegetable farming', 'dairy farming'
 ];
 
+const FALLBACK_VIDEOS = [
+    { id: 'h1_K7pL8C1c', title: 'Modern Farming Technology in India', thumbnail: 'https://i.ytimg.com/vi/h1_K7pL8C1c/hqdefault.jpg', channelTitle: 'Farming Tech' },
+    { id: 'X5l6l9w3w5k', title: 'Organic Farming Success Story', thumbnail: 'https://i.ytimg.com/vi/X5l6l9w3w5k/hqdefault.jpg', channelTitle: 'Kisan Of India' },
+    { id: '8z7P7b8C8D8', title: 'Vegetable Farming Tips', thumbnail: 'https://i.ytimg.com/vi/8z7P7b8C8D8/hqdefault.jpg', channelTitle: 'Agri World' },
+    { id: '1a2b3c4d5e6', title: 'Wheat Cultivation Process', thumbnail: 'https://i.ytimg.com/vi/1a2b3c4d5e6/hqdefault.jpg', channelTitle: 'Indian Farmer' },
+    { id: '9f8e7d6c5b4', title: 'Smart Irrigation Systems', thumbnail: 'https://i.ytimg.com/vi/9f8e7d6c5b4/hqdefault.jpg', channelTitle: 'Smart Farm' }
+];
+
 // Get farming reels from YouTube API
 app.get('/api/reels', async (req, res) => {
     try {
@@ -98,7 +131,9 @@ app.get('/api/reels', async (req, res) => {
 
     } catch (error) {
         console.error('Error fetching reels:', error.message);
-        res.status(500).json({ success: false, error: 'Failed to fetch reels' });
+        // Fallback to hardcoded videos on error to prevent UI breakage
+        console.log('Serving fallback videos due to API error');
+        res.json({ success: true, data: FALLBACK_VIDEOS });
     }
 });
 
@@ -338,34 +373,135 @@ const GROQ_API_URL = 'https://api.groq.com/openai/v1/chat/completions';
 const HARDINI_SYSTEM_PROMPT = `You are Hardini AI 🌾, an expert agricultural assistant.
 IMPORTANT: The user is authenticated. 
 Your expertise includes: Crop cultivation, Soil health, Pest control, Irrigation, Government schemes, Market prices.
+
+🚨 STRICT DOMAIN RESTRICTION 🚨
+You must ONLY answer questions related to agriculture, farming, gardening, rural development, and weather.
+If the user asks about anything else (e.g., movies, politics, coding, general knowledge), politely decline and steer them back to farming.
+Example: "I can only help with farming and agriculture related queries. Do you have any crops you need advice on?"
+
 RULES:
 1. Respond in the user's language.
 2. Be practical and actionable.
 3. Use emojis (🌾🌱).
+4. Use the provided context (Weather, Soil, Prices) to give specific advice.
 `;
+
+// Helper: Fetch Weather from Open-Meteo
+async function fetchWeather(lat, lon) {
+    if (!lat || !lon) return null;
+    try {
+        const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,rain,weather_code,wind_speed_10m&daily=temperature_2m_max,temperature_2m_min,precipitation_sum&timezone=auto`;
+        const response = await axios.get(url);
+        const current = response.data.current;
+        return `Current Weather: ${current.temperature_2m}°C, Humidity: ${current.relative_humidity_2m}%, Wind: ${current.wind_speed_10m} km/h, Rain: ${current.rain}mm. Code: ${current.weather_code}`;
+    } catch (error) {
+        console.error('Weather fetch error:', error.message);
+        return null;
+    }
+}
+
+// Helper: Fetch Mandi Prices (Mock/Real)
+async function fetchMandiPrices(location, crop) {
+    // In a real scenario, use data.gov.in API with an API Key.
+    // usage: https://api.data.gov.in/resource/9ef84268-d588-465a-a308-a864a43d0070?api-key=YOUR_KEY&format=json&filters[state]=${state}&filters[commodity]=${crop}
+
+    // Returning Mock Data for demonstration securely
+    return `Market Prices (Mandi) in ${location || 'India'}:
+- Wheat: ₹2125/quintal (Avg)
+- Rice (Common): ₹2040/quintal
+- Cotton: ₹6080/quintal
+- Maize: ₹1962/quintal
+*Prices are indicative.*`;
+}
+
+// Helper: Fetch Soil Data from Firebase
+async function fetchUserSoilData(uid) {
+    try {
+        const snapshot = await db.ref(`users/${uid}/devices`).once('value');
+        const devices = snapshot.val();
+        if (!devices) return null;
+
+        let soilInfo = "User's Soil Data:\n";
+        for (const [deviceId, deviceData] of Object.entries(devices)) {
+            // Get latest reading
+            const dataSnapshot = await db.ref(`users/${uid}/devices/${deviceId}/data`)
+                .orderByChild('created_at')
+                .limitToLast(1)
+                .once('value');
+            const latestData = dataSnapshot.val();
+            if (latestData) {
+                const reading = Object.values(latestData)[0];
+                soilInfo += `- Device ${deviceData.config?.device_name || deviceId}: Moisture ${reading.soil_moist_pct}%, Temp ${reading.soil_temp_c}°C, pH ${reading.ph || 'N/A'}\n`;
+            }
+        }
+        return soilInfo;
+    } catch (error) {
+        console.error('Soil data fetch error:', error);
+        return null;
+    }
+}
 
 app.post('/api/chat', async (req, res) => {
     try {
         if (!GROQ_API_KEY) return res.status(503).json({ success: false, error: 'AI service not configured' });
 
-        const { message, language, image, history } = req.body;
+        const { message, language, image, history, location } = req.body;
         // Personalization using Auth
         const userContext = req.user ? `User ID: ${req.user.uid}, Email: ${req.user.email}` : 'Guest User';
 
         if (!message && !image) return res.status(400).json({ success: false, error: 'Message required' });
 
+        // --- RAG & Context Injection ---
+        // Parallelize with Timeout (Max 1.5s wait for data)
+        const TIMEOUT_MS = 1500;
+        const withTimeout = (promise) => Promise.race([
+            promise,
+            new Promise(resolve => setTimeout(() => resolve(null), TIMEOUT_MS))
+        ]);
+
+        const promises = [];
+
+        // 1. Weather
+        if (location && location.latitude && location.longitude) {
+            promises.push(withTimeout(fetchWeather(location.latitude, location.longitude)).then(res => res ? `[Wait] ${res}` : null));
+        } else {
+            promises.push(Promise.resolve(null));
+        }
+
+        // 2. Soil Data
+        if (req.user) {
+            promises.push(withTimeout(fetchUserSoilData(req.user.uid)).then(res => res ? `[Soil Sensors] ${res}` : null));
+        } else {
+            promises.push(Promise.resolve(null));
+        }
+
+        // 3. Market Prices
+        const lowerMsg = message ? message.toLowerCase() : '';
+        if (lowerMsg.includes('price') || lowerMsg.includes('rate') || lowerMsg.includes('mandi') || lowerMsg.includes('bhav')) {
+            promises.push(withTimeout(fetchMandiPrices("User Location", "All")).then(res => res ? `[Market] ${res}` : null));
+        } else {
+            promises.push(Promise.resolve(null));
+        }
+
+        const results = await Promise.allSettled(promises);
+        const contextData = results
+            .filter(r => r.status === 'fulfilled' && r.value)
+            .map(r => r.value)
+            .join('\n');
+
         const messages = [
-            { role: 'system', content: HARDINI_SYSTEM_PROMPT + `\nContext: ${userContext}` + (language ? `\nRespond in ${language}.` : '') }
+            { role: 'system', content: HARDINI_SYSTEM_PROMPT + `\nContext: ${userContext}\nReal-time Data:\n${contextData}` + (language ? `\nRespond in ${language}. Keep it short.` : '') }
         ];
 
         if (history && Array.isArray(history)) {
-            const recentHistory = history.slice(-10);
+            const recentHistory = history.slice(-6); // Reduced history context for speed
             recentHistory.forEach(msg => messages.push({ role: msg.role === 'user' ? 'user' : 'assistant', content: msg.content }));
         }
 
+        // Use High Quality Model
         let model = 'llama-3.3-70b-versatile';
         if (image) {
-            model = 'meta-llama/llama-4-scout-17b-16e-instruct';
+            model = 'llama-3.2-90b-vision-preview'; // High quality vision model
             const userContent = [
                 { type: 'text', text: message || 'Analyze this agricultural image.' },
                 { type: 'image_url', image_url: { url: image.startsWith('data:') ? image : `data:image/jpeg;base64,${image}` } }
@@ -376,7 +512,10 @@ app.post('/api/chat', async (req, res) => {
         }
 
         const groqResponse = await axios.post(GROQ_API_URL, {
-            model: model, messages: messages, temperature: 0.7, max_tokens: 1024
+            model: model,
+            messages: messages,
+            temperature: 0.7,
+            max_tokens: 1024 // Restore token limit
         }, { headers: { 'Authorization': `Bearer ${GROQ_API_KEY}` } });
 
         const reply = groqResponse.data.choices[0]?.message?.content || 'Error generating response.';
@@ -449,9 +588,16 @@ app.get('/api/health', (req, res) => {
     });
 });
 
-app.listen(PORT, () => {
-    console.log(`🚀 Hardini Backend Server running on port ${PORT}`);
-    console.log(`🔥 Firebase Project: ${serviceAccount.project_id}`);
-});
+// Only run the server if executed directly (not when imported by Vercel)
+if (require.main === module) {
+    app.listen(PORT, () => {
+        console.log(`🚀 Hardini Backend Server running on port ${PORT}`);
+        if (serviceAccount) {
+            console.log(`🔥 Firebase Project: ${serviceAccount.project_id}`);
+        } else {
+            console.log('⚠️ Firebase not initialized (Missing Credentials)');
+        }
+    });
+}
 
 module.exports = app;

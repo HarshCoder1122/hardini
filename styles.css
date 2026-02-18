@@ -1348,6 +1348,7 @@ nav {
     input[type="submit"],
     input[type="button"] {
         -webkit-appearance: none;
+        appearance: none;
         border-radius: 8px;
         font-weight: 600;
         letter-spacing: 0.5px;
@@ -2184,8 +2185,7 @@ nav {
     margin: 0 0 6px 0;
 }
 
-margin-bottom: 0;
-}
+
 
 /* Speaker Button */
 .speak-btn {
@@ -4345,6 +4345,7 @@ input:checked+.slider:before {
     margin-bottom: 1rem;
     display: -webkit-box;
     -webkit-line-clamp: 2;
+    line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
 }

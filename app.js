@@ -1,5 +1,7 @@
 /* ===== HARDINI WEBAPP - app.js ===== */
-const API_BASE = window.location.hostname === 'localhost' ? 'http://localhost:3001' : '';
+const API_BASE = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+    ? 'http://localhost:3001'
+    : 'https://hardini-backend.onrender.com'; // UPDATE THIS URL AFTER DEPLOYMENT
 
 // ===== SPA ROUTER =====
 function navigateTo(page) {
@@ -288,7 +290,22 @@ async function sendChatMessage() {
         const token = await getAuthToken();
         let lang = document.getElementById('chatLang').value;
         if (lang === 'auto') lang = detectLanguage(msg);
-        const body = { message: msg, language: lang };
+
+        // Get Location (if available/allowed)
+        let locationData = null;
+        try {
+            const position = await new Promise((resolve, reject) => {
+                navigator.geolocation.getCurrentPosition(resolve, reject, { timeout: 5000 });
+            });
+            locationData = {
+                latitude: position.coords.latitude,
+                longitude: position.coords.longitude
+            };
+        } catch (e) {
+            console.log("Location access denied or unavailable");
+        }
+
+        const body = { message: msg, language: lang, location: locationData };
         if (chatImageData) body.image = chatImageData;
 
         const res = await fetch(`${API_BASE}/api/chat`, {
@@ -487,27 +504,93 @@ async function loadSensorData(deviceId) {
     } catch (err) { showNotification('Failed to load sensor data', 'error'); }
 }
 
+// ===== BLE PROVISIONING =====
+// Soil Probe / IoT Integration
+// ===================================
+
 async function scanBLEDevices() {
+    // Redirect to the Soil Probe section or show a helper message
+    // The actual scanning logic is now in soil-probe.html
+    showNotification('Please go to the "Soil Probe" section to connect your device.', 'info');
+
+    // Optional: If we want to automatically navigate
+    const soilProbeSection = document.getElementById('soil-probe-section');
+    if (soilProbeSection) {
+        // trigger navigation if needed
+        window.location.hash = '#soilprobe';
+    }
+}
+/* 
+// LEGACY BLE LOGIC - DISABLED TO PREVENT CONFLICTS
+async function scanBLEDevices_OLD() {
     if (!navigator.bluetooth) { showNotification('Bluetooth not supported. Use Chrome.', 'warning'); return; }
+
+    // UUIDs must match ESP32 code
+    const SERVICE_UUID = "4fafc201-1fb5-459e-8fcc-c5c9c331914b";
+    const CHAR_SSID_UUID = "beb5483e-36e1-4688-b7f5-ea07361b26a8";
+    const CHAR_PASS_UUID = "823d06dc-255a-4720-953e-51c367ee2733";
+    const CHAR_UID_UUID = "c730e61d-847e-4009-9768-45b73679469e";
+
     try {
-        showNotification('Scanning for BLE devices...', 'info');
+        showNotification('Scanning for Hardini Probe...', 'info');
         const device = await navigator.bluetooth.requestDevice({
-            filters: [{ namePrefix: 'ESP32' }, { namePrefix: 'SoilProbe' }],
-            optionalServices: ['environmental_sensing']
+            filters: [{ name: 'Hardini-Probe' }],
+            optionalServices: [SERVICE_UUID]
         });
-        showNotification(`Found: ${device.name}`, 'success');
-        // Auto-register the device
+
+        showNotification(`Connecting to ${device.name}...`, 'info');
+        const server = await device.gatt.connect();
+        const service = await server.getPrimaryService(SERVICE_UUID);
+
+        // Prompt for WiFi
+        const ssid = prompt("Enter WiFi Name (SSID):");
+        if (!ssid) return;
+        const pass = prompt("Enter WiFi Password:");
+        if (!pass) return;
+
+        // Get User UID
+        const user = firebase.auth().currentUser;
+        if (!user) { showNotification('Please Login First', 'error'); return; }
+        const uid = user.uid;
+
+        showNotification('Configuring Device...', 'info');
+
+        // Write Characteristics
+        const enc = new TextEncoder();
+
+        const ssidChar = await service.getCharacteristic(CHAR_SSID_UUID);
+        await ssidChar.writeValue(enc.encode(ssid));
+
+        const passChar = await service.getCharacteristic(CHAR_PASS_UUID);
+        await passChar.writeValue(enc.encode(pass));
+
+        // Writing UID triggers save & restart on ESP32
+        const uidChar = await service.getCharacteristic(CHAR_UID_UUID);
+        await uidChar.writeValue(enc.encode(uid));
+
+        showNotification('Device Configured! It will restart and connect.', 'success');
+
+        // Register Device in Backend
         const token = await getAuthToken();
         await fetch(`${API_BASE}/api/devices`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-            body: JSON.stringify({ deviceId: device.id || device.name, name: device.name, field: 'Auto-detected' })
+            body: JSON.stringify({
+                deviceId: device.id || 'esp32_new',
+                name: 'Soil Probe (BLE)',
+                field: 'Auto-detected'
+            })
         });
+
         loadDevices();
+        device.gatt.disconnect();
+
     } catch (err) {
-        if (err.name !== 'NotFoundError') showNotification('BLE scan failed: ' + err.message, 'error');
+        if (err.name !== 'NotFoundError') showNotification('BLE Setup Failed: ' + err.message, 'error');
+        console.error(err);
     }
 }
+*/
 
 // Add device form
 document.getElementById('addDeviceForm').addEventListener('submit', async e => {
@@ -642,5 +725,172 @@ document.addEventListener('keydown', e => {
         if (panel.classList.contains('open')) toggleChatbot();
     }
 });
+
+// ===== CONNECT SECTION =====
+const CONNECT_DATA = {
+    farmers: [
+        { name: 'Ramesh Kumar', location: 'Maharashtra', specialized: 'Organic Farming', exp: '15 years', img: 'https://i.pravatar.cc/150?img=11' },
+        { name: 'Suresh Patel', location: 'Gujarat', specialized: 'Cotton & Groundnut', exp: '12 years', img: 'https://i.pravatar.cc/150?img=12' },
+        { name: 'Anita Devi', location: 'Punjab', specialized: 'Wheat & Rice', exp: '8 years', img: 'https://i.pravatar.cc/150?img=5' },
+        { name: 'Vikram Singh', location: 'Haryana', specialized: 'Dairy Farming', exp: '20 years', img: 'https://i.pravatar.cc/150?img=13' },
+        { name: 'Priya Sharma', location: 'Karnataka', specialized: 'Horticulture', exp: '5 years', img: 'https://i.pravatar.cc/150?img=9' }
+    ],
+    suppliers: [
+        { name: 'GreenSeeds Ltd', type: 'Seeds & Fertilizers', rating: 4.8, location: 'Pune', verified: true },
+        { name: 'AgriTech Tools', type: 'Farm Machinery', rating: 4.5, location: 'Mumbai', verified: true },
+        { name: 'OrganicInputs Co', type: 'Bio-Pesticides', rating: 4.9, location: 'Nashik', verified: true },
+        { name: 'Kisan Seva Kendra', type: 'General Supplies', rating: 4.2, location: 'Nagpur', verified: false }
+    ],
+    market: [
+        { crop: 'Wheat', price: '₹2,200/qt', trend: 'up', change: '+5%' },
+        { crop: 'Rice (Basmati)', price: '₹3,500/qt', trend: 'down', change: '-2%' },
+        { crop: 'Cotton', price: '₹6,000/qt', trend: 'stable', change: '0%' },
+        { crop: 'Soybean', price: '₹4,800/qt', trend: 'up', change: '+3%' },
+        { crop: 'Onion', price: '₹1,500/qt', trend: 'up', change: '+10%' }
+    ],
+    buyers: [
+        { name: 'FreshMart Retail', need: 'Organic Vegetables', qty: '500kg/week', price: 'Premium' },
+        { name: 'Global Exports', need: 'Basmati Rice', qty: '20 tons', price: 'Market Rate' },
+        { name: 'Local Mandi Agent', need: 'Wheat', qty: '100 quintals', price: 'MSP' }
+    ],
+    experts: [
+        { name: 'Dr. A. Patil', role: 'Soil Scientist', exp: '25 years', rate: '₹500/call', img: 'https://i.pravatar.cc/150?img=15' },
+        { name: 'Dr. S. Rao', role: 'Entomologist', exp: '18 years', rate: '₹400/call', img: 'https://i.pravatar.cc/150?img=8' },
+        { name: 'Ms. K. Reddy', role: 'Agri-Business Consultant', exp: '10 years', rate: '₹800/hr', img: 'https://i.pravatar.cc/150?img=44' }
+    ],
+    training: [
+        { title: 'Modern Organic Farming', duration: '4 Weeks', level: 'Intermediate', students: 1250, img: '🌾' },
+        { title: 'Drip Irrigation Mastery', duration: '2 Weeks', level: 'Beginner', students: 850, img: '💧' },
+        { title: 'Soil Health Management', duration: '3 Weeks', level: 'Advanced', students: 500, img: '🌱' },
+        { title: 'Dairy Farm Management', duration: '6 Weeks', level: 'Intermediate', students: 2000, img: '🐄' }
+    ],
+    forum: [
+        { title: 'Best practices for monsoon wheat?', author: 'Ramesh K.', replies: 12, views: 340, tag: 'Crops' },
+        { title: 'Dealing with new pest in cotton', author: 'Suresh P.', replies: 8, views: 210, tag: 'Pests' },
+        { title: 'Subsidy process for solar pumps', author: 'Vikram S.', replies: 25, views: 890, tag: 'Govt Schemes' },
+        { title: 'Organic fertilizer recipes shared', author: 'Anita D.', replies: 45, views: 1200, tag: 'Organic' }
+    ]
+};
+
+function openConnectModal(type) {
+    // Populate data based on type
+    if (type === 'farmers') renderFarmers();
+    else if (type === 'suppliers') renderSuppliers();
+    else if (type === 'market') renderMarket();
+    else if (type === 'experts') renderExperts();
+    else if (type === 'training') renderTraining();
+    else if (type === 'forum') renderForum();
+
+    openModal(type + 'Modal');
+}
+
+function renderFarmers() {
+    const list = document.getElementById('farmersList');
+    list.innerHTML = CONNECT_DATA.farmers.map(f => `
+        <div class="glass-card" style="padding:16px;text-align:center">
+            <img src="${f.img}" style="width:64px;height:64px;border-radius:50%;margin-bottom:12px;border:2px solid var(--accent)">
+            <h4 style="margin-bottom:4px;font-size:16px">${f.name}</h4>
+            <div style="color:var(--text-secondary);font-size:12px;margin-bottom:8px">📍 ${f.location}</div>
+            <div style="font-size:13px;margin-bottom:4px">🌾 ${f.specialized}</div>
+            <div style="font-size:12px;color:var(--text-muted);margin-bottom:16px">Experience: ${f.exp}</div>
+            <button class="btn btn-secondary btn-sm btn-block" onclick="showNotification('Request sent to ${f.name}!', 'success')">Connect 🤝</button>
+        </div>
+    `).join('');
+}
+
+function renderSuppliers() {
+    const list = document.getElementById('suppliersList');
+    list.innerHTML = CONNECT_DATA.suppliers.map(s => `
+        <div class="glass-card" style="padding:16px">
+            <div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:12px">
+                <div>
+                    <h4 style="font-size:16px;margin-bottom:4px">${s.name}</h4>
+                    <div style="font-size:12px;color:var(--text-secondary)">📍 ${s.location}</div>
+                </div>
+                ${s.verified ? '<span style="font-size:16px" title="Verified">✅</span>' : ''}
+            </div>
+            <div style="margin-bottom:8px;font-size:13px"><span style="color:var(--accent-light)">Type:</span> ${s.type}</div>
+            <div style="margin-bottom:16px;font-size:13px">⭐ ${s.rating}/5.0</div>
+            <button class="btn btn-primary btn-sm btn-block" onclick="showNotification('Contact details for ${s.name} sent to your phone', 'success')">Contact 📞</button>
+        </div>
+    `).join('');
+}
+
+function renderMarket() {
+    // Render Prices
+    const tbody = document.getElementById('marketPricesBody');
+    tbody.innerHTML = CONNECT_DATA.market.map(m => `
+        <tr style="border-bottom:1px solid var(--border-color)">
+            <td style="padding:12px">${m.crop}</td>
+            <td style="padding:12px;font-weight:600;color:var(--text-primary)">${m.price}</td>
+            <td style="padding:12px;color:${m.trend === 'up' ? 'var(--accent)' : m.trend === 'down' ? 'var(--danger)' : 'var(--warning)'}">
+                ${m.trend === 'up' ? '↗' : m.trend === 'down' ? '↘' : '➡'} ${m.change}
+            </td>
+        </tr>
+    `).join('');
+
+    // Render Buyers
+    const list = document.getElementById('buyersList');
+    list.innerHTML = CONNECT_DATA.buyers.map(b => `
+        <div class="glass-card" style="padding:16px">
+            <h4 style="margin-bottom:8px;font-size:16px">${b.name}</h4>
+            <div style="font-size:13px;margin-bottom:4px">Looking for: <span style="color:var(--accent-light)">${b.need}</span></div>
+            <div style="font-size:13px;margin-bottom:4px">Qty: ${b.qty}</div>
+            <div style="font-size:13px;margin-bottom:16px">Price: ${b.price}</div>
+            <button class="btn btn-secondary btn-sm btn-block" onclick="showNotification('Bid placed successfully!', 'success')">Place Bid 🔨</button>
+        </div>
+    `).join('');
+}
+
+function renderExperts() {
+    const list = document.getElementById('expertsList');
+    list.innerHTML = CONNECT_DATA.experts.map(e => `
+        <div class="glass-card" style="padding:16px;display:flex;gap:16px;align-items:center">
+            <img src="${e.img}" style="width:60px;height:60px;border-radius:50%;object-fit:cover">
+            <div style="flex:1">
+                <h4 style="font-size:16px;margin-bottom:4px">${e.name}</h4>
+                <div style="font-size:13px;color:var(--text-secondary);margin-bottom:4px">${e.role}</div>
+                <div style="font-size:12px;margin-bottom:4px">Exp: ${e.exp}</div>
+                <div style="font-size:14px;color:var(--accent-light);font-weight:600">${e.rate}</div>
+            </div>
+            <button class="btn btn-primary btn-sm" onclick="showNotification('Consultation request sent!', 'success')">Book</button>
+        </div>
+    `).join('');
+}
+
+function renderTraining() {
+    const list = document.getElementById('coursesList');
+    list.innerHTML = CONNECT_DATA.training.map(t => `
+        <div class="glass-card" style="padding:0;overflow:hidden">
+            <div style="height:100px;background:linear-gradient(135deg, rgba(76,175,80,0.1), rgba(46,125,50,0.2));display:flex;align-items:center;justify-content:center;font-size:40px">${t.img}</div>
+            <div style="padding:16px">
+                <h4 style="font-size:16px;margin-bottom:8px;height:40px;overflow:hidden">${t.title}</h4>
+                <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--text-secondary);margin-bottom:12px">
+                    <span>⏱ ${t.duration}</span>
+                    <span>📊 ${t.level}</span>
+                </div>
+                <div style="font-size:12px;margin-bottom:16px">👥 ${t.students} students</div>
+                <button class="btn btn-primary btn-sm btn-block" onclick="showNotification('Enrolled in ${t.title}!', 'success')">Enroll Now</button>
+            </div>
+        </div>
+    `).join('');
+}
+
+function renderForum() {
+    const list = document.getElementById('forumList');
+    list.innerHTML = CONNECT_DATA.forum.map(f => `
+        <div class="glass-card" style="padding:16px;cursor:pointer" onclick="showNotification('Opening discussion thread...', 'info')">
+            <div style="display:flex;justify-content:space-between;margin-bottom:8px">
+                <span style="font-size:10px;background:var(--bg-card-hover);padding:2px 8px;border-radius:12px;color:var(--accent-light)">${f.tag}</span>
+                <span style="font-size:12px;color:var(--text-muted)">Views: ${f.views}</span>
+            </div>
+            <h4 style="font-size:15px;margin-bottom:8px">${f.title}</h4>
+            <div style="font-size:12px;color:var(--text-secondary);display:flex;justify-content:space-between">
+                <span>👤 ${f.author}</span>
+                <span>💬 ${f.replies} replies</span>
+            </div>
+        </div>
+    `).join('');
+}
 
 console.log('🌱 Hardini WebApp loaded successfully');
