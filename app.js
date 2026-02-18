@@ -1168,20 +1168,34 @@ async function provisionDeviceBLE(ssid, password) {
         // Write SSID
         statusLabel.textContent = 'Writing SSID...';
         const ssidChar = await service.getCharacteristic(BLE_CHAR_SSID_UUID);
-        await ssidChar.writeValue(enc.encode(ssid));
+        if (ssidChar.properties.writeWithoutResponse) {
+            await ssidChar.writeValueWithoutResponse(enc.encode(ssid));
+        } else {
+            await ssidChar.writeValue(enc.encode(ssid));
+        }
         await new Promise(r => setTimeout(r, 500));
 
         // Write Password
         statusLabel.textContent = 'Writing Password...';
         const passChar = await service.getCharacteristic(BLE_CHAR_PASS_UUID);
-        await passChar.writeValue(enc.encode(password));
+        if (passChar.properties.writeWithoutResponse) {
+            await passChar.writeValueWithoutResponse(enc.encode(password));
+        } else {
+            await passChar.writeValue(enc.encode(password));
+        }
         await new Promise(r => setTimeout(r, 500));
 
         // Write UID (Triggers Restart)
         statusLabel.textContent = 'Finalizing...';
         const uidChar = await service.getCharacteristic(BLE_CHAR_UID_UUID);
         const user = firebase.auth().currentUser;
-        if (user) await uidChar.writeValue(enc.encode(user.uid));
+        if (user) {
+            if (uidChar.properties.writeWithoutResponse) {
+                await uidChar.writeValueWithoutResponse(enc.encode(user.uid));
+            } else {
+                await uidChar.writeValue(enc.encode(user.uid));
+            }
+        }
 
         showNotification('Device configured! It will now restart.', 'success');
         await new Promise(r => setTimeout(r, 1000));
