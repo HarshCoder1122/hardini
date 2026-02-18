@@ -489,7 +489,7 @@ async function loadDevices() {
                     <div class="sensor-val"><div class="val">${(d.lastReading && d.lastReading.nitrogen) || '--'}</div><div class="lbl">NPK</div></div>
                 </div>
             </div>
-        }).join('');
+        `}).join('');
     } catch (err) {
         grid.innerHTML = '<div class="empty-state"><span class="empty-icon">⚠️</span><h3>Failed to load devices</h3><p>Check your connection.</p></div>';
     }
@@ -505,7 +505,7 @@ async function loadSensorData(deviceId) {
             showNotification('Please login to view sensor data', 'warning');
             return;
         }
-        const res = await fetch(`${ API_BASE } /api/soil - readings / ${ deviceId } `, { headers: { 'Authorization': `Bearer ${ token } ` } });
+        const res = await fetch(`${API_BASE}/api/soil-readings/${deviceId}`, { headers: { 'Authorization': `Bearer ${token}` } });
         const data = await res.json();
         const readings = data.readings || [];
         if (readings.length === 0) return;
@@ -623,9 +623,9 @@ document.getElementById('addDeviceForm').addEventListener('submit', async e => {
         field: document.getElementById('deviceField').value
     };
     try {
-        const res = await fetch(`${ API_BASE } / api / devices`, {
+        const res = await fetch(`${API_BASE} / api / devices`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${ token }` },
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
             body: JSON.stringify(body)
         });
         if (res.ok) {
@@ -648,7 +648,7 @@ function openChainDetail(stage) {
     };
     const d = details[stage];
     if (!d) return;
-    showNotification(`${ d.title }: ${ d.desc }`, 'info');
+    showNotification(`${d.title}: ${d.desc}`, 'info');
 }
 
 // ===== EDIT PROFILE =====
@@ -966,7 +966,7 @@ function closeRegistrationWizard() {
 
 function goToStep(step) {
     document.querySelectorAll('.wizard-content').forEach(el => el.style.display = 'none');
-    const target = document.getElementById(`wizardStep${ step }`);
+    const target = document.getElementById(`wizardStep${step}`);
     if (target) target.style.display = 'block';
 
     document.querySelectorAll('.wizard-step').forEach(el => {
@@ -1019,7 +1019,7 @@ async function startSoilProbeBLEScan() {
         });
 
         console.log('✅ Device selected:', bleDevice.name);
-        showNotification(`Found ${ bleDevice.name }`, 'success');
+        showNotification(`Found ${bleDevice.name}`, 'success');
 
         if (resultsContainer) {
             resultsContainer.innerHTML = `
@@ -1075,7 +1075,7 @@ function connectToBLEDevice() {
             </div>
         `;
     }
-    showNotification(`Selected ${ bleDevice.name }.Click Next.`, 'success');
+    showNotification(`Selected ${bleDevice.name}.Click Next.`, 'success');
 }
 
 function selectConnectivity(type) {
@@ -1125,11 +1125,11 @@ async function registerDevice() {
         if (!user) throw new Error("User not logged in");
         const token = await user.getIdToken();
 
-        const response = await fetch(`${ API_BASE } / api / devices`, {
+        const response = await fetch(`${API_BASE} / api / devices`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': `Bearer ${ token }`
+                'Authorization': `Bearer ${token}`
             },
             body: JSON.stringify({
                 device_id: selectedDeviceId,
