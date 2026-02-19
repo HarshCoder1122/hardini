@@ -635,14 +635,14 @@ app.post('/api/tts', async (req, res) => {
 
         // Clean text - remove emojis and special chars that might confuse TTS
         const cleanText = text
-            .replace(/\*\*(.*?)\*\*/g, '$1') // Remove markdown bold
-            .replace(/\*(.*?)\*/g, '$1')     // Remove markdown italic
-            .replace(/([\u2700-\u27BF]|[\uE000-\uF8FF]|\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDFFF]|[\u2011-\u26FF]|\uD83E[\uDD10-\uDDFF])/g, '') // Remove emojis
+            .replace(/\*\*(.*?)\*\*/g, '$1')
+            .replace(/\*(.*?)\*/g, '$1')
+            .replace(/([\u2700-\u27BF]|[\uE000-\uF8FF]|\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDFFF]|[\u2011-\u26FF]|\uD83E[\uDD10-\uDDFF])/g, '')
             .replace(/[#_`~@$%^&|+={}[\]:;"<>\\/]/g, '')
             .replace(/^[•\-] /gm, '')
             .replace(/\s+/g, ' ')
             .trim()
-            .substring(0, 500); // Limit length for speed
+            .substring(0, 500);
 
         if (!cleanText) return res.status(400).json({ success: false, error: 'No speakable text after cleaning' });
 
@@ -656,29 +656,54 @@ app.post('/api/tts', async (req, res) => {
 
         console.log(`TTS Request: lang=${lang}, voice=${selectedVoice}, text="${cleanText.substring(0, 30)}..."`);
 
-        const communicate = new IsomorphicCommunicate(cleanText, {
-            voice: selectedVoice,
-            rate: '+25%',
-            volume: '+0%'
-        });
+        // Try Edge TTS first (neural voices, best quality)
+        try {
+            const communicate = new IsomorphicCommunicate(cleanText, {
+                voice: selectedVoice,
+                rate: '+25%',
+                volume: '+0%'
+            });
 
-        // Stream audio chunks for fastest first-byte response
-        res.set({
-            'Content-Type': 'audio/mpeg',
-            'Cache-Control': 'no-cache',
-            'Transfer-Encoding': 'chunked'
-        });
+            res.set({
+                'Content-Type': 'audio/mpeg',
+                'Cache-Control': 'no-cache',
+                'Transfer-Encoding': 'chunked'
+            });
 
-        for await (const chunk of communicate.stream()) {
-            if (chunk.type === 'audio' && chunk.data) {
-                res.write(Buffer.from(chunk.data));
+            let audioReceived = false;
+            for await (const chunk of communicate.stream()) {
+                if (chunk.type === 'audio' && chunk.data) {
+                    audioReceived = true;
+                    res.write(Buffer.from(chunk.data));
+                }
             }
+            if (!audioReceived) throw new Error('No audio received from Edge TTS');
+            res.end();
+            return;
+        } catch (edgeErr) {
+            console.warn('Edge TTS failed, falling back to Google TTS:', edgeErr.message);
         }
-        res.end();
+
+        // Fallback: Google TTS (simpler, very reliable)
+        const googleTTS = require('google-tts-api');
+        const GOOGLE_LANG_MAP = {
+            'en': 'en', 'hi': 'hi', 'mr': 'mr', 'te': 'te', 'ta': 'ta',
+            'bn': 'bn', 'kn': 'kn', 'gu': 'gu', 'pa': 'pa', 'ml': 'ml',
+            'ur': 'ur', 'or': 'or', 'es': 'es', 'fr': 'fr', 'ar': 'ar'
+        };
+        const gLang = GOOGLE_LANG_MAP[lang] || 'en';
+        const url = googleTTS.getAudioUrl(cleanText, { lang: gLang, slow: false });
+        const audioRes = await axios.get(url, { responseType: 'arraybuffer', timeout: 8000 });
+        res.set({ 'Content-Type': 'audio/mpeg', 'Cache-Control': 'no-cache' });
+        res.send(Buffer.from(audioRes.data));
 
     } catch (error) {
-        console.error('Edge TTS error:', error.message);
-        res.status(500).json({ success: false, error: 'TTS Failed' });
+        console.error('TTS error (all engines failed):', error.message);
+        if (!res.headersSent) {
+            res.status(500).json({ success: false, error: 'TTS Failed' });
+        } else {
+            res.end();
+        }
     }
 });
 

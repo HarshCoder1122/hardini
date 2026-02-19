@@ -1021,7 +1021,56 @@ button {
 .chat-hdr-sub {
     font-size: 11px;
     color: var(--accent-light);
-    font-weight: 500
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 5px
+}
+
+.status-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    display: inline-block;
+    flex-shrink: 0
+}
+
+.status-dot.online {
+    background: #4caf50;
+    box-shadow: 0 0 6px rgba(76, 175, 80, 0.6);
+    animation: statusPulse 2s ease-in-out infinite
+}
+
+.status-dot.thinking {
+    background: #ff9800;
+    box-shadow: 0 0 6px rgba(255, 152, 0, 0.6);
+    animation: statusPulse 0.8s ease-in-out infinite
+}
+
+.status-dot.speaking {
+    background: #2196f3;
+    box-shadow: 0 0 6px rgba(33, 150, 243, 0.6);
+    animation: statusPulse 0.6s ease-in-out infinite
+}
+
+.status-dot.listening {
+    background: #e91e63;
+    box-shadow: 0 0 6px rgba(233, 30, 99, 0.6);
+    animation: statusPulse 0.5s ease-in-out infinite
+}
+
+@keyframes statusPulse {
+
+    0%,
+    100% {
+        opacity: 1;
+        transform: scale(1)
+    }
+
+    50% {
+        opacity: 0.5;
+        transform: scale(1.3)
+    }
 }
 
 .chat-hdr-actions {

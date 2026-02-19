@@ -689,6 +689,18 @@ function detectLanguage(text) {
     return 'en'; // Default English
 }
 
+function setChatStatus(state) {
+    const el = document.getElementById('chatStatusText');
+    if (!el) return;
+    const states = {
+        online: '<span class="status-dot online"></span> Online',
+        thinking: '<span class="status-dot thinking"></span> Thinking...',
+        speaking: '<span class="status-dot speaking"></span> Speaking...',
+        listening: '<span class="status-dot listening"></span> Listening...'
+    };
+    el.innerHTML = states[state] || states.online;
+}
+
 function toggleChatbot() {
     const fab = document.getElementById('chatbotFab');
     const panel = document.getElementById('chatbotPanel');
@@ -717,6 +729,7 @@ async function sendChatMessage() {
     // Add typing indicator
     msgs.innerHTML += `<div class="chat-msg bot typing-msg"><div class="msg-avatar">🌱</div><div class="msg-bubble"><div class="typing-indicator"><div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div></div></div></div>`;
     msgs.scrollTop = msgs.scrollHeight;
+    setChatStatus('thinking');
 
     try {
         const token = await getAuthToken();
@@ -755,11 +768,12 @@ async function sendChatMessage() {
         msgs.innerHTML += `<div class="chat-msg bot"><div class="msg-avatar">🌱</div><div class="msg-bubble">${formatChatReply(reply)}</div></div>`;
         msgs.scrollTop = msgs.scrollHeight;
 
-        if (chatTTSEnabled) speakText(reply);
+        if (chatTTSEnabled) { speakText(reply); } else { setChatStatus('online'); }
     } catch (err) {
         const typingEl = msgs.querySelector('.typing-msg');
         if (typingEl) typingEl.remove();
         msgs.innerHTML += `<div class="chat-msg bot"><div class="msg-avatar">🌱</div><div class="msg-bubble">Sorry, I'm having trouble connecting. Please try again.</div></div>`;
+        setChatStatus('online');
     }
     removeChatImage();
 }
@@ -810,12 +824,18 @@ async function speakText(text) {
         const blob = await res.blob();
         if (blob.size < 100) throw new Error('Empty audio response');
         const audio = new Audio(URL.createObjectURL(blob));
+        setChatStatus('speaking');
+        audio.onended = () => setChatStatus('online');
+        audio.onerror = () => setChatStatus('online');
         audio.play();
     } catch (err) {
         // Fallback to browser TTS
         try {
             window.speechSynthesis.cancel();
             const utter = new SpeechSynthesisUtterance(cleanText);
+            setChatStatus('speaking');
+            utter.onend = () => setChatStatus('online');
+            utter.onerror = () => setChatStatus('online');
             const lang = document.getElementById('chatLang').value;
             if (lang === 'hi') utter.lang = 'hi-IN';
             else if (lang === 'mr') utter.lang = 'mr-IN';
