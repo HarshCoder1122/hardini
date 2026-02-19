@@ -493,100 +493,126 @@ function loadDevices() {
     const devicesRef = firebase.database().ref(`users/${user.uid}/devices`);
 
     devicesListener = devicesRef.on('value', (snapshot) => {
-        const devicesObj = snapshot.val();
+        try {
+            const devicesObj = snapshot.val();
 
-        if (!devicesObj) {
-            grid.innerHTML = '<div class="empty-state"><span class="empty-icon">📡</span><h3>No devices yet</h3><p>Scan for BLE devices or add one manually.</p></div>';
-            return;
-        }
+            if (!devicesObj) {
+                grid.innerHTML = '<div class="empty-state"><span class="empty-icon">📡</span><h3>No devices yet</h3><p>Scan for BLE devices or add one manually.</p></div>';
+                return;
+            }
 
-        // Convert object to array and process
-        const devices = [];
-        Object.keys(devicesObj).forEach(key => {
-            const d = devicesObj[key];
-            const config = d.config || {};
-            // Get latest data keys
-            const dataObj = d.data || {};
-            const dataKeys = Object.keys(dataObj).sort(); // Timestamp based keys usually sortable, but relying on created_at is better
-            const latestKey = dataKeys[dataKeys.length - 1];
-            const latestData = latestKey ? dataObj[latestKey] : null;
+            // Convert object to array and process
+            const devices = [];
+            Object.keys(devicesObj).forEach(key => {
+                const d = devicesObj[key];
+                const config = d.config || {};
+                // Get latest data keys
+                const dataObj = d.data || {};
+                const dataKeys = Object.keys(dataObj).sort();
+                const latestKey = dataKeys[dataKeys.length - 1];
+                const latestData = latestKey ? dataObj[latestKey] : null;
 
-            let sensorValues = { moisture: '--', temperature: '--', ph: '--', nitrogen: '--', last_reading: null };
-
-            if (latestData) {
-                sensorValues = {
-                    moisture: latestData.soil_moist_pct || latestData.moisture,
-                    temperature: latestData.soil_temp_c || latestData.temperature,
-                    ph: latestData.soil_ph || latestData.ph || '--',
-                    nitrogen: latestData.soil_n_mg_kg || latestData.nitrogen || '--',
-                    last_reading: latestData.created_at || latestData.timestamp
+                // Ensure all keys exist in default object
+                let sensorValues = {
+                    moisture: '--', temperature: '--', ph: '--', nitrogen: '--',
+                    amb_temp: '--', amb_hum: '--', last_reading: null
                 };
-            }
 
-            devices.push({
-                device_id: key,
-                ...config,
-                ...sensorValues
+                if (latestData) {
+                    sensorValues = {
+                        moisture: latestData.soil_moist_pct || latestData.moisture,
+                        temperature: latestData.soil_temp_c || latestData.temperature,
+                        ph: latestData.soil_ph || latestData.ph || '--',
+                        nitrogen: latestData.soil_n_mg_kg || latestData.nitrogen || '--',
+                        amb_temp: latestData.ambient_temp_c || '--',
+                        amb_hum: latestData.ambient_humidity_pct || '--',
+                        last_reading: latestData.created_at || latestData.timestamp
+                    };
+                }
+
+                devices.push({
+                    device_id: key,
+                    ...config,
+                    ...sensorValues
+                });
             });
-        });
 
-        window._devicesLoaded = true;
+            window._devicesLoaded = true;
 
-        grid.innerHTML = devices.map(d => {
-            // Calculate if online (seen in last 60 minutes)
-            let isOnline = false;
-            let lastSeenText = 'Never';
+            grid.innerHTML = devices.map(d => {
+                // Calculate if online (seen in last 60 minutes)
+                let isOnline = false;
+                let lastSeenText = 'Never';
 
-            const readingTime = d.last_reading;
-            if (readingTime) {
-                const now = new Date();
-                const lastSeen = new Date(readingTime);
-                const diffMs = now - lastSeen;
-                const diffMins = diffMs / (1000 * 60);
+                const readingTime = d.last_reading;
+                if (readingTime) {
+                    const now = new Date();
+                    const lastSeen = new Date(readingTime);
+                    const diffMs = now - lastSeen;
+                    const diffMins = diffMs / (1000 * 60);
 
-                isOnline = diffMins < 60;
+                    isOnline = diffMins < 60;
 
-                // Format relative time
-                if (diffMins < 1) lastSeenText = 'Just now';
-                else if (diffMins < 60) lastSeenText = `${Math.floor(diffMins)}m ago`;
-                else if (diffMins < 1440) lastSeenText = `${Math.floor(diffMins / 60)}h ago`;
-                else lastSeenText = lastSeen.toLocaleDateString();
-            }
+                    // Format relative time
+                    if (diffMins < 1) lastSeenText = 'Just now';
+                    else if (diffMins < 60) lastSeenText = `${Math.floor(diffMins)}m ago`;
+                    else if (diffMins < 1440) lastSeenText = `${Math.floor(diffMins / 60)}h ago`;
+                    else lastSeenText = lastSeen.toLocaleDateString();
+                }
 
-            // Helper to safe format numbers
-            const fmt = (val) => {
-                if (val === undefined || val === null || val === '--' || isNaN(parseFloat(val))) return '0';
-                return val;
-            };
+                // Helper to safe format numbers
+                const fmt = (val) => {
+                    if (val === undefined || val === null || val === '--' || isNaN(parseFloat(val))) return '0';
+                    return val;
+                };
 
-            // Randomize mock values if they are static/mock for display variance
-            if (isOnline) {
-                if (d.moisture && d.moisture !== '--') d.moisture = randomizeMockData(d.moisture, 2);
-                if (d.temperature && d.temperature !== '--') d.temperature = randomizeMockData(d.temperature, 0.5);
-            }
+                // Randomize mock values if they are static/mock for display variance
+                if (isOnline) {
+                    // Safe logic to avoid runtime errors on missing function
+                    if (typeof randomizeMockData === 'function') {
+                        if (d.moisture && d.moisture !== '--') d.moisture = randomizeMockData(d.moisture, 2);
+                        if (d.temperature && d.temperature !== '--') d.temperature = randomizeMockData(d.temperature, 0.5);
+                    }
+                }
 
-            const lastUpdateStr = readingTime ? new Date(readingTime).toLocaleString() : 'Never';
+                const lastUpdateStr = readingTime ? new Date(readingTime).toLocaleString() : 'Never';
 
-            return `
-            <div class="device-card" onclick="loadSensorData('${d.device_id}')">
-                <button onclick="event.stopPropagation(); deleteDevice('${d.device_id}')" 
-                    style="position:absolute;top:10px;right:10px;background:rgba(255,0,0,0.1);color:#ff4444;border:none;border-radius:50%;width:32px;height:32px;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;z-index:10" 
-                    title="Delete Device">🗑️</button>
-                <div class="device-status ${isOnline ? 'online' : 'offline'}">
-                    <span class="status-dot"></span>${isOnline ? 'Online' : 'Offline'} 
-                    <span style="font-size:0.8em;opacity:0.7;margin-left:5px">(${lastSeenText})</span>
+                return `
+                <div class="device-card" onclick="loadSensorData('${d.device_id}')">
+                    <button onclick="event.stopPropagation(); deleteDevice('${d.device_id}')" 
+                        style="position:absolute;top:10px;right:10px;background:rgba(255,0,0,0.1);color:#ff4444;border:none;border-radius:50%;width:32px;height:32px;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;z-index:10" 
+                        title="Delete Device">🗑️</button>
+                    <div class="device-status ${isOnline ? 'online' : 'offline'}">
+                        <span class="status-dot"></span>${isOnline ? 'Online' : 'Offline'} 
+                        <span style="font-size:0.8em;opacity:0.7;margin-left:5px">(${lastSeenText})</span>
+                    </div>
+                    <div class="device-name">${d.device_name || d.name || d.device_id}</div>
+                    <div class="device-field">📍 ${d.field_name || d.field || 'Unknown'}</div>
+                    <div style="font-size:0.75em;color:rgba(255,255,255,0.5);margin-bottom:10px">🕒 Updated: ${lastUpdateStr}</div>
+                    
+                    <div style="background:rgba(255,255,255,0.05);padding:8px;border-radius:8px;margin-bottom:10px;display:flex;justify-content:space-around">
+                        <div style="text-align:center">
+                            <div style="font-size:1.2em;font-weight:bold;color:#4caf50">🌡️ ${fmt(d.amb_temp)}°C</div>
+                            <div style="font-size:0.7em;opacity:0.7">Amb Temp</div>
+                        </div>
+                        <div style="text-align:center">
+                            <div style="font-size:1.2em;font-weight:bold;color:#2196f3">💧 ${fmt(d.amb_hum)}%</div>
+                            <div style="font-size:0.7em;opacity:0.7">Amb Hum</div>
+                        </div>
+                    </div>
+
+                    <div class="sensor-grid">
+                        <div class="sensor-val"><div class="val">${fmt(d.moisture)}%</div><div class="lbl">Soil Moist</div></div>
+                        <div class="sensor-val"><div class="val">${fmt(d.temperature)}°C</div><div class="lbl">Soil Temp</div></div>
+                        <div class="sensor-val"><div class="val">${fmt(d.ph)}</div><div class="lbl">pH</div></div>
+                        <div class="sensor-val"><div class="val">${fmt(d.nitrogen)}</div><div class="lbl">NPK</div></div>
+                    </div>
                 </div>
-                <div class="device-name">${d.device_name || d.name || d.device_id}</div>
-                <div class="device-field">📍 ${d.field_name || d.field || 'Unknown'}</div>
-                <div style="font-size:0.75em;color:rgba(255,255,255,0.5);margin-bottom:10px">🕒 Updated: ${lastUpdateStr}</div>
-                <div class="sensor-grid">
-                    <div class="sensor-val"><div class="val">${fmt(d.moisture)}%</div><div class="lbl">Moisture</div></div>
-                    <div class="sensor-val"><div class="val">${fmt(d.temperature)}°C</div><div class="lbl">Temp</div></div>
-                    <div class="sensor-val"><div class="val">${fmt(d.ph)}</div><div class="lbl">pH</div></div>
-                    <div class="sensor-val"><div class="val">${fmt(d.nitrogen)}</div><div class="lbl">NPK</div></div>
-                </div>
-            </div>
-        `}).join('');
+            `}).join('');
+        } catch (err) {
+            console.error("Error in loadDevices:", err);
+            grid.innerHTML = `<div class="empty-state" style="color:#ff4444"><span class="empty-icon">⚠️</span><h3>Error loading devices</h3><p>${err.message}</p></div>`;
+        }
     });
 }
 
