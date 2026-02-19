@@ -246,60 +246,41 @@ window.fetchAlerts = async function () {
     }
 };
 
-let mapplsMapInstance = null;
-let mapplsSDKReady = false;
-let pendingMapRender = null;
-
-// Callback fired by the Mappls SDK script when it's fully loaded
-window.mapplsReady = function () {
-    mapplsSDKReady = true;
-    console.log('Mappls SDK ready');
-    if (pendingMapRender) {
-        const { lat, lon, cityName } = pendingMapRender;
-        pendingMapRender = null;
-        renderMapplsMap(lat, lon, cityName);
-    }
-};
+let leafletMapInstance = null;
 
 function renderMapplsMap(lat, lon, cityName) {
     const container = document.getElementById('mapContainer');
     if (!container) return;
 
-    // If SDK not ready yet, queue the render
-    if (!mapplsSDKReady || typeof mappls === 'undefined') {
-        pendingMapRender = { lat, lon, cityName };
-        container.innerHTML = `<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--text-muted);gap:8px">
-            <span class="loader"></span> Loading Satellite Map...
-        </div>`;
-        return;
-    }
-
     try {
+        // Clean up previous map instance
+        if (leafletMapInstance) {
+            leafletMapInstance.remove();
+            leafletMapInstance = null;
+        }
+
         container.innerHTML = '';
         const mapDiv = document.createElement('div');
-        mapDiv.id = 'mapplsMapDiv';
-        mapDiv.style.cssText = 'width:100%;height:100%';
+        mapDiv.id = 'leafletMapDiv';
+        mapDiv.style.cssText = 'width:100%;height:100%;border-radius:inherit;';
         container.appendChild(mapDiv);
 
-        mapplsMapInstance = new mappls.Map('mapplsMapDiv', {
-            center: [lat, lon],
-            zoom: 15,
-            zoomControl: true,
-            location: true,
-            hybrid: true
-        });
+        leafletMapInstance = L.map('leafletMapDiv').setView([lat, lon], 15);
 
-        mapplsMapInstance.addListener('load', function () {
-            // Add marker at user location
-            new mappls.Marker({
-                map: mapplsMapInstance,
-                position: { lat: lat, lng: lon },
-                fitbounds: true,
-                popupHtml: `<div style="padding:8px;font-family:Inter,sans-serif;color:#333"><strong>📍 ${cityName}</strong><br><small>${lat.toFixed(4)}, ${lon.toFixed(4)}</small></div>`
-            });
-        });
+        // OpenStreetMap tile layer (free, no API key)
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors',
+            maxZoom: 19
+        }).addTo(leafletMapInstance);
+
+        // Add marker at user location
+        const marker = L.marker([lat, lon]).addTo(leafletMapInstance);
+        marker.bindPopup(`<div style="font-family:Inter,sans-serif;"><strong>📍 ${cityName}</strong><br><small>${lat.toFixed(4)}, ${lon.toFixed(4)}</small></div>`).openPopup();
+
+        // Fix Leaflet rendering glitch when map is in a hidden/resized container
+        setTimeout(() => { leafletMapInstance.invalidateSize(); }, 300);
     } catch (e) {
-        console.error('Mappls Map error:', e);
+        console.error('Map error:', e);
         container.innerHTML = `<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;color:var(--text-muted);gap:8px">
             <span style="font-size:40px">🗺️</span>
             <span>Map unavailable</span>
