@@ -635,11 +635,14 @@ app.post('/api/tts', async (req, res) => {
 
         // Clean text - remove emojis and special chars that might confuse TTS
         const cleanText = text
-            .replace(/\*\*(.*?)\*\*/g, '$1')
-            .replace(/\*(.*?)\*/g, '$1')
-            .replace(/([\u2700-\u27BF]|[\uE000-\uF8FF]|\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDFFF]|[\u2011-\u26FF]|\uD83E[\uDD10-\uDDFF])/g, '')
-            .replace(/[#_`~@$%^&|+={}[\]:;"<>\\/]/g, '')
-            .replace(/^[•\-] /gm, '')
+            .replace(/\*\*(.*?)\*\*/g, '$1') // Remove markdown bold
+            .replace(/\*(.*?)\*/g, '$1')     // Remove markdown italic
+            .replace(/__(.*?)__/g, '$1')     // Remove markdown underline
+            .replace(/`(.*?)`/g, '$1')       // Remove code blocks
+            .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1') // Remove markdown links (keep text)
+            .replace(/([\u2700-\u27BF]|[\uE000-\uF8FF]|\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDFFF]|[\u2011-\u26FF]|\uD83E[\uDD10-\uDDFF])/g, '') // Remove emojis
+            .replace(/[#_`~@$%^&|+={}[\]:;"<>\\/()]/g, '') // Remove special chars
+            .replace(/^[•\-] /gm, '') // Remove bullet points
             .replace(/\s+/g, ' ')
             .trim()
             .substring(0, 500);
@@ -664,24 +667,41 @@ app.post('/api/tts', async (req, res) => {
                 volume: '+0%'
             });
 
-            res.set({
-                'Content-Type': 'audio/mpeg',
-                'Cache-Control': 'no-cache',
-                'Transfer-Encoding': 'chunked'
-            });
+            // Create a promise that rejects after timeout
+            const timeoutPromise = new Promise((_, reject) =>
+                setTimeout(() => reject(new Error('Edge TTS timeout')), 4000)
+            );
 
-            let audioReceived = false;
-            for await (const chunk of communicate.stream()) {
-                if (chunk.type === 'audio' && chunk.data) {
-                    audioReceived = true;
-                    res.write(Buffer.from(chunk.data));
+            // Fetch first chunk to ensure connection works before sending headers
+            const iterator = communicate.stream();
+            const firstChunkPromise = iterator.next();
+
+            const firstResult = await Promise.race([firstChunkPromise, timeoutPromise]);
+
+            if (!firstResult.done && firstResult.value.type === 'audio') {
+                // Connection successful, start streaming
+                res.set({
+                    'Content-Type': 'audio/mpeg',
+                    'Cache-Control': 'no-cache',
+                    'Transfer-Encoding': 'chunked'
+                });
+
+                // Write first chunk
+                res.write(Buffer.from(firstResult.value.data));
+
+                // Stream remaining chunks
+                for await (const chunk of iterator) {
+                    if (chunk.type === 'audio' && chunk.data) {
+                        res.write(Buffer.from(chunk.data));
+                    }
                 }
+                res.end();
+                return; // Done
             }
-            if (!audioReceived) throw new Error('No audio received from Edge TTS');
-            res.end();
-            return;
+            throw new Error('No audio data in first chunk');
         } catch (edgeErr) {
-            console.warn('Edge TTS failed, falling back to Google TTS:', edgeErr.message);
+            console.warn('Edge TTS failed or timed out, switching to Google TTS:', edgeErr.message);
+            // Fallthrough to Google TTS
         }
 
         // Fallback: Google TTS (simpler, very reliable)
@@ -692,10 +712,22 @@ app.post('/api/tts', async (req, res) => {
             'ur': 'ur', 'or': 'or', 'es': 'es', 'fr': 'fr', 'ar': 'ar'
         };
         const gLang = GOOGLE_LANG_MAP[lang] || 'en';
+        // Use slow=false for normal speed, but Google TTS is generally fast
         const url = googleTTS.getAudioUrl(cleanText, { lang: gLang, slow: false });
+
+        console.log(`Fallback to Google TTS: ${url}`);
         const audioRes = await axios.get(url, { responseType: 'arraybuffer', timeout: 8000 });
-        res.set({ 'Content-Type': 'audio/mpeg', 'Cache-Control': 'no-cache' });
-        res.send(Buffer.from(audioRes.data));
+
+        if (!res.headersSent) {
+            res.set({
+                'Content-Type': 'audio/mpeg',
+                'Cache-Control': 'no-cache'
+            });
+            res.send(Buffer.from(audioRes.data));
+        } else {
+            console.error('Cannot fallback to Google TTS because headers already sent');
+            res.end();
+        }
 
     } catch (error) {
         console.error('TTS error (all engines failed):', error.message);

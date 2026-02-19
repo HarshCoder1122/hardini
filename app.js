@@ -805,8 +805,19 @@ function toggleTTS() {
 }
 
 async function speakText(text) {
-    // Strip markdown/HTML for cleaner speech
-    const cleanText = text.replace(/<[^>]+>/g, '').replace(/[*#_`~]/g, '').replace(/\s+/g, ' ').trim();
+    // Strip markdown/HTML/emojis for cleaner speech
+    const cleanText = text
+        .replace(/<[^>]+>/g, '')         // Remove HTML
+        .replace(/\*\*(.*?)\*\*/g, '$1') // Remove bold
+        .replace(/\*(.*?)\*/g, '$1')     // Remove italic
+        .replace(/__(.*?)__/g, '$1')     // Remove underline
+        .replace(/`(.*?)`/g, '$1')       // Remove code
+        .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1') // Remove links
+        .replace(/([\u2700-\u27BF]|[\uE000-\uF8FF]|\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDFFF]|[\u2011-\u26FF]|\uD83E[\uDD10-\uDDFF])/g, '') // Remove emojis
+        .replace(/[#_`~@$%^&|+={}[\]:;"<>\\/()]/g, '') // Remove special chars
+        .replace(/^[•\-] /gm, '')        // Remove bullets
+        .replace(/\s+/g, ' ')
+        .trim();
     if (!cleanText) return;
 
     try {
