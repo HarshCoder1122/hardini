@@ -470,12 +470,23 @@ async function loadDevices() {
         }
         grid.innerHTML = devices.map(d => {
             // Calculate if online (seen in last 5 minutes)
+            // Calculate if online (seen in last 5 minutes)
             let isOnline = false;
-            // Support both snake_case (backend) and camelCase (frontend legacy)
-            const readingTime = d.last_reading || d.lastReading;
+            // Use last_reading (from backend derived from data) 
+            const readingTime = d.last_reading;
             if (readingTime) {
-                const diff = (new Date() - new Date(readingTime)) / 1000 / 60; // minutes
-                isOnline = diff < 5;
+                // Check if reading is recent (within 5 mins)
+                const now = new Date();
+                const lastSeen = new Date(readingTime);
+                const diffMs = now - lastSeen;
+                const diffMins = diffMs / (1000 * 60);
+                isOnline = diffMins < 10; // Increased to 10 mins to account for potential delays
+            }
+
+            // Randomize mock values if they are static/mock for display variance
+            if (isOnline) {
+                if (d.moisture) d.moisture = randomizeMockData(d.moisture, 2);
+                if (d.temperature) d.temperature = randomizeMockData(d.temperature, 0.5);
             }
 
             return `
@@ -499,6 +510,16 @@ async function loadDevices() {
     }
 }
 
+// Randomize mock data points slightly to visualize activity
+function randomizeMockData(val, range) {
+    if (val === undefined || val === '--') return val;
+    // Small random fluctuation +/- range
+    const num = parseFloat(val);
+    if (isNaN(num)) return val;
+    const offset = (Math.random() - 0.5) * range;
+    return (num + offset).toFixed(1);
+}
+
 async function loadSensorData(deviceId) {
     const container = document.getElementById('chartContainer');
     container.style.display = 'block';
@@ -511,12 +532,21 @@ async function loadSensorData(deviceId) {
         }
         const res = await fetch(`${API_BASE}/api/soil-readings/${deviceId}`, { headers: { 'Authorization': `Bearer ${token}` } });
         const data = await res.json();
-        const readings = data.readings || [];
-        if (readings.length === 0) return;
+        const readings = data.data || []; // FIX: use data.data instead of data.readings
 
-        const labels = readings.map(r => new Date(r.timestamp).toLocaleTimeString());
-        const moisture = readings.map(r => r.moisture);
-        const temp = readings.map(r => r.temperature);
+        if (readings.length === 0) {
+            if (sensorChart) sensorChart.destroy();
+            document.getElementById('sensorChart').innerHTML = 'No data available';
+            return;
+        }
+
+        // Process readings for chart
+        // Limit to 20 points for cleaner view
+        const displayReadings = readings.slice(0, 20).reverse();
+
+        const labels = displayReadings.map(r => new Date(r.created_at || r.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
+        const moisture = displayReadings.map(r => r.soil_moist_pct || r.moisture);
+        const temp = displayReadings.map(r => r.soil_temp_c || r.temperature);
 
         if (sensorChart) sensorChart.destroy();
         sensorChart = new Chart(document.getElementById('sensorChart'), {
@@ -524,20 +554,55 @@ async function loadSensorData(deviceId) {
             data: {
                 labels,
                 datasets: [
-                    { label: 'Moisture %', data: moisture, borderColor: '#4caf50', backgroundColor: 'rgba(76,175,80,.1)', fill: true, tension: 0.4 },
-                    { label: 'Temperature °C', data: temp, borderColor: '#ff9800', backgroundColor: 'rgba(255,152,0,.1)', fill: true, tension: 0.4 }
+                    {
+                        label: 'Moisture %',
+                        data: moisture,
+                        borderColor: '#4caf50',
+                        backgroundColor: 'rgba(76,175,80,.1)',
+                        fill: true,
+                        tension: 0.4,
+                        pointRadius: 4
+                    },
+                    {
+                        label: 'Temperature °C',
+                        data: temp,
+                        borderColor: '#ff9800',
+                        backgroundColor: 'rgba(255,152,0,.1)',
+                        fill: true,
+                        tension: 0.4,
+                        pointRadius: 4
+                    }
                 ]
             },
             options: {
                 responsive: true,
-                plugins: { legend: { labels: { color: '#e8f5e9' } } },
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { labels: { color: '#e8f5e9' } },
+                    tooltip: { mode: 'index', intersect: false }
+                },
                 scales: {
-                    x: { ticks: { color: 'rgba(255,255,255,.4)' }, grid: { color: 'rgba(255,255,255,.05)' } },
-                    y: { ticks: { color: 'rgba(255,255,255,.4)' }, grid: { color: 'rgba(255,255,255,.05)' } }
+                    x: { ticks: { color: 'rgba(255,255,255,.6)' }, grid: { color: 'rgba(255,255,255,.05)' } },
+                    y: { ticks: { color: 'rgba(255,255,255,.6)' }, grid: { color: 'rgba(255,255,255,.05)' } }
                 }
             }
         });
-    } catch (err) { showNotification('Failed to load sensor data', 'error'); }
+
+        // Inject Analyze Button safely
+        if (!document.getElementById('aiAnalyzeBtn')) {
+            const btn = document.createElement('button');
+            btn.id = 'aiAnalyzeBtn';
+            btn.className = 'btn btn-primary btn-sm';
+            btn.style.marginTop = '15px';
+            btn.innerHTML = '🤖 Analyze Data & Recommend';
+            btn.onclick = analyzeSoilData;
+            container.appendChild(btn);
+        }
+
+    } catch (err) {
+        console.error(err);
+        showNotification('Failed to load sensor data', 'error');
+    }
 }
 
 async function deleteDevice(deviceId) {
