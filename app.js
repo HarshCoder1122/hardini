@@ -63,10 +63,14 @@ window.fetchAlerts = async function () {
         }
 
         const ALERTS_API_URL = `${API_BASE}/api/alerts`;
+        const token = await getAuthToken();
 
         const response = await fetch(ALERTS_API_URL, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
             body: JSON.stringify(location || {})
         });
 
@@ -132,7 +136,10 @@ window.fetchAlerts = async function () {
 
     } catch (error) {
         console.error('Error fetching alerts:', error);
-        weatherDash.innerHTML = '<div style="text-align:center;padding:20px;color:var(--danger)">Failed to load weather. Check connection.</div>';
+        weatherDash.innerHTML = `<div style="text-align:center;padding:20px;color:#ef5350">
+            <strong>Failed to load weather.</strong><br>
+            <span style="font-size:12px;opacity:0.8">${error.message === 'Failed to fetch' ? 'Check Backend Connection' : error.message}</span>
+        </div>`;
     }
 };
 
