@@ -280,8 +280,11 @@ app.get('/api/devices', async (req, res) => {
                     sensorValues = {
                         moisture: entry.soil_moist_pct,
                         temperature: entry.soil_temp_c,
-                        ph: entry.ph || 6.5, // Default/Mock for now if missing
-                        nitrogen: entry.nitrogen || 120 // Default/Mock
+                        ph: entry.soil_ph || 6.5,
+                        nitrogen: entry.soil_n_mg_kg || 120,
+                        phosphorus: entry.soil_p_mg_kg || 40,
+                        potassium: entry.soil_k_mg_kg || 150,
+                        ec: entry.soil_ec_us_cm || 0
                     };
                 }
                 devices.push({
@@ -340,7 +343,12 @@ app.post('/api/soil-readings', async (req, res) => {
             ambient_temp_c: parseFloat(ambient_temp_c) || 0,
             ambient_humidity_pct: parseFloat(ambient_humidity_pct) || 0,
             rssi: parseInt(rssi) || null,
-            created_at: new Date().toISOString()
+            created_at: new Date().toISOString(),
+            soil_ec_us_cm: parseFloat(req.body.soil_ec_us_cm) || 0,
+            soil_ph: parseFloat(req.body.soil_ph) || 0,
+            soil_n_mg_kg: parseInt(req.body.soil_n_mg_kg) || 0,
+            soil_p_mg_kg: parseInt(req.body.soil_p_mg_kg) || 0,
+            soil_k_mg_kg: parseInt(req.body.soil_k_mg_kg) || 0
         };
 
         // Save to Firebase at users/{uid}/devices/{device_id}/data

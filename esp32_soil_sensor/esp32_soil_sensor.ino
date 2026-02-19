@@ -1,25 +1,61 @@
 /*
  * ESP32 SoilProbe IoT Sensor - Hardini Cloud Connected
- * WITH BLE PROVISIONING
+ * WITH BLE PROVISIONING - RS485 MODBUS RTU - DIRECT FIREBASE
  */
 
 #include <WiFi.h>
-#include <HTTPClient.h>
 #include <ArduinoJson.h>
 #include <EEPROM.h>
 #include <BLEDevice.h>
 #include <BLEUtils.h>
 #include <BLEServer.h>
 #include <DHT.h>
+#include <Firebase_ESP_Client.h>
+
+// Provide the token generation process info.
+#include <addons/TokenHelper.h>
+// Provide the RTDB payload printing info and other helper functions.
+#include <addons/RTDBHelper.h>
 
 // ==========================================
 // 🔧 CONSTANTS & PIN DEFS
 // ==========================================
 #define DHT_PIN 4
 #define DHT_TYPE DHT11
-#define SOIL_PIN 34
+
+// RS485 Pins
+#define RX_PIN 16
+#define TX_PIN 17
+#define RE_DE_PIN 5
 
 #define EEPROM_SIZE 512
+
+// Firebase Config
+#define API_KEY "AIzaSyAG8KcL0Ul8Hrrz31WSHxR1fxd2PkSY1QY"
+#define DATABASE_URL "https://hardini-3e576-default-rtdb.asia-southeast1.firebasedatabase.app"
+
+// Firebase Objects
+FirebaseData fbdo;
+FirebaseAuth auth;
+FirebaseConfig config;
+bool signupOK = false;
+
+// ==========================================
+// 🧪 SENSOR VARIABLES
+// ==========================================
+struct SoilData {
+  float moisture;
+  float temp;
+  float ec;
+  float ph;
+  int nitrogen;
+  int phosphorus;
+  int potassium;
+  bool valid;
+};
+
+SoilData lastReading;
+const byte soilSensorRequest[] = {0x01, 0x03, 0x00, 0x00, 0x00, 0x07, 0x04, 0x08};
 
 // BLE UUIDs
 #define SERVICE_UUID        "4fafc201-1fb5-459e-8fcc-c5c9c331914b"
@@ -39,9 +75,6 @@ String device_id = "esp32_" + String((uint32_t)ESP.getEfuseMac(), HEX);
 
 bool deviceConnected = false;
 bool wifiConfigured = false;
-
-// API
-const char* API_BASE_URL = "https://hardini.onrender.com";
 
 // ==========================================
 // 💾 EEPROM HELPERS
@@ -84,26 +117,21 @@ void loadCredentials() {
 
 void saveCredentials() {
   Serial.println("Saving Credentials...");
-
   for (int i = 0; i < EEPROM_SIZE; i++) EEPROM.write(i, 0);
-
   writeString(0, wifi_ssid);
   writeString(100, wifi_pass);
   writeString(200, user_uid);
-
   EEPROM.commit();
 }
 
 // ==========================================
 // 📡 BLE CALLBACKS
 // ==========================================
-
 class MyServerCallbacks : public BLEServerCallbacks {
   void onConnect(BLEServer* pServer) {
     deviceConnected = true;
     Serial.println("BLE Client Connected");
   }
-
   void onDisconnect(BLEServer* pServer) {
     deviceConnected = false;
     Serial.println("BLE Client Disconnected");
@@ -112,27 +140,20 @@ class MyServerCallbacks : public BLEServerCallbacks {
 };
 
 class MyCallbacks : public BLECharacteristicCallbacks {
-
   void onWrite(BLECharacteristic *pCharacteristic) {
-
-    String value = pCharacteristic->getValue();   // ✅ FIXED
-
+    String value = pCharacteristic->getValue();
     if (value.length() == 0) return;
-
     String uuid = pCharacteristic->getUUID().toString();
 
     if (uuid == CHAR_SSID_UUID) {
       wifi_ssid = value;
       Serial.println("RCV SSID: " + wifi_ssid);
-
     } else if (uuid == CHAR_PASS_UUID) {
       wifi_pass = value;
       Serial.println("RCV PASS: [Hidden]");
-
     } else if (uuid == CHAR_UID_UUID) {
       user_uid = value;
       Serial.println("RCV UID: " + user_uid);
-
       if (wifi_ssid.length() > 0) {
         saveCredentials();
         Serial.println("Restarting in 2s...");
@@ -146,169 +167,207 @@ class MyCallbacks : public BLECharacteristicCallbacks {
 // ==========================================
 // 📡 BLE START
 // ==========================================
-
 void startBLE() {
-
   Serial.println("Starting BLE Provisioning Mode...");
-
   BLEDevice::init("Hardini-Probe");
   BLEDevice::setPower(ESP_PWR_LVL_P9);
-
   BLEServer *pServer = BLEDevice::createServer();
   pServer->setCallbacks(new MyServerCallbacks());
-
   BLEService *pService = pServer->createService(SERVICE_UUID);
 
-  BLECharacteristic *pCharSSID =
-    pService->createCharacteristic(CHAR_SSID_UUID, BLECharacteristic::PROPERTY_WRITE | BLECharacteristic::PROPERTY_WRITE_NR);
-
-  BLECharacteristic *pCharPass =
-    pService->createCharacteristic(CHAR_PASS_UUID, BLECharacteristic::PROPERTY_WRITE | BLECharacteristic::PROPERTY_WRITE_NR);
-
-  BLECharacteristic *pCharUID =
-    pService->createCharacteristic(CHAR_UID_UUID, BLECharacteristic::PROPERTY_WRITE | BLECharacteristic::PROPERTY_WRITE_NR);
-
-  BLECharacteristic *pCharStatus =
-    pService->createCharacteristic(
-      CHAR_STATUS_UUID,
-      BLECharacteristic::PROPERTY_READ | BLECharacteristic::PROPERTY_NOTIFY
-    );
+  BLECharacteristic *pCharSSID = pService->createCharacteristic(CHAR_SSID_UUID, BLECharacteristic::PROPERTY_WRITE | BLECharacteristic::PROPERTY_WRITE_NR);
+  BLECharacteristic *pCharPass = pService->createCharacteristic(CHAR_PASS_UUID, BLECharacteristic::PROPERTY_WRITE | BLECharacteristic::PROPERTY_WRITE_NR);
+  BLECharacteristic *pCharUID = pService->createCharacteristic(CHAR_UID_UUID, BLECharacteristic::PROPERTY_WRITE | BLECharacteristic::PROPERTY_WRITE_NR);
+  BLECharacteristic *pCharStatus = pService->createCharacteristic(CHAR_STATUS_UUID, BLECharacteristic::PROPERTY_READ | BLECharacteristic::PROPERTY_NOTIFY);
 
   MyCallbacks *callbacks = new MyCallbacks();
-
   pCharSSID->setCallbacks(callbacks);
   pCharPass->setCallbacks(callbacks);
   pCharUID->setCallbacks(callbacks);
-
   pCharStatus->setValue("Waiting for Config");
 
   pService->start();
-
   BLEAdvertising *pAdvertising = BLEDevice::getAdvertising();
   pAdvertising->addServiceUUID(SERVICE_UUID);
   pAdvertising->setScanResponse(true);
-
   BLEDevice::startAdvertising();
-
   Serial.println("BLE Advertising started...");
+}
+
+// ==========================================
+// 🔄 RS485 HELPER
+// ==========================================
+SoilData readSoilSensor() {
+  SoilData data = {0, 0, 0, 0, 0, 0, 0, false};
+
+  // Clear buffer
+  while (Serial2.available()) Serial2.read();
+
+  Serial.println(" -> Sending Modbus Request (4800 baud)...");
+  digitalWrite(RE_DE_PIN, HIGH); // Enable TX
+  delay(10);
+  Serial2.write(soilSensorRequest, sizeof(soilSensorRequest));
+  Serial2.flush();
+  digitalWrite(RE_DE_PIN, LOW); // Enable RX
+
+  // Wait for response
+  unsigned long startTime = millis();
+  while (Serial2.available() < 19 && millis() - startTime < 3000) {
+    delay(10);
+  }
+
+  int available = Serial2.available();
+  Serial.printf(" -> Bytes Available: %d\n", available);
+
+  if (available > 0) {
+    byte buf[32]; // Buffer slightly larger
+    int len = Serial2.readBytes(buf, available < 32 ? available : 32);
+
+    Serial.print(" -> HEX RCV: ");
+    for (int i = 0; i < len; i++) {
+        Serial.printf("%02X ", buf[i]);
+    }
+    Serial.println();
+
+    if (len >= 19 && buf[0] == 0x01 && buf[1] == 0x03) {
+      data.moisture = (buf[3] << 8 | buf[4]) * 0.1;
+      data.temp = (buf[5] << 8 | buf[6]) * 0.1;
+      data.ec = (buf[7] << 8 | buf[8]);
+      data.ph = (buf[9] << 8 | buf[10]) * 0.1;
+      data.nitrogen = (buf[11] << 8 | buf[12]);
+      data.phosphorus = (buf[13] << 8 | buf[14]);
+      data.potassium = (buf[15] << 8 | buf[16]);
+      data.valid = true;
+      Serial.println(" -> ✅ Modbus Frame Valid");
+    } else {
+      Serial.println("❌ Modbus Invalid Header/Length");
+    }
+  } else {
+    Serial.println("❌ Modbus Timeout (No Data)");
+  }
+  return data;
+}
+
+// ==========================================
+// 📊 SENSOR + API
+// ==========================================
+void sendSensorData() {
+  Serial.println("\n--------------------------------");
+  Serial.println("Reading Sensors...");
+
+  // Read RS485 Sensor
+  SoilData soil = readSoilSensor();
+  
+  // Read DHT (Ambient)
+  float ambHum = dht.readHumidity();
+  float ambTemp = dht.readTemperature();
+
+  Serial.printf("Soil: moist=%.1f%% temp=%.1fC ph=%.1f N=%d P=%d K=%d\n", 
+                soil.moisture, soil.temp, soil.ph, soil.nitrogen, soil.phosphorus, soil.potassium);
+  Serial.printf("Amb: temp=%.1fC hum=%.1f%%\n", ambTemp, ambHum);
+
+  if (!soil.valid) {
+    Serial.println("⚠️ Warning: Using dummy soil values (read failed)");
+  }
+  
+  // Firebase Data Object
+  FirebaseJson json;
+  
+  // Note: Firebase paths cannot contain ".", "#", "$", "[", or "]"
+  // We use timestamps as keys usually, but pushJSON handles distinct keys
+  
+  json.set("soil_temp_c", soil.valid ? soil.temp : 0);
+  json.set("soil_moist_pct", soil.valid ? soil.moisture : 0);
+  json.set("soil_ec_us_cm", soil.valid ? soil.ec : 0);
+  json.set("soil_ph", soil.valid ? soil.ph : 0);
+  json.set("soil_n_mg_kg", soil.valid ? soil.nitrogen : 0);
+  json.set("soil_p_mg_kg", soil.valid ? soil.phosphorus : 0);
+  json.set("soil_k_mg_kg", soil.valid ? soil.potassium : 0);
+  json.set("ambient_temp_c", isnan(ambTemp) ? 0 : ambTemp);
+  json.set("ambient_humidity_pct", isnan(ambHum) ? 0 : ambHum);
+  json.set("rssi", WiFi.RSSI());
+  json.set("created_at", millis()); // Helper, real timestamp generated by server usually
+
+  if (WiFi.status() == WL_CONNECTED && signupOK) {
+    String path = "users/" + user_uid + "/devices/" + device_id + "/data";
+    
+    Serial.print("Pushing to: "); Serial.println(path);
+    
+    if (Firebase.RTDB.pushJSON(&fbdo, path.c_str(), &json)) {
+      Serial.println("✅ Firebase: Data Sent");
+    } else {
+      Serial.printf("❌ Firebase Error: %s\n", fbdo.errorReason().c_str());
+    }
+  } else {
+    Serial.println("⚠️ WiFi Disconnected or Firebase Not Ready");
+  }
 }
 
 // ==========================================
 // 🚀 SETUP
 // ==========================================
-
 void setup() {
-
   Serial.begin(115200);
+  
+  // RS485 Setup
+  pinMode(RE_DE_PIN, OUTPUT);
+  digitalWrite(RE_DE_PIN, LOW);
+  Serial2.begin(4800, SERIAL_8N1, RX_PIN, TX_PIN); // 4800 Baud
 
   EEPROM.begin(EEPROM_SIZE);
-
   dht.begin();
-
-  pinMode(SOIL_PIN, INPUT);
-
+  
   delay(1000);
-
   Serial.println("Booting Hardini Probe: " + device_id);
-
-  // ✅ BLE ALWAYS ACTIVE (per user request)
+  
   startBLE();
-
   loadCredentials();
 
   if (wifiConfigured) {
     WiFi.begin(wifi_ssid.c_str(), wifi_pass.c_str());
-
     Serial.print("Connecting to WiFi");
-
     int retries = 0;
     while (WiFi.status() != WL_CONNECTED && retries < 20) {
-      delay(500);
-      Serial.print(".");
-      retries++;
+      delay(500); Serial.print("."); retries++;
     }
-
     if (WiFi.status() == WL_CONNECTED) {
       Serial.println("\n✅ WiFi Connected!");
-      Serial.print("IP: ");
-      Serial.println(WiFi.localIP());
       
-      // Send first reading immediately!
+      // Initialize Firebase
+      config.api_key = API_KEY;
+      config.database_url = DATABASE_URL;
+      
+      // Anonymous Sign up
+      if (Firebase.signUp(&config, &auth, "", "")) {
+        Serial.println("✅ Firebase Signed Up (Anonymous)");
+        signupOK = true;
+      } else {
+        Serial.printf("❌ Firebase Sign Up Failed: %s\n", config.signer.signupError.message.c_str());
+      }
+      
+      config.token_status_callback = tokenStatusCallback; // Helper function from addons
+      
+      Firebase.begin(&config, &auth);
+      Firebase.reconnectWiFi(true);
+
       sendSensorData();
     } else {
-      Serial.println("\n⚠️ WiFi Failed (BLE remains active)");
+      Serial.println("\n⚠️ WiFi Failed");
     }
-  } else {
-    Serial.println("No WiFi Credentials. BLE waiting for config...");
   }
 }
 
 // ==========================================
 // 🔁 LOOP
 // ==========================================
-
 void loop() {
-
   if (WiFi.status() != WL_CONNECTED) {
-    delay(100);
-    return;
+    delay(100); return;
   }
 
   static unsigned long lastTime = 0;
-
   if (millis() - lastTime > 30000) {
     sendSensorData();
     lastTime = millis();
   }
-}
-
-// ==========================================
-// 📊 SENSOR + API
-// ==========================================
-
-void sendSensorData() {
-
-  Serial.println("\nReading Sensors...");
-
-  float humidity = dht.readHumidity();
-  float temp = dht.readTemperature();
-
-  int soilRaw = analogRead(SOIL_PIN);
-
-  int soilPct = map(soilRaw, 4095, 0, 0, 100);
-  soilPct = constrain(soilPct, 0, 100);
-
-  if (isnan(humidity)) humidity = 0;
-  if (isnan(temp)) temp = 0;
-
-  StaticJsonDocument<512> doc;
-
-  doc["user_uid"] = user_uid;
-  doc["device_id"] = device_id;
-  doc["soil_temp_c"] = temp;
-  doc["soil_moist_pct"] = soilPct;
-  doc["ambient_temp_c"] = temp;
-  doc["ambient_humidity_pct"] = humidity;
-  doc["rssi"] = WiFi.RSSI();
-
-  String jsonString;
-  serializeJson(doc, jsonString);
-
-  HTTPClient http;
-
-  String endpoint = String(API_BASE_URL) + "/api/soil-readings";
-
-  http.begin(endpoint);
-  http.addHeader("Content-Type", "application/json");
-
-  int httpResponseCode = http.POST(jsonString);
-
-  if (httpResponseCode > 0) {
-    Serial.printf("✅ Data Sent: %d\n", httpResponseCode);
-  } else {
-    Serial.printf("❌ Error: %s\n",
-                  http.errorToString(httpResponseCode).c_str());
-  }
-
-  http.end();
 }

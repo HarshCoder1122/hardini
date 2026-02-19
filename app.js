@@ -809,7 +809,7 @@ function openConnectModal(type) {
 function renderFarmers() {
     const list = document.getElementById('farmersList');
     list.innerHTML = CONNECT_DATA.farmers.map(f => `
-        < div class= "glass-card" style = "padding:16px;text-align:center" >
+        <div class="glass-card" style="padding:16px;text-align:center">
         <img src="${f.img}" style="width:64px;height:64px;border-radius:50%;margin-bottom:12px;border:2px solid var(--accent)">
             <h4 style="margin-bottom:4px;font-size:16px">${f.name}</h4>
             <div style="color:var(--text-secondary);font-size:12px;margin-bottom:8px">📍 ${f.location}</div>
@@ -823,7 +823,7 @@ function renderFarmers() {
 function renderSuppliers() {
     const list = document.getElementById('suppliersList');
     list.innerHTML = CONNECT_DATA.suppliers.map(s => `
-            < div class= "glass-card" style = "padding:16px" >
+            <div class="glass-card" style="padding:16px">
             <div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:12px">
                 <div>
                     <h4 style="font-size:16px;margin-bottom:4px">${s.name}</h4>
@@ -834,7 +834,7 @@ function renderSuppliers() {
             <div style="margin-bottom:8px;font-size:13px"><span style="color:var(--accent-light)">Type:</span> ${s.type}</div>
             <div style="margin-bottom:16px;font-size:13px">⭐ ${s.rating}/5.0</div>
             <button class="btn btn-primary btn-sm btn-block" onclick="showNotification('Contact details for ${s.name} sent to your phone', 'success')">Contact 📞</button>
-        </div >
+        </div>
             `).join('');
 }
 
@@ -842,32 +842,32 @@ function renderMarket() {
     // Render Prices
     const tbody = document.getElementById('marketPricesBody');
     tbody.innerHTML = CONNECT_DATA.market.map(m => `
-            < tr style = "border-bottom:1px solid var(--border-color)" >
+            <tr style="border-bottom:1px solid var(--border-color)">
             <td style="padding:12px">${m.crop}</td>
             <td style="padding:12px;font-weight:600;color:var(--text-primary)">${m.price}</td>
             <td style="padding:12px;color:${m.trend === 'up' ? 'var(--accent)' : m.trend === 'down' ? 'var(--danger)' : 'var(--warning)'}">
                 ${m.trend === 'up' ? '↗' : m.trend === 'down' ? '↘' : '➡'} ${m.change}
             </td>
-        </tr >
+        </tr>
             `).join('');
 
     // Render Buyers
     const list = document.getElementById('buyersList');
     list.innerHTML = CONNECT_DATA.buyers.map(b => `
-            < div class= "glass-card" style = "padding:16px" >
+            <div class="glass-card" style="padding:16px">
             <h4 style="margin-bottom:8px;font-size:16px">${b.name}</h4>
             <div style="font-size:13px;margin-bottom:4px">Looking for: <span style="color:var(--accent-light)">${b.need}</span></div>
             <div style="font-size:13px;margin-bottom:4px">Qty: ${b.qty}</div>
             <div style="font-size:13px;margin-bottom:16px">Price: ${b.price}</div>
             <button class="btn btn-secondary btn-sm btn-block" onclick="showNotification('Bid placed successfully!', 'success')">Place Bid 🔨</button>
-        </div >
+        </div>
             `).join('');
 }
 
 function renderExperts() {
     const list = document.getElementById('expertsList');
     list.innerHTML = CONNECT_DATA.experts.map(e => `
-            < div class= "glass-card" style = "padding:16px;display:flex;gap:16px;align-items:center" >
+            <div class="glass-card" style="padding:16px;display:flex;gap:16px;align-items:center">
             <img src="${e.img}" style="width:60px;height:60px;border-radius:50%;object-fit:cover">
                 <div style="flex:1">
                     <h4 style="font-size:16px;margin-bottom:4px">${e.name}</h4>
@@ -883,7 +883,7 @@ function renderExperts() {
 function renderTraining() {
     const list = document.getElementById('coursesList');
     list.innerHTML = CONNECT_DATA.training.map(t => `
-            < div class= "glass-card" style = "padding:0;overflow:hidden" >
+            <div class="glass-card" style="padding:0;overflow:hidden">
             <div style="height:100px;background:linear-gradient(135deg, rgba(76,175,80,0.1), rgba(46,125,50,0.2));display:flex;align-items:center;justify-content:center;font-size:40px">${t.img}</div>
             <div style="padding:16px">
                 <h4 style="font-size:16px;margin-bottom:8px;height:40px;overflow:hidden">${t.title}</h4>
@@ -894,14 +894,14 @@ function renderTraining() {
                 <div style="font-size:12px;margin-bottom:16px">👥 ${t.students} students</div>
                 <button class="btn btn-primary btn-sm btn-block" onclick="showNotification('Enrolled in ${t.title}!', 'success')">Enroll Now</button>
             </div>
-        </div >
+        </div>
             `).join('');
 }
 
 function renderForum() {
     const list = document.getElementById('forumList');
     list.innerHTML = CONNECT_DATA.forum.map(f => `
-            < div class= "glass-card" style = "padding:16px;cursor:pointer" onclick = "showNotification('Opening discussion thread...', 'info')" >
+            <div class="glass-card" style="padding:16px;cursor:pointer" onclick="showNotification('Opening discussion thread...', 'info')">
             <div style="display:flex;justify-content:space-between;margin-bottom:8px">
                 <span style="font-size:10px;background:var(--bg-card-hover);padding:2px 8px;border-radius:12px;color:var(--accent-light)">${f.tag}</span>
                 <span style="font-size:12px;color:var(--text-muted)">Views: ${f.views}</span>
@@ -911,7 +911,7 @@ function renderForum() {
                 <span>👤 ${f.author}</span>
                 <span>💬 ${f.replies} replies</span>
             </div>
-        </div >
+        </div>
             `).join('');
 }
 
@@ -1024,7 +1024,7 @@ async function startSoilProbeBLEScan() {
 
         if (resultsContainer) {
             resultsContainer.innerHTML = `
-        < h4 > Found Device:</h4 >
+        <h4>Found Device:</h4>
         <div class="ble-device-item">
             <div>
                 <div class="ble-device-name">${bleDevice.name}</div>
@@ -1065,12 +1065,12 @@ function connectToBLEDevice() {
     const resultsContainer = document.getElementById('bleResults');
     if (resultsContainer) {
         resultsContainer.innerHTML = `
-            < div class= "ble-device-item" style = "border-color: #4caf50; background: rgba(76, 175, 80, 0.2);" >
+            <div class="ble-device-item" style="border-color: #4caf50; background: rgba(76, 175, 80, 0.2);">
             <div>
                 <div class="ble-device-name">✅ ${bleDevice.name}</div>
                 <div class="ble-device-id">Ready to Configure</div>
             </div>
-            </div >
+            </div>
             <div style="text-align: center; margin-top: 10px;">
                 <small style="color: #4caf50;">Device selected! Click "Next"</small>
             </div>
