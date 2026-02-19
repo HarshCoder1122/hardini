@@ -211,11 +211,11 @@ async function loadReels(query) {
         const res = await fetch(`${API_BASE}/api/reels?q=${encodeURIComponent(q)}`);
         const data = await res.json();
         window._reelsLoaded = true;
-        if (!data.videos || data.videos.length === 0) {
+        if (!data.data || data.data.length === 0) {
             grid.innerHTML = '<div class="empty-state"><span class="empty-icon">🎬</span><h3>No videos found</h3><p>Try a different category.</p></div>';
             return;
         }
-        grid.innerHTML = data.videos.map(v => `
+        grid.innerHTML = data.data.map(v => `
             <div class="reel-card" onclick="playReel('${v.id}')">
                 <div class="reel-thumb">
                     <img src="${v.thumbnail}" alt="${v.title}" loading="lazy">
@@ -223,7 +223,7 @@ async function loadReels(query) {
                 </div>
                 <div class="reel-info-bar">
                     <div class="reel-title">${v.title}</div>
-                    <div class="reel-channel">${v.channel || ''}</div>
+                    <div class="reel-channel">${v.channelTitle || v.channel || ''}</div>
                 </div>
             </div>
         `).join('');
