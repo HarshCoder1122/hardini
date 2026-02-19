@@ -21,127 +21,434 @@ function navigateTo(page) {
 // ... (Rest of file unchanged until Alerts Feature section)
 
 // ============================================
-// ALERTS FEATURE
+// WEATHER & ALERTS FEATURE (Real-Time)
 // ============================================
-async function getUserLocation() {
-    return new Promise((resolve, reject) => {
-        if (!navigator.geolocation) {
-            reject(new Error('Geolocation not supported'));
-        } else {
-            navigator.geolocation.getCurrentPosition(
-                (position) => {
-                    resolve({
-                        latitude: position.coords.latitude,
-                        longitude: position.coords.longitude
-                    });
-                },
-                (error) => {
-                    console.warn('Geolocation denied or failed:', error.message);
-                    resolve(null); // Resolve null to fallback to IP-based or default
-                }
-            );
-        }
-    });
+const WEATHER_CODE_MAP = {
+    0: { text: 'Clear Sky', icon: '☀️' },
+    1: { text: 'Mainly Clear', icon: '🌤️' },
+    2: { text: 'Partly Cloudy', icon: '⛅' },
+    3: { text: 'Overcast', icon: '☁️' },
+    45: { text: 'Foggy', icon: '🌫️' },
+    48: { text: 'Rime Fog', icon: '🌫️' },
+    51: { text: 'Light Drizzle', icon: '🌦️' },
+    53: { text: 'Moderate Drizzle', icon: '🌦️' },
+    55: { text: 'Dense Drizzle', icon: '🌧️' },
+    56: { text: 'Freezing Drizzle', icon: '🌧️' },
+    57: { text: 'Heavy Freezing Drizzle', icon: '🌧️' },
+    61: { text: 'Slight Rain', icon: '🌧️' },
+    63: { text: 'Moderate Rain', icon: '🌧️' },
+    65: { text: 'Heavy Rain', icon: '🌧️' },
+    66: { text: 'Freezing Rain', icon: '🌧️' },
+    67: { text: 'Heavy Freezing Rain', icon: '🌧️' },
+    71: { text: 'Slight Snow', icon: '🌨️' },
+    73: { text: 'Moderate Snow', icon: '❄️' },
+    75: { text: 'Heavy Snow', icon: '❄️' },
+    77: { text: 'Snow Grains', icon: '🌨️' },
+    80: { text: 'Slight Showers', icon: '🌦️' },
+    81: { text: 'Moderate Showers', icon: '🌧️' },
+    82: { text: 'Violent Showers', icon: '⛈️' },
+    85: { text: 'Snow Showers', icon: '🌨️' },
+    86: { text: 'Heavy Snow Showers', icon: '❄️' },
+    95: { text: 'Thunderstorm', icon: '⛈️' },
+    96: { text: 'Thunderstorm + Hail', icon: '⛈️' },
+    99: { text: 'Severe Thunderstorm', icon: '⛈️' }
+};
+
+function getWeatherInfo(code) {
+    return WEATHER_CODE_MAP[code] || { text: 'Unknown', icon: '🌤️' };
 }
 
-window.fetchAlerts = async function () {
-    const weatherDash = document.getElementById('weatherDashboard');
-    const alertsFeed = document.getElementById('alertsFeed');
-
-    if (!weatherDash) return; // Not on alerts page or elements missing
-
-    weatherDash.innerHTML = '<div style="text-align:center;padding:40px"><span class="loader"></span> Update Weather...</div>';
-
+async function getUserLocation() {
+    // Strategy 1: Browser Geolocation (GPS)
     try {
-        const location = await getUserLocation();
-        let locationText = "Finding you...";
-
-        if (location) {
-            locationText = `${location.latitude.toFixed(2)}, ${location.longitude.toFixed(2)}`;
-        } else {
-            locationText = "Approx Location (IP)";
-        }
-
-        const ALERTS_API_URL = `${API_BASE}/api/alerts`;
-        const token = await getAuthToken();
-
-        const response = await fetch(ALERTS_API_URL, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`
-            },
-            body: JSON.stringify(location || {})
+        const pos = await new Promise((resolve, reject) => {
+            if (!navigator.geolocation) return reject(new Error('No geolocation'));
+            navigator.geolocation.getCurrentPosition(resolve, reject, {
+                enableHighAccuracy: true,
+                timeout: 8000,
+                maximumAge: 300000
+            });
         });
+        return {
+            latitude: pos.coords.latitude,
+            longitude: pos.coords.longitude,
+            source: 'gps'
+        };
+    } catch (e) {
+        console.warn('Geolocation failed, falling back to IP:', e.message);
+    }
 
-        const data = await response.json();
-
-        if (data.success) {
-            // 1. Render Weather Dashboard with REAL DATA
-            const w = data.weather || { temp: '--', wind: '--', humidity: '--', code: 0 };
-
-            // Map weather code to condition text/icon
-            // Codes: 0=Clear, 1-3=Cloudy, 45-48=Fog, 51-55=Drizzle, 61-65=Rain, 71-75=Snow, 80-82=Showers, 95+=Thunder
-            let condition = 'Clear';
-            let icon = '☀️';
-            if (w.code >= 1 && w.code <= 3) { condition = 'Partly Cloudy'; icon = '⛅'; }
-            else if (w.code >= 45 && w.code <= 48) { condition = 'Foggy'; icon = '🌫️'; }
-            else if (w.code >= 51 && w.code <= 67) { condition = 'Rainy'; icon = '🌧️'; }
-            else if (w.code >= 71 && w.code <= 77) { condition = 'Snow'; icon = '❄️'; }
-            else if (w.code >= 80 && w.code <= 82) { condition = 'Showers'; icon = '🌦️'; }
-            else if (w.code >= 95) { condition = 'Thunderstorm'; icon = '⛈️'; }
-
-            weatherDash.innerHTML = `
-                <div class="weather-main">
-                    <div class="weather-temp">
-                        <span>${w.temp}°</span>
-                        <span style="font-size:20px">${icon}</span>
-                    </div>
-                    <div style="text-align:right">
-                        <div class="weather-condition">${condition}</div>
-                        <div class="weather-location">📍 ${locationText}</div>
-                    </div>
-                </div>
-                <div class="weather-details">
-                    <div class="w-detail-item">
-                        <div class="w-label">Rain Chance</div>
-                        <div class="w-value">${w.code >= 60 ? 'High' : 'Low'}</div>
-                    </div>
-                    <div class="w-detail-item">
-                        <div class="w-label">Wind</div>
-                        <div class="w-value">${w.wind} km/h</div>
-                    </div>
-                    <div class="w-detail-item">
-                        <div class="w-label">Humidity</div>
-                        <div class="w-value">${w.humidity}%</div>
-                    </div>
-                </div>
-            `;
-
-            // 2. Render Alerts Feed
-            if (data.alerts && data.alerts.length > 0) {
-                alertsFeed.innerHTML = data.alerts.map(alert => `
-                    <div class="alert-item" style="border-left-color: ${getSeverityColor(alert.severity)}">
-                        <div class="alert-header">
-                            <span class="alert-title">${alert.title}</span>
-                            <span class="alert-tag">${alert.type.toUpperCase()}</span>
-                        </div>
-                        <div class="alert-msg">${alert.message}</div>
-                    </div>
-                `).join('');
-            } else {
-                alertsFeed.innerHTML = '<div style="text-align:center;padding:30px;color:var(--text-muted)">No active alerts. All clear! ✅</div>';
-            }
+    // Strategy 2: IP-based location fallback
+    try {
+        const res = await fetch('https://ipapi.co/json/', { signal: AbortSignal.timeout(5000) });
+        const data = await res.json();
+        if (data.latitude && data.longitude) {
+            return {
+                latitude: data.latitude,
+                longitude: data.longitude,
+                city: data.city,
+                region: data.region,
+                source: 'ip'
+            };
         }
+    } catch (e) {
+        console.warn('IP geolocation also failed:', e.message);
+    }
+
+    // Default: New Delhi
+    return { latitude: 28.6139, longitude: 77.209, city: 'New Delhi', source: 'default' };
+}
+
+async function reverseGeocode(lat, lon) {
+    try {
+        const res = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=&count=1&latitude=${lat}&longitude=${lon}&language=en&format=json`);
+        // Open-Meteo geocoding doesn't do reverse, so use Nominatim as fallback
+        const nom = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json&zoom=10`, {
+            headers: { 'Accept-Language': 'en' },
+            signal: AbortSignal.timeout(5000)
+        });
+        const data = await nom.json();
+        const addr = data.address || {};
+        return addr.city || addr.town || addr.village || addr.county || addr.state || 'Your Location';
+    } catch (e) {
+        return null;
+    }
+}
+
+let mapplsMapInstance = null;
+
+window.fetchAlerts = async function () {
+    try {
+        // 1. Get user location
+        const loc = await getUserLocation();
+        const lat = loc.latitude;
+        const lon = loc.longitude;
+
+        // Get city name
+        let cityName = loc.city || null;
+        if (!cityName) {
+            cityName = await reverseGeocode(lat, lon) || `${lat.toFixed(2)}°, ${lon.toFixed(2)}°`;
+        }
+
+        // Update hero location + date
+        const locEl = document.getElementById('weatherLocation');
+        const dateEl = document.getElementById('weatherDate');
+        if (locEl) locEl.textContent = `📍 ${cityName}` + (loc.source === 'ip' ? ' (via IP)' : loc.source === 'default' ? ' (Default)' : '');
+        if (dateEl) {
+            const now = new Date();
+            dateEl.textContent = now.toLocaleDateString('en-IN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }) + ' • ' + now.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
+        }
+
+        // 2. Fetch all weather data from Open-Meteo (free, no key)
+        const weatherUrl = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}`
+            + `&current=temperature_2m,relative_humidity_2m,apparent_temperature,precipitation,weather_code,wind_speed_10m,wind_direction_10m,surface_pressure,cloud_cover,uv_index,visibility,dew_point_2m`
+            + `&hourly=temperature_2m,weather_code&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_sum,uv_index_max`
+            + `&timezone=auto&forecast_days=6`;
+
+        const aqiUrl = `https://air-quality-api.open-meteo.com/v1/air-quality?latitude=${lat}&longitude=${lon}`
+            + `&current=european_aqi,pm10,pm2_5,nitrogen_dioxide,ozone,sulphur_dioxide,carbon_monoxide`
+            + `&timezone=auto`;
+
+        const [weatherRes, aqiRes] = await Promise.all([
+            fetch(weatherUrl),
+            fetch(aqiUrl)
+        ]);
+
+        const weather = await weatherRes.json();
+        const aqi = await aqiRes.json();
+
+        // 3. Render current weather hero
+        const cur = weather.current || {};
+        const wInfo = getWeatherInfo(cur.weather_code);
+
+        document.getElementById('weatherIconBig').textContent = wInfo.icon;
+        document.getElementById('weatherTempBig').textContent = `${Math.round(cur.temperature_2m || 0)}°`;
+        document.getElementById('weatherCondition').textContent = wInfo.text;
+        document.getElementById('weatherFeels').textContent = `Feels like ${Math.round(cur.apparent_temperature || 0)}°C`;
+
+        // 4. Render weather stats
+        document.getElementById('wsHumidity').textContent = `${cur.relative_humidity_2m || '--'}%`;
+        document.getElementById('wsWind').textContent = `${Math.round(cur.wind_speed_10m || 0)} km/h`;
+        document.getElementById('wsUV').textContent = `${(cur.uv_index || 0).toFixed(1)}`;
+        document.getElementById('wsPressure').textContent = `${Math.round(cur.surface_pressure || 0)} hPa`;
+        document.getElementById('wsVisibility').textContent = `${((cur.visibility || 0) / 1000).toFixed(1)} km`;
+        document.getElementById('wsDewpoint').textContent = `${Math.round(cur.dew_point_2m || 0)}°`;
+        document.getElementById('wsRain').textContent = `${(cur.precipitation || 0).toFixed(1)} mm`;
+        document.getElementById('wsWindDir').textContent = `${cur.wind_direction_10m || '--'}°`;
+
+        // 5. Render hourly forecast (next 24 hours)
+        const hourlyEl = document.getElementById('hourlyForecast');
+        if (weather.hourly) {
+            const nowHour = new Date().getHours();
+            const hourlyCards = [];
+            // Find current hour index
+            const times = weather.hourly.time || [];
+            const nowStr = new Date().toISOString().slice(0, 13);
+            let startIdx = times.findIndex(t => t.startsWith(nowStr));
+            if (startIdx < 0) startIdx = 0;
+
+            for (let i = startIdx; i < Math.min(startIdx + 24, times.length); i++) {
+                const time = new Date(times[i]);
+                const h = time.getHours();
+                const isNow = (i === startIdx);
+                const hIcon = getWeatherInfo(weather.hourly.weather_code[i]).icon;
+                const hTemp = Math.round(weather.hourly.temperature_2m[i]);
+                hourlyCards.push(`
+                    <div class="hourly-card${isNow ? ' now' : ''}">
+                        <div class="hourly-time">${isNow ? 'Now' : (h === 0 ? '12 AM' : h < 12 ? h + ' AM' : h === 12 ? '12 PM' : (h - 12) + ' PM')}</div>
+                        <div class="hourly-icon">${hIcon}</div>
+                        <div class="hourly-temp">${hTemp}°</div>
+                    </div>
+                `);
+            }
+            hourlyEl.innerHTML = hourlyCards.join('');
+        }
+
+        // 6. Render 5-day forecast
+        const dailyEl = document.getElementById('dailyForecast');
+        if (weather.daily) {
+            const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+            const dailyCards = [];
+            // Skip first day (today), show next 5
+            for (let i = 1; i < Math.min(6, weather.daily.time.length); i++) {
+                const d = new Date(weather.daily.time[i]);
+                const dInfo = getWeatherInfo(weather.daily.weather_code[i]);
+                dailyCards.push(`
+                    <div class="daily-card">
+                        <div class="daily-day">${dayNames[d.getDay()]}, ${d.getDate()}/${d.getMonth() + 1}</div>
+                        <div class="daily-icon">${dInfo.icon}</div>
+                        <div class="daily-temps">
+                            <span class="daily-max">${Math.round(weather.daily.temperature_2m_max[i])}°</span>
+                            <span class="daily-min">${Math.round(weather.daily.temperature_2m_min[i])}°</span>
+                        </div>
+                        <div class="daily-rain">🌧️ ${(weather.daily.precipitation_sum[i] || 0).toFixed(1)} mm</div>
+                    </div>
+                `);
+            }
+            dailyEl.innerHTML = dailyCards.join('');
+        }
+
+        // 7. Render Mappls Map (satellite view)
+        renderMapplsMap(lat, lon, cityName);
+
+        // 8. Render Air Quality
+        renderAirQuality(aqi);
+
+        // 9. Generate smart alerts
+        generateWeatherAlerts(cur, weather.daily, aqi, cityName);
 
     } catch (error) {
-        console.error('Error fetching alerts:', error);
-        weatherDash.innerHTML = `<div style="text-align:center;padding:20px;color:#ef5350">
-            <strong>Failed to load weather.</strong><br>
-            <span style="font-size:12px;opacity:0.8">${error.message === 'Failed to fetch' ? 'Check Backend Connection' : error.message}</span>
-        </div>`;
+        console.error('Error in fetchAlerts:', error);
+        document.getElementById('weatherCondition').textContent = 'Failed to load';
+        document.getElementById('weatherTempBig').textContent = '⚠️';
+        document.getElementById('alertsFeed').innerHTML = `
+            <div class="alert-item severity-high">
+                <div class="alert-header">
+                    <span class="alert-title">⚠️ Weather Data Unavailable</span>
+                    <span class="alert-tag">ERROR</span>
+                </div>
+                <div class="alert-msg">${error.message === 'Failed to fetch' ? 'Please check your internet connection and try again.' : error.message}</div>
+            </div>`;
     }
 };
+
+function renderMapplsMap(lat, lon, cityName) {
+    const container = document.getElementById('mapContainer');
+    if (!container) return;
+
+    // Check if Mappls SDK is loaded
+    if (typeof mappls !== 'undefined' && mappls.Map) {
+        try {
+            container.innerHTML = ''; // Clear placeholder
+            const mapDiv = document.createElement('div');
+            mapDiv.id = 'mapplsMapDiv';
+            mapDiv.style.cssText = 'width:100%;height:100%';
+            container.appendChild(mapDiv);
+
+            mapplsMapInstance = new mappls.Map('mapplsMapDiv', {
+                center: [lat, lon],
+                zoom: 14,
+                mapType: 'satellite',  // Satellite imagery
+                zoomControl: true,
+                location: true
+            });
+
+            mapplsMapInstance.addListener('load', function () {
+                // Add marker at user location
+                new mappls.Marker({
+                    map: mapplsMapInstance,
+                    position: { lat: lat, lng: lon },
+                    fitbounds: true,
+                    popupHtml: `<div style="padding:8px;font-family:Inter,sans-serif;color:#333"><strong>📍 ${cityName}</strong><br><small>${lat.toFixed(4)}, ${lon.toFixed(4)}</small></div>`
+                });
+            });
+        } catch (e) {
+            console.error('Mappls Map error:', e);
+            container.innerHTML = `<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;color:var(--text-muted);gap:8px">
+                <span style="font-size:40px">🗺️</span>
+                <span>Map unavailable</span>
+                <small>${lat.toFixed(4)}, ${lon.toFixed(4)}</small>
+            </div>`;
+        }
+    } else {
+        // Fallback: show coordinate info
+        container.innerHTML = `<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;color:var(--text-muted);gap:8px">
+            <span style="font-size:40px">🗺️</span>
+            <span>Mappls SDK loading...</span>
+            <small>📍 ${cityName} (${lat.toFixed(4)}, ${lon.toFixed(4)})</small>
+        </div>`;
+        // Retry after SDK loads
+        setTimeout(() => renderMapplsMap(lat, lon, cityName), 2000);
+    }
+}
+
+function renderAirQuality(aqiData) {
+    const cur = aqiData.current || {};
+    const aqiVal = cur.european_aqi || 0;
+
+    // AQI level mapping (European AQI: 0-20 Good, 20-40 Fair, 40-60 Moderate, 60-80 Poor, 80-100 Very Poor, 100+ Extremely Poor)
+    let level = 'Good';
+    let color = '#4caf50';
+    if (aqiVal > 100) { level = 'Hazardous'; color = '#9c27b0'; }
+    else if (aqiVal > 80) { level = 'Very Poor'; color = '#f44336'; }
+    else if (aqiVal > 60) { level = 'Poor'; color = '#ff9800'; }
+    else if (aqiVal > 40) { level = 'Moderate'; color = '#ffeb3b'; }
+    else if (aqiVal > 20) { level = 'Fair'; color = '#8bc34a'; }
+
+    document.getElementById('aqiNumber').textContent = aqiVal;
+    document.getElementById('aqiNumber').style.color = color;
+    document.getElementById('aqiLevel').textContent = level;
+    document.getElementById('aqiLevel').style.color = color;
+
+    // Position bar indicator (0-150 mapped to 0-100%)
+    const barPct = Math.min((aqiVal / 150) * 100, 100);
+    document.getElementById('aqiBar').style.left = `calc(${barPct}% - 9px)`;
+
+    // Pollutant details
+    document.getElementById('aqiPM25').textContent = `${(cur.pm2_5 || 0).toFixed(1)} µg/m³`;
+    document.getElementById('aqiPM10').textContent = `${(cur.pm10 || 0).toFixed(1)} µg/m³`;
+    document.getElementById('aqiNO2').textContent = `${(cur.nitrogen_dioxide || 0).toFixed(1)} µg/m³`;
+    document.getElementById('aqiO3').textContent = `${(cur.ozone || 0).toFixed(1)} µg/m³`;
+    document.getElementById('aqiSO2').textContent = `${(cur.sulphur_dioxide || 0).toFixed(1)} µg/m³`;
+    document.getElementById('aqiCO').textContent = `${(cur.carbon_monoxide || 0).toFixed(0)} µg/m³`;
+}
+
+function generateWeatherAlerts(current, daily, aqiData, cityName) {
+    const alertsFeed = document.getElementById('alertsFeed');
+    if (!alertsFeed) return;
+
+    const alerts = [];
+    const now = new Date();
+
+    // High temperature alert
+    if (current.temperature_2m > 40) {
+        alerts.push({
+            title: '🔥 Extreme Heat Warning', type: 'WEATHER', severity: 'high',
+            message: `Temperature is ${Math.round(current.temperature_2m)}°C in ${cityName}. Avoid outdoor farm work during peak hours. Keep livestock hydrated.`
+        });
+    } else if (current.temperature_2m > 35) {
+        alerts.push({
+            title: '🌡️ Heat Advisory', type: 'WEATHER', severity: 'medium',
+            message: `Temperature of ${Math.round(current.temperature_2m)}°C expected. Plan farm activities for early morning or evening. Ensure irrigation is active.`
+        });
+    }
+
+    // Rain/Storm alerts
+    if (current.weather_code >= 95) {
+        alerts.push({
+            title: '⛈️ Thunderstorm Alert', type: 'SEVERE', severity: 'high',
+            message: 'Active thunderstorms in your area. Seek shelter. Secure loose equipment and protect crops if possible.'
+        });
+    } else if (current.weather_code >= 61 && current.weather_code <= 67) {
+        alerts.push({
+            title: '🌧️ Rain Advisory', type: 'WEATHER', severity: 'medium',
+            message: `Rain ongoing in ${cityName}. Delay pesticide spraying. Ensure good field drainage to prevent waterlogging.`
+        });
+    }
+
+    // Wind alert
+    if (current.wind_speed_10m > 40) {
+        alerts.push({
+            title: '💨 High Wind Warning', type: 'WEATHER', severity: 'high',
+            message: `Wind speed at ${Math.round(current.wind_speed_10m)} km/h. Secure shade nets, poly-houses, and tall crops. Avoid drone operations.`
+        });
+    }
+
+    // UV alert
+    if (current.uv_index >= 8) {
+        alerts.push({
+            title: '☀️ High UV Index', type: 'HEALTH', severity: 'medium',
+            message: `UV Index is ${current.uv_index.toFixed(1)} (Very High). Wear sun protection when working outdoors. Peak UV expected between 11 AM - 3 PM.`
+        });
+    }
+
+    // Fog alert
+    if (current.weather_code === 45 || current.weather_code === 48) {
+        alerts.push({
+            title: '🌫️ Fog Advisory', type: 'WEATHER', severity: 'low',
+            message: 'Dense fog conditions. Drive carefully on farm roads. Foggy conditions may affect pesticide application effectiveness.'
+        });
+    }
+
+    // Air quality alert
+    const aqiVal = aqiData?.current?.european_aqi || 0;
+    if (aqiVal > 80) {
+        alerts.push({
+            title: '🌬️ Poor Air Quality', type: 'HEALTH', severity: 'high',
+            message: `Air Quality Index is ${aqiVal} (${aqiVal > 100 ? 'Hazardous' : 'Very Poor'}). Limit outdoor exposure. Consider wearing respiratory protection during field work.`
+        });
+    } else if (aqiVal > 60) {
+        alerts.push({
+            title: '🌬️ Moderate Air Quality', type: 'HEALTH', severity: 'medium',
+            message: `AQI is ${aqiVal} (Poor). Sensitive individuals should reduce outdoor activities. Consider early morning work when air is cleaner.`
+        });
+    }
+
+    // Tomorrow rain alert
+    if (daily && daily.precipitation_sum && daily.precipitation_sum[1] > 5) {
+        alerts.push({
+            title: '🌧️ Rain Expected Tomorrow', type: 'FORECAST', severity: 'info',
+            message: `${daily.precipitation_sum[1].toFixed(1)} mm rain expected tomorrow. Plan irrigation and spraying accordingly. Consider harvesting ripe produce today.`
+        });
+    }
+
+    // Humidity alert (for disease risk)
+    if (current.relative_humidity_2m > 85) {
+        alerts.push({
+            title: '🍄 High Humidity — Disease Risk', type: 'CROP', severity: 'medium',
+            message: `Humidity at ${current.relative_humidity_2m}%. High risk of fungal diseases. Check crops for signs of blight, mildew, or rot. Apply preventive fungicide if needed.`
+        });
+    }
+
+    // Frost alert
+    if (current.temperature_2m < 4) {
+        alerts.push({
+            title: '🥶 Frost Warning', type: 'SEVERE', severity: 'high',
+            message: `Near-freezing temperature of ${Math.round(current.temperature_2m)}°C. Protect frost-sensitive crops. Use mulch or temporary covers overnight.`
+        });
+    }
+
+    // Render alerts
+    if (alerts.length > 0) {
+        alertsFeed.innerHTML = alerts.map((a, i) => `
+            <div class="alert-item severity-${a.severity}" style="animation-delay: ${i * 0.1}s">
+                <div class="alert-header">
+                    <span class="alert-title">${a.title}</span>
+                    <span class="alert-tag">${a.type}</span>
+                </div>
+                <div class="alert-msg">${a.message}</div>
+                <div class="alert-time">${now.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })} • ${cityName}</div>
+            </div>
+        `).join('');
+    } else {
+        alertsFeed.innerHTML = `
+            <div class="all-clear-card">
+                <div class="all-clear-icon">✅</div>
+                <div class="all-clear-title">All Clear!</div>
+                <div class="all-clear-msg">No weather advisories for ${cityName}. Conditions are favorable for farming activities.</div>
+            </div>`;
+    }
+}
 
 // Init nav clicks
 document.querySelectorAll('.nav-item, .mobile-nav-item').forEach(btn => {

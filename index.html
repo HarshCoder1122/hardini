@@ -16,6 +16,8 @@
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
     <script src="firebase-config.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script
+        src="https://apis.mappls.com/advancedmaps/api/qgetdcgmertduatimqhaacepqmcnhkyddjzk/map_sdk?layer=vector&v=3.0"></script>
     <script src="https://cdn.jsdelivr.net/npm/idb@8/build/umd.js"></script>
     <script>
         // Register Service Worker for PWA
@@ -94,24 +96,129 @@
 
         <!-- ===== ALERTS PAGE ===== -->
         <div class="page-view" id="page-alerts">
-            <div class="page-header">
-                <h1>Weather & Alerts 🌤️</h1>
-                <p>Real-time updates for your farm location.</p>
+
+            <!-- Weather Hero Banner -->
+            <div class="weather-hero" id="weatherHero">
+                <div class="weather-hero-bg"></div>
+                <div class="weather-hero-content">
+                    <div class="weather-hero-left">
+                        <div class="weather-icon-big" id="weatherIconBig">🌤️</div>
+                        <div>
+                            <div class="weather-temp-big" id="weatherTempBig">--°</div>
+                            <div class="weather-condition-text" id="weatherCondition">Loading...</div>
+                        </div>
+                    </div>
+                    <div class="weather-hero-right">
+                        <div class="weather-location-label" id="weatherLocation">📍 Detecting location...</div>
+                        <div class="weather-date" id="weatherDate"></div>
+                        <div class="weather-feels" id="weatherFeels">Feels like --°</div>
+                    </div>
+                </div>
             </div>
 
-            <!-- Weather Dashboard -->
-            <div id="weatherDashboard" class="weather-dashboard loading">
-                <div style="text-align:center;padding:40px">
-                    <span class="loader"></span> Loading Weather Data...
+            <!-- Weather Stats Grid -->
+            <div class="weather-stats-grid" id="weatherStatsGrid">
+                <div class="weather-stat-card">
+                    <div class="ws-icon">💧</div>
+                    <div class="ws-value" id="wsHumidity">--%</div>
+                    <div class="ws-label">Humidity</div>
+                </div>
+                <div class="weather-stat-card">
+                    <div class="ws-icon">💨</div>
+                    <div class="ws-value" id="wsWind">-- km/h</div>
+                    <div class="ws-label">Wind Speed</div>
+                </div>
+                <div class="weather-stat-card">
+                    <div class="ws-icon">☀️</div>
+                    <div class="ws-value" id="wsUV">--</div>
+                    <div class="ws-label">UV Index</div>
+                </div>
+                <div class="weather-stat-card">
+                    <div class="ws-icon">🌡️</div>
+                    <div class="ws-value" id="wsPressure">-- hPa</div>
+                    <div class="ws-label">Pressure</div>
+                </div>
+                <div class="weather-stat-card">
+                    <div class="ws-icon">👁️</div>
+                    <div class="ws-value" id="wsVisibility">-- km</div>
+                    <div class="ws-label">Visibility</div>
+                </div>
+                <div class="weather-stat-card">
+                    <div class="ws-icon">💦</div>
+                    <div class="ws-value" id="wsDewpoint">--°</div>
+                    <div class="ws-label">Dew Point</div>
+                </div>
+                <div class="weather-stat-card">
+                    <div class="ws-icon">🌧️</div>
+                    <div class="ws-value" id="wsRain">-- mm</div>
+                    <div class="ws-label">Precipitation</div>
+                </div>
+                <div class="weather-stat-card">
+                    <div class="ws-icon">🧭</div>
+                    <div class="ws-value" id="wsWindDir">--°</div>
+                    <div class="ws-label">Wind Direction</div>
+                </div>
+            </div>
+
+            <!-- Hourly Forecast -->
+            <h3 class="section-title-weather">⏱️ Hourly Forecast</h3>
+            <div class="hourly-forecast-strip" id="hourlyForecast">
+                <div style="text-align:center;padding:20px;color:var(--text-muted);width:100%">Loading...</div>
+            </div>
+
+            <!-- 5-Day Forecast -->
+            <h3 class="section-title-weather">📅 5-Day Forecast</h3>
+            <div class="daily-forecast-grid" id="dailyForecast">
+                <div style="text-align:center;padding:20px;color:var(--text-muted);width:100%">Loading...</div>
+            </div>
+
+            <!-- Map & Air Quality Row -->
+            <div class="map-aqi-row">
+                <!-- Mappls Satellite Map -->
+                <div class="map-section">
+                    <h3 class="section-title-weather">🗺️ Your Farm Location</h3>
+                    <div class="map-container" id="mapContainer">
+                        <div id="mapPlaceholder"
+                            style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--text-muted)">
+                            <span class="loader"></span> Loading Map...
+                        </div>
+                    </div>
+                </div>
+                <!-- Air Quality -->
+                <div class="aqi-section">
+                    <h3 class="section-title-weather">🌬️ Air Quality</h3>
+                    <div class="aqi-card" id="aqiCard">
+                        <div class="aqi-number" id="aqiNumber">--</div>
+                        <div class="aqi-level" id="aqiLevel">Loading...</div>
+                        <div class="aqi-bar-container">
+                            <div class="aqi-bar" id="aqiBar"></div>
+                        </div>
+                        <div class="aqi-bar-labels">
+                            <span>Good</span><span>Moderate</span><span>Poor</span><span>Hazardous</span>
+                        </div>
+                        <div class="aqi-details" id="aqiDetails">
+                            <div class="aqi-detail-item"><span class="aqi-d-label">PM2.5</span><span class="aqi-d-value"
+                                    id="aqiPM25">--</span></div>
+                            <div class="aqi-detail-item"><span class="aqi-d-label">PM10</span><span class="aqi-d-value"
+                                    id="aqiPM10">--</span></div>
+                            <div class="aqi-detail-item"><span class="aqi-d-label">NO₂</span><span class="aqi-d-value"
+                                    id="aqiNO2">--</span></div>
+                            <div class="aqi-detail-item"><span class="aqi-d-label">O₃</span><span class="aqi-d-value"
+                                    id="aqiO3">--</span></div>
+                            <div class="aqi-detail-item"><span class="aqi-d-label">SO₂</span><span class="aqi-d-value"
+                                    id="aqiSO2">--</span></div>
+                            <div class="aqi-detail-item"><span class="aqi-d-label">CO</span><span class="aqi-d-value"
+                                    id="aqiCO">--</span></div>
+                        </div>
+                    </div>
                 </div>
             </div>
 
             <!-- Alerts Feed -->
-            <h3 style="margin:24px 0 16px;display:flex;align-items:center;gap:8px">
-                📢 Latest Advisories
-            </h3>
+            <h3 class="section-title-weather">📢 Latest Advisories & Alerts</h3>
             <div id="alertsFeed" class="alerts-feed">
-                <!-- Alerts injected here -->
+                <div style="text-align:center;padding:30px;color:var(--text-muted)"><span class="loader"></span> Loading
+                    alerts...</div>
             </div>
         </div>
 
