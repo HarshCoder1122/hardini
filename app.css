@@ -2480,6 +2480,128 @@ input:checked+.slider::before {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    justify-content: center
+}
+
+/* ===== ALERTS PAGE STYLES ===== */
+.weather-dashboard {
+    background: linear-gradient(135deg, #1e88e5, #1565c0);
+    border-radius: var(--radius);
+    padding: 24px;
+    color: #fff;
+    margin-bottom: 24px;
+    box-shadow: 0 10px 30px rgba(21, 101, 192, 0.4);
+    position: relative;
+    overflow: hidden;
+}
+
+.weather-dashboard::before {
+    content: "";
+    position: absolute;
+    top: -50px;
+    right: -50px;
+    width: 200px;
+    height: 200px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 50%;
+    filter: blur(40px);
+}
+
+.weather-main {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 24px;
+}
+
+.weather-temp {
+    font-size: 48px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.weather-condition {
+    font-size: 18px;
+    opacity: 0.9;
+}
+
+.weather-location {
+    font-size: 14px;
+    opacity: 0.7;
+    margin-top: 4px;
+}
+
+.weather-details {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    background: rgba(0, 0, 0, 0.1);
+    padding: 16px;
+    border-radius: var(--radius-sm);
+}
+
+.w-detail-item {
+    text-align: center;
+}
+
+.w-label {
+    font-size: 11px;
+    opacity: 0.7;
+    margin-bottom: 4px;
+}
+
+.w-value {
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.alerts-feed {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.alert-item {
+    background: var(--bg-glass);
+    border: 1px solid var(--border-color);
+    border-left-width: 4px;
+    border-radius: var(--radius-sm);
+    padding: 16px;
+    transition: var(--transition);
+}
+
+.alert-item:hover {
+    transform: translateX(4px);
+    background: var(--bg-card-hover);
+}
+
+.alert-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 6px;
+}
+
+.alert-title {
+    font-weight: 600;
+    font-size: 15px;
+    color: var(--text-primary);
+}
+
+.alert-tag {
+    font-size: 10px;
+    padding: 2px 8px;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.alert-msg {
+    font-size: 13px;
+    color: var(--text-secondary);
+    line-height: 1.5;
 }
 
 .ble-device-name {
