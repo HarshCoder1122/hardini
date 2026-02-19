@@ -449,100 +449,194 @@ function toggleVoiceInput() {
 
 // ===== SOILPROBE / IoT =====
 let sensorChart = null;
+let devicesListener = null;
+let sensorDataListener = null;
+let currentDeviceId = null;
 
-async function loadDevices() {
-    const grid = document.getElementById('deviceGrid');
-    grid.innerHTML = '<div class="loading-spinner"></div>';
-    try {
-        const token = await getAuthToken();
-        if (!token) {
-            console.warn("No auth token available, skipping device load");
-            return;
-        }
-        const res = await fetch(`${API_BASE}/api/devices`, { headers: { 'Authorization': `Bearer ${token}` } });
-        const data = await res.json();
-        window._devicesLoaded = true;
-        window._devicesLoaded = true;
-        const devices = data.data || [];
-        if (devices.length === 0) {
-            grid.innerHTML = '<div class="empty-state"><span class="empty-icon">📡</span><h3>No devices yet</h3><p>Scan for BLE devices or add one manually.</p></div>';
-            return;
-        }
-        grid.innerHTML = devices.map(d => {
-            // Calculate if online (seen in last 5 minutes)
-            // Calculate if online (seen in last 5 minutes)
-            let isOnline = false;
-            // Use last_reading (from backend derived from data) 
-            const readingTime = d.last_reading;
-            if (readingTime) {
-                // Check if reading is recent (within 5 mins)
-                const now = new Date();
-                const lastSeen = new Date(readingTime);
-                const diffMs = now - lastSeen;
-                const diffMins = diffMs / (1000 * 60);
-                isOnline = diffMins < 10; // Increased to 10 mins to account for potential delays
-            }
-
-            // Randomize mock values if they are static/mock for display variance
-            if (isOnline) {
-                if (d.moisture) d.moisture = randomizeMockData(d.moisture, 2);
-                if (d.temperature) d.temperature = randomizeMockData(d.temperature, 0.5);
-            }
-
-            return `
-            <div class="device-card" onclick="loadSensorData('${d.device_id || d.id}')">
-                <button onclick="event.stopPropagation(); deleteDevice('${d.device_id || d.id}')" 
-                    style="position:absolute;top:10px;right:10px;background:rgba(255,0,0,0.1);color:#ff4444;border:none;border-radius:50%;width:32px;height:32px;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;z-index:10" 
-                    title="Delete Device">🗑️</button>
-                <div class="device-status ${isOnline ? 'online' : 'offline'}"><span class="status-dot"></span>${isOnline ? 'Online' : 'Offline'}</div>
-                <div class="device-name">${d.device_name || d.name || d.device_id}</div>
-                <div class="device-field">📍 ${d.field_name || d.field || 'Unknown'}</div>
-                <div class="sensor-grid">
-                    <div class="sensor-val"><div class="val">${(d.moisture !== undefined ? d.moisture : '--')}%</div><div class="lbl">Moisture</div></div>
-                    <div class="sensor-val"><div class="val">${(d.temperature !== undefined ? d.temperature : '--')}°C</div><div class="lbl">Temp</div></div>
-                    <div class="sensor-val"><div class="val">${(d.ph !== undefined ? d.ph : '--')}</div><div class="lbl">pH</div></div>
-                    <div class="sensor-val"><div class="val">${(d.nitrogen !== undefined ? d.nitrogen : '--')}</div><div class="lbl">NPK</div></div>
-                </div>
-            </div>
-        `}).join('');
-    } catch (err) {
-        grid.innerHTML = '<div class="empty-state"><span class="empty-icon">⚠️</span><h3>Failed to load devices</h3><p>Check your connection.</p></div>';
-    }
+// Helper to get DB reference safely
+function getDbRef(path) {
+    const user = firebase.auth().currentUser;
+    if (!user) return null;
+    return firebase.database().ref(path);
 }
 
-// Randomize mock data points slightly to visualize activity
 function randomizeMockData(val, range) {
     if (val === undefined || val === '--') return val;
-    // Small random fluctuation +/- range
     const num = parseFloat(val);
     if (isNaN(num)) return val;
     const offset = (Math.random() - 0.5) * range;
     return (num + offset).toFixed(1);
 }
 
-async function loadSensorData(deviceId) {
+function loadDevices() {
+    const grid = document.getElementById('deviceGrid');
+
+    // Cleanup previous listener if any
+    if (devicesListener) {
+        getDbRef(`users/${firebase.auth().currentUser.uid}/devices`)?.off('value', devicesListener);
+        devicesListener = null;
+    }
+
+    grid.innerHTML = '<div class="loading-spinner"></div>';
+
+    const user = firebase.auth().currentUser;
+    if (!user) {
+        console.warn("No auth user available, checking auth state...");
+        // If called before auth ready, wait for it
+        const unsubscribe = firebase.auth().onAuthStateChanged(u => {
+            unsubscribe();
+            if (u) loadDevices();
+        });
+        return;
+    }
+
+    const devicesRef = firebase.database().ref(`users/${user.uid}/devices`);
+
+    devicesListener = devicesRef.on('value', (snapshot) => {
+        const devicesObj = snapshot.val();
+
+        if (!devicesObj) {
+            grid.innerHTML = '<div class="empty-state"><span class="empty-icon">📡</span><h3>No devices yet</h3><p>Scan for BLE devices or add one manually.</p></div>';
+            return;
+        }
+
+        // Convert object to array and process
+        const devices = [];
+        Object.keys(devicesObj).forEach(key => {
+            const d = devicesObj[key];
+            const config = d.config || {};
+            // Get latest data keys
+            const dataObj = d.data || {};
+            const dataKeys = Object.keys(dataObj).sort(); // Timestamp based keys usually sortable, but relying on created_at is better
+            const latestKey = dataKeys[dataKeys.length - 1];
+            const latestData = latestKey ? dataObj[latestKey] : null;
+
+            let sensorValues = { moisture: '--', temperature: '--', ph: '--', nitrogen: '--', last_reading: null };
+
+            if (latestData) {
+                sensorValues = {
+                    moisture: latestData.soil_moist_pct || latestData.moisture,
+                    temperature: latestData.soil_temp_c || latestData.temperature,
+                    ph: latestData.soil_ph || latestData.ph || '--',
+                    nitrogen: latestData.soil_n_mg_kg || latestData.nitrogen || '--',
+                    last_reading: latestData.created_at || latestData.timestamp
+                };
+            }
+
+            devices.push({
+                device_id: key,
+                ...config,
+                ...sensorValues
+            });
+        });
+
+        window._devicesLoaded = true;
+
+        grid.innerHTML = devices.map(d => {
+            // Calculate if online (seen in last 60 minutes)
+            let isOnline = false;
+            let lastSeenText = 'Never';
+
+            const readingTime = d.last_reading;
+            if (readingTime) {
+                const now = new Date();
+                const lastSeen = new Date(readingTime);
+                const diffMs = now - lastSeen;
+                const diffMins = diffMs / (1000 * 60);
+
+                isOnline = diffMins < 60;
+
+                // Format relative time
+                if (diffMins < 1) lastSeenText = 'Just now';
+                else if (diffMins < 60) lastSeenText = `${Math.floor(diffMins)}m ago`;
+                else if (diffMins < 1440) lastSeenText = `${Math.floor(diffMins / 60)}h ago`;
+                else lastSeenText = lastSeen.toLocaleDateString();
+            }
+
+            // Helper to safe format numbers
+            const fmt = (val) => {
+                if (val === undefined || val === null || val === '--' || isNaN(parseFloat(val))) return '0';
+                return val;
+            };
+
+            // Randomize mock values if they are static/mock for display variance
+            if (isOnline) {
+                if (d.moisture && d.moisture !== '--') d.moisture = randomizeMockData(d.moisture, 2);
+                if (d.temperature && d.temperature !== '--') d.temperature = randomizeMockData(d.temperature, 0.5);
+            }
+
+            const lastUpdateStr = readingTime ? new Date(readingTime).toLocaleString() : 'Never';
+
+            return `
+            <div class="device-card" onclick="loadSensorData('${d.device_id}')">
+                <button onclick="event.stopPropagation(); deleteDevice('${d.device_id}')" 
+                    style="position:absolute;top:10px;right:10px;background:rgba(255,0,0,0.1);color:#ff4444;border:none;border-radius:50%;width:32px;height:32px;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;z-index:10" 
+                    title="Delete Device">🗑️</button>
+                <div class="device-status ${isOnline ? 'online' : 'offline'}">
+                    <span class="status-dot"></span>${isOnline ? 'Online' : 'Offline'} 
+                    <span style="font-size:0.8em;opacity:0.7;margin-left:5px">(${lastSeenText})</span>
+                </div>
+                <div class="device-name">${d.device_name || d.name || d.device_id}</div>
+                <div class="device-field">📍 ${d.field_name || d.field || 'Unknown'}</div>
+                <div style="font-size:0.75em;color:rgba(255,255,255,0.5);margin-bottom:10px">🕒 Updated: ${lastUpdateStr}</div>
+                <div class="sensor-grid">
+                    <div class="sensor-val"><div class="val">${fmt(d.moisture)}%</div><div class="lbl">Moisture</div></div>
+                    <div class="sensor-val"><div class="val">${fmt(d.temperature)}°C</div><div class="lbl">Temp</div></div>
+                    <div class="sensor-val"><div class="val">${fmt(d.ph)}</div><div class="lbl">pH</div></div>
+                    <div class="sensor-val"><div class="val">${fmt(d.nitrogen)}</div><div class="lbl">NPK</div></div>
+                </div>
+            </div>
+        `}).join('');
+    });
+}
+
+function loadSensorData(deviceId) {
     const container = document.getElementById('chartContainer');
     container.style.display = 'block';
     container.scrollIntoView({ behavior: 'smooth' });
-    try {
-        const token = await getAuthToken();
-        if (!token) {
-            showNotification('Please login to view sensor data', 'warning');
-            return;
-        }
-        const res = await fetch(`${API_BASE}/api/soil-readings/${deviceId}`, { headers: { 'Authorization': `Bearer ${token}` } });
-        const data = await res.json();
-        const readings = data.data || []; // FIX: use data.data instead of data.readings
 
-        if (readings.length === 0) {
+    // Cleanup previous listener
+    if (sensorDataListener && currentDeviceId) {
+        getDbRef(`users/${firebase.auth().currentUser.uid}/devices/${currentDeviceId}/data`)?.off('value', sensorDataListener);
+    }
+    currentDeviceId = deviceId;
+
+    // Inject Analyze Button safely if not exists
+    if (!document.getElementById('aiAnalyzeBtn')) {
+        const btn = document.createElement('button');
+        btn.id = 'aiAnalyzeBtn';
+        btn.className = 'btn btn-primary btn-sm';
+        btn.style.marginTop = '15px';
+        btn.innerHTML = '🤖 Analyze Data & Recommend';
+        btn.onclick = analyzeSoilData;
+        container.appendChild(btn);
+    }
+
+    const user = firebase.auth().currentUser;
+    if (!user) return; // Should be handled by global auth check
+
+    const dataRef = firebase.database().ref(`users/${user.uid}/devices/${deviceId}/data`);
+
+    // Listen to last 50 readings
+    sensorDataListener = dataRef.orderByChild('created_at').limitToLast(50).on('value', (snapshot) => {
+        const dataObj = snapshot.val();
+        if (!dataObj) {
             if (sensorChart) sensorChart.destroy();
             document.getElementById('sensorChart').innerHTML = 'No data available';
             return;
         }
 
-        // Process readings for chart
-        // Limit to 20 points for cleaner view
-        const displayReadings = readings.slice(0, 20).reverse();
+        const readings = [];
+        Object.keys(dataObj).forEach(key => {
+            readings.push(dataObj[key]);
+        });
+
+        // Data usually comes sorted by the query (created_at), but object keys order isn't guaranteed in JS
+        // So we sort locally to be sure
+        readings.sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+
+        // Limit to 20 for display
+        const displayReadings = readings.slice(-20);
 
         const labels = displayReadings.map(r => new Date(r.created_at || r.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
         const moisture = displayReadings.map(r => r.soil_moist_pct || r.moisture);
@@ -587,22 +681,7 @@ async function loadSensorData(deviceId) {
                 }
             }
         });
-
-        // Inject Analyze Button safely
-        if (!document.getElementById('aiAnalyzeBtn')) {
-            const btn = document.createElement('button');
-            btn.id = 'aiAnalyzeBtn';
-            btn.className = 'btn btn-primary btn-sm';
-            btn.style.marginTop = '15px';
-            btn.innerHTML = '🤖 Analyze Data & Recommend';
-            btn.onclick = analyzeSoilData;
-            container.appendChild(btn);
-        }
-
-    } catch (err) {
-        console.error(err);
-        showNotification('Failed to load sensor data', 'error');
-    }
+    });
 }
 
 async function deleteDevice(deviceId) {
