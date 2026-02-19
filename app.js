@@ -101,15 +101,11 @@ async function getUserLocation() {
 
 async function reverseGeocode(lat, lon) {
     try {
-        const res = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=&count=1&latitude=${lat}&longitude=${lon}&language=en&format=json`);
-        // Open-Meteo geocoding doesn't do reverse, so use Nominatim as fallback
-        const nom = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json&zoom=10`, {
-            headers: { 'Accept-Language': 'en' },
+        const res = await fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lon}&localityLanguage=en`, {
             signal: AbortSignal.timeout(5000)
         });
-        const data = await nom.json();
-        const addr = data.address || {};
-        return addr.city || addr.town || addr.village || addr.county || addr.state || 'Your Location';
+        const data = await res.json();
+        return data.city || data.locality || data.principalSubdivision || 'Your Location';
     } catch (e) {
         return null;
     }
