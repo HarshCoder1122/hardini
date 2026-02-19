@@ -1458,3 +1458,191 @@ async function provisionDeviceBLE(ssid, password) {
         }
     }
 }
+
+
+// ============================================
+// ALERTS FEATURE
+// ============================================
+async function getUserLocation() {
+    return new Promise((resolve, reject) => {
+        if (!navigator.geolocation) {
+            reject(new Error('Geolocation not supported'));
+        } else {
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    resolve({
+                        latitude: position.coords.latitude,
+                        longitude: position.coords.longitude
+                    });
+                },
+                (error) => {
+                    console.warn('Geolocation denied or failed:', error.message);
+                    resolve(null); // Resolve null to fallback to IP-based or default
+                }
+            );
+        }
+    });
+}
+
+window.fetchAlerts = async function () {
+    const container = document.getElementById('alertsContainer');
+    const status = document.getElementById('locationStatus');
+
+    if (!container) return;
+
+    container.innerHTML = '<div style="text-align:center;padding:20px;color:var(--text-muted)"><span class="loader"></span> Fetching latest updates...</div>';
+    status.textContent = '📍 Detecting location...';
+
+    try {
+        const location = await getUserLocation();
+
+        if (location) {
+            status.textContent = `📍 Location: ${location.latitude.toFixed(2)}, ${location.longitude.toFixed(2)}`;
+        } else {
+            status.textContent = '📍 Location: Approx (IP Based)';
+        }
+
+        const ALERTS_API_URL = `${API_BASE}/api/alerts`;
+
+        const response = await fetch(ALERTS_API_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(location || {})
+        });
+
+        const data = await response.json();
+
+        if (data.success && data.alerts.length > 0) {
+            container.innerHTML = data.alerts.map(alert => `
+                <div class="alert-card ${alert.type} ${alert.severity}" style="
+                    border-left: 4px solid ${getSeverityColor(alert.severity)};
+                    background: ${getSeverityBg(alert.severity)};
+                    padding: 12px;
+                    border-radius: 4px;
+                    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+                ">
+                    <div style="display:flex;justify-content:space-between;margin-bottom:4px">
+                        <strong style="color:var(--text-primary)">${alert.title}</strong>
+                        <span style="font-size:11px;padding:2px 6px;border-radius:10px;background:#fff;border:1px solid #ddd">${alert.type.toUpperCase()}</span>
+                    </div>
+                    <p style="margin:0;font-size:13px;color:var(--text-secondary)">${alert.message}</p>
+                </div>
+            `).join('');
+        } else {
+            container.innerHTML = '<div style="text-align:center;padding:20px;color:var(--text-muted)">No active alerts for your region. ✅</div>';
+        }
+
+    } catch (error) {
+        console.error('Error fetching alerts:', error);
+        container.innerHTML = '<div style="text-align:center;padding:20px;color:var(--danger)">Failed to load alerts. Please check connection.</div>';
+        status.textContent = '⚠️ Location/Network Error';
+    }
+};
+
+function getSeverityColor(severity) {
+    switch (severity) {
+        case 'high': return '#f44336'; // Red
+        case 'medium': return '#ff9800'; // Orange
+        case 'low': return '#4caf50'; // Green
+        default: return '#2196f3'; // Blue
+    }
+}
+
+function getSeverityBg(severity) {
+    switch (severity) {
+        case 'high': return '#ffebee';
+        case 'medium': return '#fff3e0';
+        case 'low': return '#e8f5e9';
+        default: return '#e3f2fd';
+    }
+}
+
+// ============================================
+// OFFLINE MANAGER (IndexedDB)
+// ============================================
+let dbPromise;
+
+function initDB() {
+    if (!window.idb) {
+        console.warn('IDB library not loaded');
+        return;
+    }
+    dbPromise = idb.openDB('hardini-db', 1, {
+        upgrade(db) {
+            if (!db.objectStoreNames.contains('offline-chat')) {
+                db.createObjectStore('offline-chat', { keyPath: 'id', autoIncrement: true });
+            }
+        },
+    });
+}
+
+// Initialize DB on load
+if ('serviceWorker' in navigator) {
+    initDB();
+}
+
+async function saveOfflineMessage(msgData) {
+    if (!dbPromise) return;
+    const db = await dbPromise;
+    await db.put('offline-chat', msgData);
+    console.log('Message saved offline:', msgData);
+    showNotification('Message saved. Waiting for internet...', 'success');
+}
+
+async function syncOfflineMessages() {
+    if (!dbPromise || !navigator.onLine) return;
+
+    const db = await dbPromise;
+    const tx = db.transaction('offline-chat', 'readwrite');
+    const store = tx.objectStore('offline-chat');
+    const messages = await store.getAll();
+
+    if (messages.length === 0) return;
+
+    console.log(`Syncing ${messages.length} offline messages...`);
+    showNotification(`Syncing ${messages.length} offline messages...`, 'success');
+
+    for (const msg of messages) {
+        try {
+            const CHAT_API_URL = `${API_BASE}/api/chat`;
+            const token = await getAuthToken();
+
+            const response = await fetch(CHAT_API_URL, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({
+                    message: msg.content,
+                    language: msg.language,
+                    image: msg.image,
+                    history: []
+                })
+            });
+
+            if (response.ok) {
+                await db.delete('offline-chat', msg.id);
+                const data = await response.json();
+                if (data.success && data.reply) {
+                    showNotification(`Response: ${data.reply.substring(0, 30)}...`, 'success', 5000);
+                    // Use app.js speakText
+                    if (window.speakText && chatTTSEnabled) window.speakText(data.reply);
+                }
+            }
+        } catch (err) {
+            console.error('Sync failed for message:', msg, err);
+        }
+    }
+}
+
+window.addEventListener('online', () => {
+    console.log('Back online! Syncing...');
+    showNotification('Back online! Syncing data...', 'success');
+    syncOfflineMessages();
+});
+
+window.addEventListener('offline', () => {
+    console.log('Gone offline');
+    showNotification('You are now offline. App will use cached data.', 'error');
+});

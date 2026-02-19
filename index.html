@@ -602,7 +602,19 @@
                 <h2>➕ Add Device</h2><button class="modal-close" onclick="closeModal('addDeviceModal')">×</button>
             </div>
             <div class="modal-body">
-                <!-- Device form content... -->
+                <form id="addDeviceForm">
+                    <div class="form-group"><label>Device Name</label><input type="text" id="deviceName"
+                            class="form-input" required placeholder="e.g., Field Sensor 1"></div>
+                    <div class="form-group"><label>Device ID</label><input type="text" id="deviceId" class="form-input"
+                            required placeholder="e.g., ESP32-XXXX"></div>
+                    <div class="form-group"><label>Field/Location</label><input type="text" id="deviceField"
+                            class="form-input" placeholder="e.g., North Field"></div>
+                    <div style="display:flex;gap:12px;justify-content:flex-end;margin-top:20px">
+                        <button type="button" class="btn btn-secondary"
+                            onclick="closeModal('addDeviceModal')">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Add Device</button>
+                    </div>
+                </form>
             </div>
         </div>
     </div>
@@ -629,21 +641,6 @@
                 </div>
             </div>
         </div>
-    </div>
-    <form id="addDeviceForm">
-        <div class="form-group"><label>Device Name</label><input type="text" id="deviceName" class="form-input" required
-                placeholder="e.g., Field Sensor 1"></div>
-        <div class="form-group"><label>Device ID</label><input type="text" id="deviceId" class="form-input" required
-                placeholder="e.g., ESP32-XXXX"></div>
-        <div class="form-group"><label>Field/Location</label><input type="text" id="deviceField" class="form-input"
-                placeholder="e.g., North Field"></div>
-        <div style="display:flex;gap:12px;justify-content:flex-end;margin-top:20px">
-            <button type="button" class="btn btn-secondary" onclick="closeModal('addDeviceModal')">Cancel</button>
-            <button type="submit" class="btn btn-primary">Add Device</button>
-        </div>
-    </form>
-    </div>
-    </div>
     </div>
 
     <!-- Reel Player Modal -->
