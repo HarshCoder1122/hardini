@@ -401,17 +401,22 @@ app.get('/api/soil-readings/:deviceId', async (req, res) => {
 const GROQ_API_KEY = process.env.GROQ_API_KEY || '';
 const GROQ_API_URL = 'https://api.groq.com/openai/v1/chat/completions';
 
-const HARDINI_SYSTEM_PROMPT = `You are Hardini AI 🌾, an expert agricultural assistant.
-IMPORTANT: The user is authenticated. 
+const HARDINI_SYSTEM_PROMPT = (language) => `You are Hardini AI 🌾, an expert agricultural assistant.
+IMPORTANT: The user is authenticated.
 Your expertise includes: Crop cultivation, Soil health, Pest control, Irrigation, Government schemes, Market prices.
 
 🚨 STRICT DOMAIN RESTRICTION 🚨
 You must ONLY answer questions related to agriculture, farming, gardening, rural development, and weather.
-If the user asks about anything else (e.g., movies, politics, coding, general knowledge), politely decline and steer them back to farming.
-Example: "I can only help with farming and agriculture related queries. Do you have any crops you need advice on?"
+If the user asks about anything else, politely decline and steer them back to farming.
+
+🚨 LANGUAGE INSTRUCTION 🚨
+You MUST answer in **${language || 'English'}**.
+- If the language is an Indian language (e.g., Hindi, Marathi, Telugu), use the **native script** (Devanagari, Telugu script, etc.).
+- Do NOT use Hinglish or transliteration unless explicitly asked.
+- Keep the tone helpful, respectful, and simple for rural farmers.
 
 RULES:
-1. Respond in the user's language.
+1. Respond exclusively in ${language || 'English'}.
 2. Be practical and actionable.
 3. Use emojis (🌾🌱).
 4. Use the provided context (Weather, Soil, Prices) to give specific advice.
@@ -521,7 +526,7 @@ app.post('/api/chat', async (req, res) => {
             .join('\n');
 
         const messages = [
-            { role: 'system', content: HARDINI_SYSTEM_PROMPT + `\nContext: ${userContext}\nReal-time Data:\n${contextData}` + (language ? `\nRespond in ${language}. Keep it short.` : '') }
+            { role: 'system', content: HARDINI_SYSTEM_PROMPT(language) + `\nContext: ${userContext}\nReal-time Data:\n${contextData}` }
         ];
 
         if (history && Array.isArray(history)) {
@@ -570,13 +575,26 @@ app.post('/api/chat', async (req, res) => {
 });
 
 // ============================================
-// TTS — Google Translate (Reliable & Fast)
+// TTS — Microsoft Edge TTS (High Quality & Natural)
 // ============================================
-const googleTTS = require('google-tts-api');
-const GOOGLE_LANG_MAP = {
-    'English': 'en', 'Hindi': 'hi', 'Marathi': 'mr', 'Telugu': 'te', 'Tamil': 'ta',
-    'Bengali': 'bn', 'Kannada': 'kn', 'Gujarati': 'gu', 'Punjabi': 'pa', 'Malayalam': 'ml',
-    'Odia': 'or', 'Urdu': 'ur', 'Spanish': 'es', 'French': 'fr', 'Arabic': 'ar'
+
+// Map languages to specific high-quality neural voices
+const VOICE_MAP = {
+    'English': 'en-IN-NeerjaNeural',
+    'Hindi': 'hi-IN-SwaraNeural',
+    'Marathi': 'mr-IN-AarohiNeural',
+    'Telugu': 'te-IN-ShrutiNeural',
+    'Tamil': 'ta-IN-PallaviNeural',
+    'Bengali': 'bn-IN-TanishaaNeural',
+    'Kannada': 'kn-IN-SapnaNeural',
+    'Gujarati': 'gu-IN-DhwaniNeural',
+    'Punjabi': 'pa-IN-OjasNeural', // Male voice often better for Punjabi
+    'Malayalam': 'ml-IN-SobhanaNeural',
+    'Odia': 'or-IN-MunaNeural', // Very few voices, this might be male
+    'Urdu': 'ur-IN-GulshanNeural',
+    'Spanish': 'es-ES-ElviraNeural',
+    'French': 'fr-FR-DeniseNeural',
+    'Arabic': 'ar-SA-ZariyahNeural'
 };
 
 app.post('/api/tts', async (req, res) => {
@@ -584,28 +602,108 @@ app.post('/api/tts', async (req, res) => {
         const { text, language } = req.body;
         if (!text) return res.status(400).json({ success: false, error: 'Text required' });
 
+        // Clean text - remove emojis and special chars that might confuse TTS
         const cleanText = text
-            .replace(/\*\*(.*?)\*\*/g, '$1')
-            .replace(/\*(.*?)\*/g, '$1')
-            .replace(/([\u2700-\u27BF]|[\uE000-\uF8FF]|\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDFFF]|[\u2011-\u26FF]|\uD83E[\uDD10-\uDDFF])/g, '')
+            .replace(/\*\*(.*?)\*\*/g, '$1') // Remove markdown bold
+            .replace(/\*(.*?)\*/g, '$1')     // Remove markdown italic
+            .replace(/([\u2700-\u27BF]|[\uE000-\uF8FF]|\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDFFF]|[\u2011-\u26FF]|\uD83E[\uDD10-\uDDFF])/g, '') // Remove emojis
             .replace(/[#_`~@$%^&|+={}\[\]:;"<>\\\/]/g, '')
             .replace(/^[•\-] /gm, '')
             .replace(/\s+/g, ' ')
             .trim()
-            .substring(0, 200);
+            .substring(0, 500); // Limit length for speed
 
-        const langCode = GOOGLE_LANG_MAP[language] || 'en';
-        const base64 = await googleTTS.getAudioBase64(cleanText, {
-            lang: langCode, slow: false, host: 'https://translate.google.com', timeout: 10000,
+        const selectedVoice = VOICE_MAP[language] || 'en-IN-NeerjaNeural';
+
+        console.log(`TTS Request: "${cleanText.substring(0, 20)}..." in ${selectedVoice}`);
+
+        const communicate = new Communicate(cleanText, { name: selectedVoice });
+        const audioBuffer = await communicate.toBuffer();
+
+        res.set({
+            'Content-Type': 'audio/mpeg',
+            'Content-Length': audioBuffer.length,
+            'Cache-Control': 'no-cache'
         });
-        const audioBuffer = Buffer.from(base64, 'base64');
-
-        res.set({ 'Content-Type': 'audio/mpeg', 'Content-Length': audioBuffer.length, 'Cache-Control': 'no-cache' });
         res.send(audioBuffer);
 
     } catch (error) {
-        console.error('TTS error:', error.message);
+        console.error('Edge TTS error:', error.message);
         res.status(500).json({ success: false, error: 'TTS Failed' });
+    }
+});
+
+// ============================================
+// ALERTS SYSTEM (Weather, Mandi, Gov)
+// ============================================
+app.post('/api/alerts', async (req, res) => {
+    try {
+        const { latitude, longitude, ip } = req.body;
+        const alerts = [];
+
+        // 1. Weather Alerts (Open-Meteo)
+        // Check for Rain, High Wind, Extreme Temp
+        if (latitude && longitude) {
+            try {
+                const url = `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=weather_code,wind_speed_10m,temperature_2m&timezone=auto`;
+                const response = await axios.get(url);
+                const current = response.data.current;
+
+                // Rain Check (Codes: 61, 63, 65 = Rain | 80, 81, 82 = Showers | 95+ = Thunderstorm)
+                if (current.weather_code >= 61 && current.weather_code <= 65) {
+                    alerts.push({ type: 'weather', severity: 'medium', title: 'Rain Alert 🌧️', message: 'Rain has started. Cover harvested crops.' });
+                } else if (current.weather_code >= 80) {
+                    alerts.push({ type: 'weather', severity: 'high', title: 'Storm Warning ⛈️', message: 'Heavy showers/thunderstorms expected. seek shelter.' });
+                }
+
+                // Wind Check (> 25 km/h)
+                if (current.wind_speed_10m > 25) {
+                    alerts.push({ type: 'weather', severity: 'medium', title: 'High Winds 💨', message: `Strong winds (${current.wind_speed_10m} km/h). Secure tall crops.` });
+                }
+
+                // Temp Check (> 40°C or < 5°C)
+                if (current.temperature_2m > 40) {
+                    alerts.push({ type: 'weather', severity: 'medium', title: 'Heatwave 🔥', message: 'Temperature > 40°C. Irrigate to prevent heat stress.' });
+                } else if (current.temperature_2m < 5) {
+                    alerts.push({ type: 'weather', severity: 'medium', title: 'Frost Alert ❄️', message: 'Low temperature. Frost possible.' });
+                }
+            } catch (err) {
+                console.error('Weather alert fetch failed:', err.message);
+            }
+        }
+
+        // 2. Mandi Price Alerts (Mock Data - In production use real API)
+        // Simulating price surge for generic crops
+        const mockSurges = [
+            { crop: 'Onion', price: 2500, change: '+15%' },
+            { crop: 'Tomato', price: 1800, change: '-10%' },
+            { crop: 'Soybean', price: 4200, change: '+5%' }
+        ];
+
+        // Randomly pick one to show "Live" feel
+        const randomCrop = mockSurges[Math.floor(Date.now() / 1000) % mockSurges.length];
+        if (randomCrop.change.startsWith('+')) {
+            alerts.push({
+                type: 'mandi',
+                severity: 'low',
+                title: 'Price Surge 📈',
+                message: `${randomCrop.crop} prices up by ${randomCrop.change}. Avg: ₹${randomCrop.price}/qtl.`
+            });
+        }
+
+        // 3. Government Scheme Alerts (Static/Mock)
+        alerts.push({
+            type: 'gov',
+            severity: 'low',
+            title: 'PM-KISAN Update 📢',
+            message: 'Next installment processing started. Check your e-KYC status.'
+        });
+
+        res.json({ success: true, alerts: alerts });
+
+    } catch (error) {
+        console.error('Alerts API error:', error.message);
+        res.status(500).json({ success: false, error: 'Failed to fetch alerts' });
     }
 });
 

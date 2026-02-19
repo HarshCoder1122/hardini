@@ -7,6 +7,8 @@
     <title>Hardini - Technology Meets Experiences</title>
     <link rel="icon"
         href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌱</text></svg>">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#2e7d32">
     <link rel="stylesheet" href="app.css">
     <link rel="stylesheet" href="hardini-auth.css">
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
@@ -14,7 +16,17 @@
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
     <script src="firebase-config.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/idb@8/build/umd.js"></script>
     <script>
+        // Register Service Worker for PWA
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./service-worker.js')
+                    .then(reg => console.log('Service Worker registered!', reg))
+                    .catch(err => console.log('Service Worker registration failed: ', err));
+            });
+        }
+
         firebase.initializeApp(firebaseConfig);
         firebase.auth().onAuthStateChanged(user => {
             if (!user) { window.location.href = 'login.html'; }
@@ -45,6 +57,8 @@
                     class="nav-label">AgriReels</span></button>
             <button class="nav-item" data-page="soilprobe"><span class="nav-icon">📡</span><span
                     class="nav-label">SoilProbe</span></button>
+            <button class="nav-item" onclick="openModal('alertsModal'); fetchAlerts();"><span
+                    class="nav-icon">🔔</span><span class="nav-label">Alerts</span></button>
         </nav>
         <div class="sidebar-footer">
             <div class="profile-dropdown" id="profileDropdown">
@@ -71,6 +85,8 @@
             <button class="mobile-nav-item" data-page="reels"><span class="m-icon">🎬</span>Reels</button>
             <button class="mobile-nav-item" data-page="connect"><span class="m-icon">🤝</span>Connect</button>
             <button class="mobile-nav-item" data-page="soilprobe"><span class="m-icon">📡</span>IoT</button>
+            <button class="mobile-nav-item" onclick="openModal('alertsModal'); fetchAlerts();"><span
+                    class="m-icon">🔔</span>Alerts</button>
         </div>
     </nav>
 
@@ -586,21 +602,48 @@
                 <h2>➕ Add Device</h2><button class="modal-close" onclick="closeModal('addDeviceModal')">×</button>
             </div>
             <div class="modal-body">
-                <form id="addDeviceForm">
-                    <div class="form-group"><label>Device Name</label><input type="text" id="deviceName"
-                            class="form-input" required placeholder="e.g., Field Sensor 1"></div>
-                    <div class="form-group"><label>Device ID</label><input type="text" id="deviceId" class="form-input"
-                            required placeholder="e.g., ESP32-XXXX"></div>
-                    <div class="form-group"><label>Field/Location</label><input type="text" id="deviceField"
-                            class="form-input" placeholder="e.g., North Field"></div>
-                    <div style="display:flex;gap:12px;justify-content:flex-end;margin-top:20px">
-                        <button type="button" class="btn btn-secondary"
-                            onclick="closeModal('addDeviceModal')">Cancel</button>
-                        <button type="submit" class="btn btn-primary">Add Device</button>
-                    </div>
-                </form>
+                <!-- Device form content... -->
             </div>
         </div>
+    </div>
+
+    <!-- Alerts Modal -->
+    <div class="modal-overlay" id="alertsModal">
+        <div class="modal-panel" style="max-width:500px">
+            <div class="modal-header">
+                <h2>🔔 Real-time Alerts</h2><button class="modal-close" onclick="closeModal('alertsModal')">×</button>
+            </div>
+            <div class="modal-body">
+                <div id="locationStatus" style="font-size:12px;color:var(--text-muted);margin-bottom:12px">📍 Detecting
+                    location...</div>
+                <div id="alertsContainer" class="alerts-container"
+                    style="display:flex;flex-direction:column;gap:12px;max-height:60vh;overflow-y:auto">
+                    <!-- Alerts will be injected here -->
+                    <div style="text-align:center;padding:20px;color:var(--text-muted)">
+                        <span class="loader"></span> Loading alerts...
+                    </div>
+                </div>
+                <div style="margin-top:16px;text-align:right">
+                    <button class="btn btn-primary" onclick="fetchAlerts()">🔄 Refresh</button>
+                    <button class="btn btn-secondary" onclick="closeModal('alertsModal')">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <form id="addDeviceForm">
+        <div class="form-group"><label>Device Name</label><input type="text" id="deviceName" class="form-input" required
+                placeholder="e.g., Field Sensor 1"></div>
+        <div class="form-group"><label>Device ID</label><input type="text" id="deviceId" class="form-input" required
+                placeholder="e.g., ESP32-XXXX"></div>
+        <div class="form-group"><label>Field/Location</label><input type="text" id="deviceField" class="form-input"
+                placeholder="e.g., North Field"></div>
+        <div style="display:flex;gap:12px;justify-content:flex-end;margin-top:20px">
+            <button type="button" class="btn btn-secondary" onclick="closeModal('addDeviceModal')">Cancel</button>
+            <button type="submit" class="btn btn-primary">Add Device</button>
+        </div>
+    </form>
+    </div>
+    </div>
     </div>
 
     <!-- Reel Player Modal -->

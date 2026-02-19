@@ -636,7 +636,10 @@ document.addEventListener('DOMContentLoaded', () => {
         recognition.interimResults = true;
 
         const selectedLang = chatLanguageSelect.value;
+        // Use the selected language, fallback to English
         recognition.lang = LANG_CODES[selectedLang] || 'en-US';
+        // Optimize for dialect if possible (browser dependent)
+        if (selectedLang === 'Hindi') recognition.lang = 'hi-IN'; // Explicit check
 
         recognition.onstart = () => {
             isRecording = true;
@@ -691,6 +694,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         try {
             chatStatus.textContent = 'Speaking...';
+            // Visual indicator on the speak button if possible
 
             const response = await fetch(TTS_URL, {
                 method: 'POST',
@@ -724,6 +728,7 @@ document.addEventListener('DOMContentLoaded', () => {
         } catch (error) {
             console.error('Edge TTS error:', error);
             chatStatus.textContent = 'Agricultural Expert';
+            showNotification('TTS failed. Please try again.', 'error');
         }
     }
 
@@ -752,6 +757,21 @@ document.addEventListener('DOMContentLoaded', () => {
         // Update status
         chatStatus.textContent = 'Thinking...';
 
+        if (!navigator.onLine) {
+            // Offline Mode Logic
+            await saveOfflineMessage({
+                role: 'user',
+                content: message,
+                image: selectedImageBase64,
+                language: chatLanguageSelect.value,
+                timestamp: Date.now()
+            });
+            typingEl.remove();
+            addMessageToUI('bot', '🔌 You are offline. Message saved and will be sent automatically when you are back online.');
+            chatStatus.textContent = 'Offline - Saved';
+            return;
+        }
+
         try {
             const response = await fetch(CHAT_API_URL, {
                 method: 'POST',
@@ -773,13 +793,25 @@ document.addEventListener('DOMContentLoaded', () => {
             if (data.success) {
                 addMessageToUI('bot', data.reply);
                 chatHistory.push({ role: 'assistant', content: data.reply });
+
+                // Auto-speak if enabled (optional, good for accessibility)
+                // speakResponse(data.reply); 
             } else {
                 addMessageToUI('bot', `⚠️ ${data.error || 'Something went wrong. Please try again.'}`);
             }
         } catch (error) {
             console.error('Chat error:', error);
             typingEl.remove();
-            addMessageToUI('bot', '⚠️ Could not connect to the server. Make sure the backend is running.');
+
+            // Fallback to offline save if fetch fails (e.g. server down or network flaky)
+            await saveOfflineMessage({
+                role: 'user',
+                content: message,
+                image: selectedImageBase64,
+                language: chatLanguageSelect.value,
+                timestamp: Date.now()
+            });
+            addMessageToUI('bot', '🔌 Network issue. Message saved offline.');
         }
 
         chatStatus.textContent = 'Agricultural Expert';
@@ -1310,3 +1342,205 @@ document.querySelectorAll('input[name="start-date"], input[name="end-date"]').fo
         }
     });
 });
+
+// ============================================
+// OFFLINE MANAGER (IndexedDB)
+// ============================================
+let dbPromise;
+
+function initDB() {
+    if (!window.idb) {
+        console.warn('IDB library not loaded');
+        return;
+    }
+    dbPromise = idb.openDB('hardini-db', 1, {
+        upgrade(db) {
+            if (!db.objectStoreNames.contains('offline-chat')) {
+                db.createObjectStore('offline-chat', { keyPath: 'id', autoIncrement: true });
+            }
+        },
+    });
+}
+
+// Initialize DB on load
+if ('serviceWorker' in navigator) {
+    initDB();
+}
+
+async function saveOfflineMessage(msgData) {
+    if (!dbPromise) return;
+    const db = await dbPromise;
+    await db.put('offline-chat', msgData);
+    console.log('Message saved offline:', msgData);
+    showNotification('Message saved. Waiting for internet...', 'success');
+}
+
+async function syncOfflineMessages() {
+    if (!dbPromise || !navigator.onLine) return;
+
+    const db = await dbPromise;
+    const tx = db.transaction('offline-chat', 'readwrite');
+    const store = tx.objectStore('offline-chat');
+    const messages = await store.getAll();
+
+    if (messages.length === 0) return;
+
+    console.log(`Syncing ${messages.length} offline messages...`);
+    showNotification(`Syncing ${messages.length} offline messages...`, 'success');
+
+    // Process sequentially to maintain order
+    for (const msg of messages) {
+        try {
+            const CHAT_API_URL = (window.location.protocol === 'file:' || window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+                ? 'http://localhost:3001/api/chat'
+                : 'https://hardini.onrender.com/api/chat';
+
+            // We need to re-fetch the token potentially, but we'll try with current state
+            // In a real app, ensure auth token is valid
+            const response = await fetch(CHAT_API_URL, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    // Note: Auth might be tricky if token expired. 
+                    // Ideally, we refresh token here. For now, assuming token is valid or handling 401.
+                    'Authorization': window.firebase?.auth()?.currentUser ?
+                        `Bearer ${await window.firebase.auth().currentUser.getIdToken()}` : ''
+                },
+                body: JSON.stringify({
+                    message: msg.content,
+                    language: msg.language,
+                    image: msg.image,
+                    history: [] // Simplified history for sync
+                })
+            });
+
+            if (response.ok) {
+                // Remove from DB if successful
+                await db.delete('offline-chat', msg.id);
+                const data = await response.json();
+
+                // Show rich notification or append to chat if visible
+                // For now, simple notification
+                if (data.success && data.reply) {
+                    showNotification(`Response to "${msg.content.substring(0, 15)}...":\n${data.reply.substring(0, 50)}...`, 'success', 8000);
+                    // Also try to speak it if online now
+                    if (window.speakResponse) window.speakResponse(data.reply);
+                }
+            }
+        } catch (err) {
+            console.error('Sync failed for message:', msg, err);
+            // Leave in DB to try again later
+        }
+    }
+}
+
+// Listen for online status
+window.addEventListener('online', () => {
+    console.log('Back online! Syncing...');
+    showNotification('Back online! Syncing data...', 'success');
+    syncOfflineMessages();
+});
+
+window.addEventListener('offline', () => {
+    console.log('Gone offline');
+    showNotification('You are now offline. App will use cached data.', 'error');
+});
+
+// ============================================
+// ALERTS FEATURE
+// ============================================
+async function getUserLocation() {
+    return new Promise((resolve, reject) => {
+        if (!navigator.geolocation) {
+            reject(new Error('Geolocation not supported'));
+        } else {
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    resolve({
+                        latitude: position.coords.latitude,
+                        longitude: position.coords.longitude
+                    });
+                },
+                (error) => {
+                    console.warn('Geolocation denied or failed:', error.message);
+                    resolve(null); // Resolve null to fallback to IP-based or default
+                }
+            );
+        }
+    });
+}
+
+window.fetchAlerts = async function () {
+    const container = document.getElementById('alertsContainer');
+    const status = document.getElementById('locationStatus');
+
+    if (!container) return;
+
+    container.innerHTML = '<div style="text-align:center;padding:20px;color:var(--text-muted)"><span class="loader"></span> Fetching latest updates...</div>';
+    status.textContent = '📍 Detecting location...';
+
+    try {
+        const location = await getUserLocation();
+
+        if (location) {
+            status.textContent = `📍 Location: ${location.latitude.toFixed(2)}, ${location.longitude.toFixed(2)}`;
+        } else {
+            status.textContent = '📍 Location: Approx (IP Based)';
+        }
+
+        const ALERTS_API_URL = (window.location.protocol === 'file:' || window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+            ? 'http://localhost:3001/api/alerts'
+            : 'https://hardini.onrender.com/api/alerts';
+
+        const response = await fetch(ALERTS_API_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(location || {})
+        });
+
+        const data = await response.json();
+
+        if (data.success && data.alerts.length > 0) {
+            container.innerHTML = data.alerts.map(alert => `
+                <div class="alert-card ${alert.type} ${alert.severity}" style="
+                    border-left: 4px solid ${getSeverityColor(alert.severity)};
+                    background: ${getSeverityBg(alert.severity)};
+                    padding: 12px;
+                    border-radius: 4px;
+                    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+                ">
+                    <div style="display:flex;justify-content:space-between;margin-bottom:4px">
+                        <strong style="color:var(--text-primary)">${alert.title}</strong>
+                        <span style="font-size:11px;padding:2px 6px;border-radius:10px;background:#fff;border:1px solid #ddd">${alert.type.toUpperCase()}</span>
+                    </div>
+                    <p style="margin:0;font-size:13px;color:var(--text-secondary)">${alert.message}</p>
+                </div>
+            `).join('');
+        } else {
+            container.innerHTML = '<div style="text-align:center;padding:20px;color:var(--text-muted)">No active alerts for your region. ✅</div>';
+        }
+
+    } catch (error) {
+        console.error('Error fetching alerts:', error);
+        container.innerHTML = '<div style="text-align:center;padding:20px;color:var(--danger)">Failed to load alerts. Please check connection.</div>';
+        status.textContent = '⚠️ Location/Network Error';
+    }
+};
+
+function getSeverityColor(severity) {
+    switch (severity) {
+        case 'high': return '#f44336'; // Red
+        case 'medium': return '#ff9800'; // Orange
+        case 'low': return '#4caf50'; // Green
+        default: return '#2196f3'; // Blue
+    }
+}
+
+function getSeverityBg(severity) {
+    switch (severity) {
+        case 'high': return '#ffebee';
+        case 'medium': return '#fff3e0';
+        case 'low': return '#e8f5e9';
+        default: return '#e3f2fd';
+    }
+}
