@@ -4,7 +4,7 @@ const axios = require('axios');
 const admin = require('firebase-admin');
 // const serviceAccount = require('./serviceAccountKey.json'); // Removed to prevent crash on Vercel
 require('dotenv').config();
-const { Communicate } = require('edge-tts-universal');
+const { IsomorphicCommunicate } = require('edge-tts-universal');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -579,23 +579,54 @@ app.post('/api/chat', async (req, res) => {
 // ============================================
 
 // Map languages to specific high-quality neural voices
+// Supports both full names AND short codes from the frontend
 const VOICE_MAP = {
+    'en': 'en-IN-NeerjaNeural',
     'English': 'en-IN-NeerjaNeural',
+    'hi': 'hi-IN-SwaraNeural',
     'Hindi': 'hi-IN-SwaraNeural',
+    'mr': 'mr-IN-AarohiNeural',
     'Marathi': 'mr-IN-AarohiNeural',
+    'te': 'te-IN-ShrutiNeural',
     'Telugu': 'te-IN-ShrutiNeural',
+    'ta': 'ta-IN-PallaviNeural',
     'Tamil': 'ta-IN-PallaviNeural',
+    'bn': 'bn-IN-TanishaaNeural',
     'Bengali': 'bn-IN-TanishaaNeural',
+    'kn': 'kn-IN-SapnaNeural',
     'Kannada': 'kn-IN-SapnaNeural',
+    'gu': 'gu-IN-DhwaniNeural',
     'Gujarati': 'gu-IN-DhwaniNeural',
-    'Punjabi': 'pa-IN-OjasNeural', // Male voice often better for Punjabi
+    'pa': 'pa-IN-OjasNeural',
+    'Punjabi': 'pa-IN-OjasNeural',
+    'ml': 'ml-IN-SobhanaNeural',
     'Malayalam': 'ml-IN-SobhanaNeural',
-    'Odia': 'or-IN-MunaNeural', // Very few voices, this might be male
+    'or': 'or-IN-MunaNeural',
+    'Odia': 'or-IN-MunaNeural',
+    'ur': 'ur-IN-GulshanNeural',
     'Urdu': 'ur-IN-GulshanNeural',
+    'es': 'es-ES-ElviraNeural',
     'Spanish': 'es-ES-ElviraNeural',
+    'fr': 'fr-FR-DeniseNeural',
     'French': 'fr-FR-DeniseNeural',
+    'ar': 'ar-SA-ZariyahNeural',
     'Arabic': 'ar-SA-ZariyahNeural'
 };
+
+// Auto-detect language from text using Unicode ranges
+function detectLanguageFromText(text) {
+    if (/[\u0A00-\u0A7F]/.test(text)) return 'pa';
+    if (/[\u0C80-\u0CFF]/.test(text)) return 'kn';
+    if (/[\u0C00-\u0C7F]/.test(text)) return 'te';
+    if (/[\u0B80-\u0BFF]/.test(text)) return 'ta';
+    if (/[\u0D00-\u0D7F]/.test(text)) return 'ml';
+    if (/[\u0B00-\u0B7F]/.test(text)) return 'or';
+    if (/[\u0A80-\u0AFF]/.test(text)) return 'gu';
+    if (/[\u0980-\u09FF]/.test(text)) return 'bn';
+    if (/[\u0600-\u06FF]/.test(text)) return 'ur';
+    if (/[\u0900-\u097F]/.test(text)) return 'hi';
+    return 'en';
+}
 
 app.post('/api/tts', async (req, res) => {
     try {
@@ -607,25 +638,43 @@ app.post('/api/tts', async (req, res) => {
             .replace(/\*\*(.*?)\*\*/g, '$1') // Remove markdown bold
             .replace(/\*(.*?)\*/g, '$1')     // Remove markdown italic
             .replace(/([\u2700-\u27BF]|[\uE000-\uF8FF]|\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDFFF]|[\u2011-\u26FF]|\uD83E[\uDD10-\uDDFF])/g, '') // Remove emojis
-            .replace(/[#_`~@$%^&|+={}\[\]:;"<>\\\/]/g, '')
+            .replace(/[#_`~@$%^&|+={}[\]:;"<>\\/]/g, '')
             .replace(/^[•\-] /gm, '')
             .replace(/\s+/g, ' ')
             .trim()
             .substring(0, 500); // Limit length for speed
 
-        const selectedVoice = VOICE_MAP[language] || 'en-IN-NeerjaNeural';
+        if (!cleanText) return res.status(400).json({ success: false, error: 'No speakable text after cleaning' });
 
-        console.log(`TTS Request: "${cleanText.substring(0, 20)}..." in ${selectedVoice}`);
+        // Auto-detect language if 'auto' or not provided
+        let lang = language;
+        if (!lang || lang === 'auto') {
+            lang = detectLanguageFromText(cleanText);
+        }
 
-        const communicate = new Communicate(cleanText, { name: selectedVoice });
-        const audioBuffer = await communicate.toBuffer();
+        const selectedVoice = VOICE_MAP[lang] || 'en-IN-NeerjaNeural';
 
+        console.log(`TTS Request: lang=${lang}, voice=${selectedVoice}, text="${cleanText.substring(0, 30)}..."`);
+
+        const communicate = new IsomorphicCommunicate(cleanText, {
+            voice: selectedVoice,
+            rate: '+25%',
+            volume: '+0%'
+        });
+
+        // Stream audio chunks for fastest first-byte response
         res.set({
             'Content-Type': 'audio/mpeg',
-            'Content-Length': audioBuffer.length,
-            'Cache-Control': 'no-cache'
+            'Cache-Control': 'no-cache',
+            'Transfer-Encoding': 'chunked'
         });
-        res.send(audioBuffer);
+
+        for await (const chunk of communicate.stream()) {
+            if (chunk.type === 'audio' && chunk.data) {
+                res.write(Buffer.from(chunk.data));
+            }
+        }
+        res.end();
 
     } catch (error) {
         console.error('Edge TTS error:', error.message);

@@ -791,6 +791,10 @@ function toggleTTS() {
 }
 
 async function speakText(text) {
+    // Strip markdown/HTML for cleaner speech
+    const cleanText = text.replace(/<[^>]+>/g, '').replace(/[*#_`~]/g, '').replace(/\s+/g, ' ').trim();
+    if (!cleanText) return;
+
     try {
         const token = await getAuthToken();
         const headers = { 'Content-Type': 'application/json' };
@@ -800,17 +804,31 @@ async function speakText(text) {
         const res = await fetch(`${API_BASE}/api/tts`, {
             method: 'POST',
             headers: headers,
-            body: JSON.stringify({ text, language: lang })
+            body: JSON.stringify({ text: cleanText, language: lang })
         });
-        if (res.ok) {
-            const blob = await res.blob();
-            const audio = new Audio(URL.createObjectURL(blob));
-            audio.play();
-        }
+        if (!res.ok) throw new Error('TTS API not available');
+        const blob = await res.blob();
+        if (blob.size < 100) throw new Error('Empty audio response');
+        const audio = new Audio(URL.createObjectURL(blob));
+        audio.play();
     } catch (err) {
         // Fallback to browser TTS
-        const utter = new SpeechSynthesisUtterance(text);
-        speechSynthesis.speak(utter);
+        try {
+            window.speechSynthesis.cancel();
+            const utter = new SpeechSynthesisUtterance(cleanText);
+            const lang = document.getElementById('chatLang').value;
+            if (lang === 'hi') utter.lang = 'hi-IN';
+            else if (lang === 'mr') utter.lang = 'mr-IN';
+            else if (lang === 'te') utter.lang = 'te-IN';
+            else if (lang === 'ta') utter.lang = 'ta-IN';
+            else if (lang === 'kn') utter.lang = 'kn-IN';
+            else if (lang === 'pa') utter.lang = 'pa-IN';
+            else utter.lang = 'en-IN';
+            utter.rate = 0.95;
+            window.speechSynthesis.speak(utter);
+        } catch (e) {
+            console.error('Browser TTS also failed:', e);
+        }
     }
 }
 
