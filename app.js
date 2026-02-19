@@ -115,8 +115,6 @@ async function reverseGeocode(lat, lon) {
     }
 }
 
-let mapplsMapInstance = null;
-
 window.fetchAlerts = async function () {
     try {
         // 1. Get user location
@@ -252,53 +250,65 @@ window.fetchAlerts = async function () {
     }
 };
 
+let mapplsMapInstance = null;
+let mapplsSDKReady = false;
+let pendingMapRender = null;
+
+// Callback fired by the Mappls SDK script when it's fully loaded
+window.mapplsReady = function () {
+    mapplsSDKReady = true;
+    console.log('Mappls SDK ready');
+    if (pendingMapRender) {
+        const { lat, lon, cityName } = pendingMapRender;
+        pendingMapRender = null;
+        renderMapplsMap(lat, lon, cityName);
+    }
+};
+
 function renderMapplsMap(lat, lon, cityName) {
     const container = document.getElementById('mapContainer');
     if (!container) return;
 
-    // Check if Mappls SDK is loaded
-    if (typeof mappls !== 'undefined' && mappls.Map) {
-        try {
-            container.innerHTML = ''; // Clear placeholder
-            const mapDiv = document.createElement('div');
-            mapDiv.id = 'mapplsMapDiv';
-            mapDiv.style.cssText = 'width:100%;height:100%';
-            container.appendChild(mapDiv);
+    // If SDK not ready yet, queue the render
+    if (!mapplsSDKReady || typeof mappls === 'undefined') {
+        pendingMapRender = { lat, lon, cityName };
+        container.innerHTML = `<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--text-muted);gap:8px">
+            <span class="loader"></span> Loading Satellite Map...
+        </div>`;
+        return;
+    }
 
-            mapplsMapInstance = new mappls.Map('mapplsMapDiv', {
-                center: [lat, lon],
-                zoom: 14,
-                mapType: 'satellite',  // Satellite imagery
-                zoomControl: true,
-                location: true
-            });
+    try {
+        container.innerHTML = '';
+        const mapDiv = document.createElement('div');
+        mapDiv.id = 'mapplsMapDiv';
+        mapDiv.style.cssText = 'width:100%;height:100%';
+        container.appendChild(mapDiv);
 
-            mapplsMapInstance.addListener('load', function () {
-                // Add marker at user location
-                new mappls.Marker({
-                    map: mapplsMapInstance,
-                    position: { lat: lat, lng: lon },
-                    fitbounds: true,
-                    popupHtml: `<div style="padding:8px;font-family:Inter,sans-serif;color:#333"><strong>📍 ${cityName}</strong><br><small>${lat.toFixed(4)}, ${lon.toFixed(4)}</small></div>`
-                });
+        mapplsMapInstance = new mappls.Map('mapplsMapDiv', {
+            center: [lat, lon],
+            zoom: 15,
+            zoomControl: true,
+            location: true,
+            hybrid: true
+        });
+
+        mapplsMapInstance.addListener('load', function () {
+            // Add marker at user location
+            new mappls.Marker({
+                map: mapplsMapInstance,
+                position: { lat: lat, lng: lon },
+                fitbounds: true,
+                popupHtml: `<div style="padding:8px;font-family:Inter,sans-serif;color:#333"><strong>📍 ${cityName}</strong><br><small>${lat.toFixed(4)}, ${lon.toFixed(4)}</small></div>`
             });
-        } catch (e) {
-            console.error('Mappls Map error:', e);
-            container.innerHTML = `<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;color:var(--text-muted);gap:8px">
-                <span style="font-size:40px">🗺️</span>
-                <span>Map unavailable</span>
-                <small>${lat.toFixed(4)}, ${lon.toFixed(4)}</small>
-            </div>`;
-        }
-    } else {
-        // Fallback: show coordinate info
+        });
+    } catch (e) {
+        console.error('Mappls Map error:', e);
         container.innerHTML = `<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;color:var(--text-muted);gap:8px">
             <span style="font-size:40px">🗺️</span>
-            <span>Mappls SDK loading...</span>
-            <small>📍 ${cityName} (${lat.toFixed(4)}, ${lon.toFixed(4)})</small>
+            <span>Map unavailable</span>
+            <small>${lat.toFixed(4)}, ${lon.toFixed(4)}</small>
         </div>`;
-        // Retry after SDK loads
-        setTimeout(() => renderMapplsMap(lat, lon, cityName), 2000);
     }
 }
 

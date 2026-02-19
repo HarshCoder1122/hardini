@@ -18,7 +18,15 @@
       "use": "@vercel/static"
     },
     {
+      "src": "*.json",
+      "use": "@vercel/static"
+    },
+    {
       "src": "images/**/*",
+      "use": "@vercel/static"
+    },
+    {
+      "src": "assets/**/*",
       "use": "@vercel/static"
     }
   ],
