@@ -73,44 +73,49 @@ window.fetchAlerts = async function () {
         const data = await response.json();
 
         if (data.success) {
-            // 1. Render Weather Dashboard
-            // Extract weather alert or mock current weather if no alert provided (Using mock fallback for visual demo if API doesn't return raw current weather)
-            // Ideally backend should return current weather Details. Assuming backend returns 'alerts' array.
-            // For this UI, we'll try to extract weather info from the first weather alert OR use a placeholder if standard weather data isn't in this specific endpoint structure yet.
-            // *Self-correction*: The current /api/alerts returns alerts based on weather, but maybe not the raw weather data for display. 
-            // We will simulate the "Current Weather" display for now using the first weather alert's context if available, or just generic data.
-            // *Update*: To make it "wow", let's mock a nice display if access to raw data isn't exposed.
+            // 1. Render Weather Dashboard with REAL DATA
+            const w = data.weather || { temp: '--', wind: '--', humidity: '--', code: 0 };
 
-            // Let's assume we want to show a nice card. 
+            // Map weather code to condition text/icon
+            // Codes: 0=Clear, 1-3=Cloudy, 45-48=Fog, 51-55=Drizzle, 61-65=Rain, 71-75=Snow, 80-82=Showers, 95+=Thunder
+            let condition = 'Clear';
+            let icon = '☀️';
+            if (w.code >= 1 && w.code <= 3) { condition = 'Partly Cloudy'; icon = '⛅'; }
+            else if (w.code >= 45 && w.code <= 48) { condition = 'Foggy'; icon = '🌫️'; }
+            else if (w.code >= 51 && w.code <= 67) { condition = 'Rainy'; icon = '🌧️'; }
+            else if (w.code >= 71 && w.code <= 77) { condition = 'Snow'; icon = '❄️'; }
+            else if (w.code >= 80 && w.code <= 82) { condition = 'Showers'; icon = '🌦️'; }
+            else if (w.code >= 95) { condition = 'Thunderstorm'; icon = '⛈️'; }
+
             weatherDash.innerHTML = `
                 <div class="weather-main">
                     <div class="weather-temp">
-                        <span>28°</span>
-                        <span style="font-size:20px">☁️</span>
+                        <span>${w.temp}°</span>
+                        <span style="font-size:20px">${icon}</span>
                     </div>
                     <div style="text-align:right">
-                        <div class="weather-condition">Partly Cloudy</div>
+                        <div class="weather-condition">${condition}</div>
                         <div class="weather-location">📍 ${locationText}</div>
                     </div>
                 </div>
                 <div class="weather-details">
                     <div class="w-detail-item">
                         <div class="w-label">Rain Chance</div>
-                        <div class="w-value">10%</div>
+                        <div class="w-value">${w.code >= 60 ? 'High' : 'Low'}</div>
                     </div>
                     <div class="w-detail-item">
                         <div class="w-label">Wind</div>
-                        <div class="w-value">12 km/h</div>
+                        <div class="w-value">${w.wind} km/h</div>
                     </div>
                     <div class="w-detail-item">
                         <div class="w-label">Humidity</div>
-                        <div class="w-value">65%</div>
+                        <div class="w-value">${w.humidity}%</div>
                     </div>
                 </div>
             `;
 
             // 2. Render Alerts Feed
-            if (data.alerts.length > 0) {
+            if (data.alerts && data.alerts.length > 0) {
                 alertsFeed.innerHTML = data.alerts.map(alert => `
                     <div class="alert-item" style="border-left-color: ${getSeverityColor(alert.severity)}">
                         <div class="alert-header">

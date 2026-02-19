@@ -640,14 +640,22 @@ app.post('/api/alerts', async (req, res) => {
     try {
         const { latitude, longitude, ip } = req.body;
         const alerts = [];
+        let weatherData = null;
 
         // 1. Weather Alerts (Open-Meteo)
         // Check for Rain, High Wind, Extreme Temp
         if (latitude && longitude) {
             try {
-                const url = `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=weather_code,wind_speed_10m,temperature_2m&timezone=auto`;
+                const url = `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=weather_code,wind_speed_10m,temperature_2m,relative_humidity_2m&timezone=auto`;
                 const response = await axios.get(url);
                 const current = response.data.current;
+
+                weatherData = {
+                    temp: current.temperature_2m,
+                    wind: current.wind_speed_10m,
+                    humidity: current.relative_humidity_2m || 60, // Fallback if API version differs
+                    code: current.weather_code
+                };
 
                 // Rain Check (Codes: 61, 63, 65 = Rain | 80, 81, 82 = Showers | 95+ = Thunderstorm)
                 if (current.weather_code >= 61 && current.weather_code <= 65) {
@@ -699,7 +707,7 @@ app.post('/api/alerts', async (req, res) => {
             message: 'Next installment processing started. Check your e-KYC status.'
         });
 
-        res.json({ success: true, alerts: alerts });
+        res.json({ success: true, alerts: alerts, weather: weatherData });
 
     } catch (error) {
         console.error('Alerts API error:', error.message);
