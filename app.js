@@ -480,6 +480,9 @@ async function loadDevices() {
 
             return `
             <div class="device-card" onclick="loadSensorData('${d.device_id || d.id}')">
+                <button onclick="event.stopPropagation(); deleteDevice('${d.device_id || d.id}')" 
+                    style="position:absolute;top:10px;right:10px;background:rgba(255,0,0,0.1);color:#ff4444;border:none;border-radius:50%;width:32px;height:32px;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;z-index:10" 
+                    title="Delete Device">🗑️</button>
                 <div class="device-status ${isOnline ? 'online' : 'offline'}"><span class="status-dot"></span>${isOnline ? 'Online' : 'Offline'}</div>
                 <div class="device-name">${d.device_name || d.name || d.device_id}</div>
                 <div class="device-field">📍 ${d.field_name || d.field || 'Unknown'}</div>
@@ -535,6 +538,72 @@ async function loadSensorData(deviceId) {
             }
         });
     } catch (err) { showNotification('Failed to load sensor data', 'error'); }
+}
+
+async function deleteDevice(deviceId) {
+    if (!confirm('Are you sure you want to delete this device? Data history will be retained.')) return;
+    try {
+        const token = await getAuthToken();
+        const res = await fetch(`${API_BASE}/api/devices/${deviceId}`, {
+            method: 'DELETE',
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (res.ok) {
+            showNotification('Device deleted successfully', 'success');
+            loadDevices(); // Refresh list
+            document.getElementById('chartContainer').style.display = 'none'; // Hide chart if open
+        } else {
+            showNotification('Failed to delete device', 'error');
+        }
+    } catch (err) { showNotification('Network error', 'error'); }
+}
+
+function analyzeSoilData() {
+    if (!sensorChart || !sensorChart.data || !sensorChart.data.labels) {
+        showNotification('No data available to analyze', 'warning');
+        return;
+    }
+
+    // Get last 5 readings
+    const len = sensorChart.data.labels.length;
+    const recent = len > 5 ? 5 : len;
+
+    // Construct simplified data summary
+    const moisture = sensorChart.data.datasets[0].data.slice(-recent);
+    const temp = sensorChart.data.datasets[1].data.slice(-recent);
+    const avgMoist = (moisture.reduce((a, b) => a + b, 0) / recent).toFixed(1);
+    const avgTemp = (temp.reduce((a, b) => a + b, 0) / recent).toFixed(1);
+
+    const prompt = `Analyze this soil data from my field (Last ${recent} readings avg):
+- Moisture: ${avgMoist}% (Recent trend: ${moisture.join(', ')})
+- Temperature: ${avgTemp}°C (Recent trend: ${temp.join(', ')})
+
+Based on this, what are the immediate irrigation and fertilizer recommendations? 
+Also, considering general NPK needs for standard crops, suggest any adjustments.`;
+
+    // Open Chatbot
+    const panel = document.getElementById('chatbotPanel');
+    if (!panel.classList.contains('open')) toggleChatbot();
+
+    // Send Message
+    setTimeout(() => sendQuickChat(prompt), 500); // Small delay to let panel open
+}
+
+// Inject Analyze Button into Chart Container (One-time setup or dynamic)
+// Modifying loadSensorData to ensure button exists
+const _origLoadSensorData = loadSensorData;
+loadSensorData = async function (deviceId) {
+    await _origLoadSensorData(deviceId);
+    const container = document.getElementById('chartContainer');
+    if (!document.getElementById('aiAnalyzeBtn')) {
+        const btn = document.createElement('button');
+        btn.id = 'aiAnalyzeBtn';
+        btn.className = 'btn btn-primary btn-sm';
+        btn.style.marginTop = '15px';
+        btn.innerHTML = '🤖 Analyze Data & Recommend';
+        btn.onclick = analyzeSoilData;
+        container.appendChild(btn);
+    }
 }
 
 // ===== BLE PROVISIONING =====
